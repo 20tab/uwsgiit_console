@@ -14,7 +14,7 @@ VASSALS = u"{}/vassals".format(os.path.dirname(BASE_DIR))
 
 output['everything'] = False
 port = '22'
-host = ''
+host = '30003@unbit0002.uwsgi.it'
 env.hosts = ['%s:%s' % (host,port)]
 project_dir = 'www/uwsgiit_console'
 prod_project_dir = 'www/uwsgiit_console'
