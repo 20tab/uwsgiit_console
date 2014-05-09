@@ -1,0 +1,65 @@
+{% extends 'index.html' %}
+{% load console_tags %}
+
+{% block content %}
+<form id="container-form" class="form-inline" role="form" action="{% url 'containers' container.uid %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" id="id_action">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+      <li class="{% if not active_panel %}active{% endif %}">
+          <a href="#infos" data-toggle="tab">Info</a>
+      </li>
+      <li{% if active_panel == 'ssh' %} class="active"{% endif %}>
+          <a href="#ssh" data-toggle="tab">SSH keys</a>
+      </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+
+            <!-- INFO -->
+            <div class="tab-pane{% if not active_panel %} active{% endif %}" id="infos">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                    {% for k, v in container_copy.items %}
+                        <tr>
+                            <td>{{ k|get_title }}</td>
+                            <td>{{ v }}</td>
+                        </tr>
+                    {% endfor %}
+                        {{ containerform }}
+
+                    </table>
+                    <button id="update-container" type="button" class="btn btn-primary submit-container-form">
+                        Update
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- SSH -->
+            <div class="tab-pane{% if active_panel == 'ssh' %} active{% endif %}" id="ssh">
+                <h2>Add or remove ssh keys</h2>
+                <div class="div-as-tablerow row div-hover">
+                    {{ sshform }}
+                    <button id="add-key" type="button" class="btn btn-primary submit-container-form">Add</button>
+                </div>
+
+                {% for k in container.ssh_keys %}
+                    <div class="div-as-tablerow row div-hover">
+                        <div id="ssh-{{ forloop.counter }}" class="col-md-11 word-break">{{ k }}</div>
+                        <div class="col-md-1">
+                            <a class="remove-key submit-container-form" href="#" title="Remove" data-id="ssh-{{ forloop.counter }}" data-action="del-key" data-field="key">
+                                <span class="glyphicon glyphicon-remove-circle"></span>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+
+    </div>
+</form>
+
+{% endblock %}

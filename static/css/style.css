@@ -1,0 +1,21 @@
+body { padding-top: 70px; }
+
+.word-break{
+    word-break: break-all;
+}
+
+.div-hover:hover{
+    background-color: #f6f6f6;
+}
+
+.div-as-tablerow{
+    border: 1px solid #f6f6f6;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+.inline{
+    display: inline-block;
+}

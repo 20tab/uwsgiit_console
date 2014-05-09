@@ -1,0 +1,42 @@
+{% extends 'index.html' %}
+
+{% block content %}
+
+    <div>
+        <form id="add-domain-form" class="form-inline" role="form" action="{% url 'domains' %}" method="post">
+            {% csrf_token %}
+            {{ new_domain }}
+            <button type="submit" class="btn btn-primary">Add</button>
+        </form>
+    </div>
+    <br>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>UUID</th>
+                <th>TAGS</th>
+            </tr>
+        {% for d in domains %}
+            <tr>
+                <td>{{ d.0.id }}</td>
+                <td>{{ d.0.name }}</td>
+                <td>{{ d.0.uuid }}</td>
+                <td>
+                    <form class="inline form-inline" role="form" action="." method="post">{% csrf_token %}
+                        <input name="did" value="{{ d.0.id }}" type="hidden">
+                        {{ d.1.tags }}
+                        <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
+                    </form>
+
+                    <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}

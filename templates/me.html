@@ -1,0 +1,40 @@
+{% extends "index.html" %}
+{% load console_tags %}
+
+{% block content %}
+
+
+    <form action="." method="post" class="clearfix">{% csrf_token %}
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            {{ me_form }}
+            <tr>
+                <td>uuid</td>
+                <td>{{ me.uuid }}</td>
+            </tr>
+            <tr>
+                <td>Servers</td>
+                <td>{{ me.servers }}</td>
+            </tr>
+        </table>
+    </div>
+    <button type="submit" class="btn btn-primary update-me">Update</button>
+    </form>
+
+    <h2>Available distributions</h2>
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        {% for d in distros %}
+            <tr>
+                <td>{{ d.id }}</td>
+                <td>{{ d.name }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}
