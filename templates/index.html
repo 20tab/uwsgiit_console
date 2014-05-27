@@ -35,7 +35,7 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             {% if not login_form %}
                 <ul class="nav navbar-nav">
-                    <li{% if path == "/me/" or path == "/" %} class="active"{% endif %}><a href="/me/">Me</a></li>
+                    <li{% if path == "/me/" %} class="active"{% endif %}><a href="/me/">Me</a></li>
                     <li{% if "/containers/" in path %} class="active"{% endif %}>
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Containers <span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -52,11 +52,15 @@
                     <li{% if "/tags/" in path %} class="active"{% endif %}>
                         <a href="/tags/">Tags</a>
                     </li>
+                    <li {% if "/metrics/" in path %} class="active"{% endif %}>
+                        <a href="/metrics/">Metrics</a>
+                    </li>
                     <li><a href="/logout/">Logout</a></li>
                 </ul>
             {% else %}
 
                 <form class="navbar-form navbar-right" role="form" action="." method="post">{% csrf_token %}
+                    <input name="action-login" type="hidden" value="1">
                     <div class="form-group">
                         <input type="text" placeholder="username" class="form-control" name="username">
                     </div>
@@ -74,8 +78,11 @@
     {% block content %}{% endblock %}
 </div>
 
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="{{ STATIC_URL }}bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
-    <script src="{{ STATIC_URL }}js/functions.js"></script>
+
+{% endblock %}
+{% block footer_js %}
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{ STATIC_URL }}bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}js/functions.js"></script>
 
 {% endblock %}

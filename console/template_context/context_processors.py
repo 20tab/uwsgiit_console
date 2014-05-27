@@ -9,4 +9,5 @@ def console_context(request):
     except:
         pass
     context_extras['JQUERY_LIB'] = settings.JQUERY_LIB
+    context_extras['path'] = request.get_full_path()
     return context_extras

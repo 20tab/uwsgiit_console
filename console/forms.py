@@ -1,10 +1,24 @@
 from django import forms
-from select2.widgets import SelectMultipleAutocomplete
+from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
+from uwsgiit.api import UwsgiItClient
+from django.conf import settings
+from django.utils.dates import MONTHS
+from datetime import datetime
 
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u'Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(label=u'Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+    def clean(self):
+        cd = super(LoginForm, self).clean()
+        username = cd['username']
+        password = cd['password']
+        client = UwsgiItClient(username, password, settings.CONSOLE_API)
+        me = client.me().json()
+        if 'error' in me:
+            raise forms.ValidationError(u'Username o password errate!')
+        return cd
 
 
 class MeForm(forms.Form):
@@ -66,3 +80,64 @@ class DomainForm(forms.Form):
 
 class NewDomainForm(forms.Form):
     name = forms.CharField(label=u'Name', widget=forms.TextInput(attrs={'size': 70}))
+
+
+class CalendarForm(forms.Form):
+    year = forms.IntegerField(required=False)
+    month = forms.ChoiceField(required=False, widget=SelectAutocomplete(plugin_options={"width": "300px"}),
+                              choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
+    day = forms.IntegerField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(CalendarForm, self).__init__(*args, **kwargs)
+        today = datetime.today()
+        self.fields['year'].initial = today.year
+        self.fields['month'].initial = today.month
+        self.fields['day'].initial = today.day
+
+    def has_value(self, field):
+        data = self.cleaned_data
+        if field in data and data[field]:
+            return True
+        return False
+
+    def get_params(self):
+        res = {}
+        data = self.cleaned_data
+        if self.has_value(u'year'):
+            res[u'year'] = data[u'year']
+        if self.has_value(u'month'):
+            res[u'month'] = int(data[u'month'])
+        if self.has_value(u'day'):
+            res[u'day'] = data[u'day']
+        return res
+
+    def metric_type(self):
+        if self.has_value(u'day'):
+            return u'h'
+        elif self.has_value(u'month'):
+            return u'd'
+        return u'm'
+
+    def is_in_the_future(self):
+        data = self.get_params()
+        today = datetime.today()
+        if 'year' in data and data['year'] > today.year:
+            return True
+        if 'year' in data and data['year'] == today.year and 'month' in data and data['month'] > today.month:
+            return True
+        if 'year' in data and data['year'] == today.year and 'month' in data and data['month'] == today.month and \
+                'day' in data and data['day'] > today.day:
+            return True
+        return False
+
+    def clean(self):
+        data = super(CalendarForm, self).clean()
+        if self.has_value(u'day') and not self.has_value(u'month'):
+            self._errors[u'month'] = self.error_class([u'Month is required'])
+        if self.has_value(u'month') and not self.has_value(u'year'):
+            self._errors[u'year'] = self.error_class([u'Year is required'])
+        if self.is_in_the_future():
+            raise forms.ValidationError(u'Set a date in the past not in future.')
+        return data
+

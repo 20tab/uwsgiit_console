@@ -13,6 +13,4 @@ jQuery(function($){
         $('#container-form').submit();
     });
 
-
-
 });

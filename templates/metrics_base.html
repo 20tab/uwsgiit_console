@@ -1,0 +1,97 @@
+{% extends 'index.html' %}
+
+{% block content %}
+
+<div class="clearfix">
+    <ul class="nav navbar-nav">
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Container IO read <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for c in containers %}
+                <li>
+                    <a href="{% url 'container_io_read' c.uid %}"><b>{{ c.name }}</b> ({{ c.uid }})</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Container IO write <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for c in containers %}
+                <li>
+                    <a href="{% url 'container_io_write' c.uid %}"><b>{{ c.name }}</b> ({{ c.uid }})</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Container NET rx <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for c in containers %}
+                <li>
+                    <a href="{% url 'container_net_rx' c.uid %}"><b>{{ c.name }}</b> ({{ c.uid }})</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Container NET tx <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for c in containers %}
+                <li>
+                    <a href="{% url 'container_net_tx' c.uid %}"><b>{{ c.name }}</b> ({{ c.uid }})</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Container cpu <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for c in containers %}
+                <li>
+                    <a href="{% url 'container_cpu' c.uid %}"><b>{{ c.name }}</b> ({{ c.uid }})</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Container mem <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for c in containers %}
+                <li>
+                    <a href="{% url 'container_mem' c.uid %}"><b>{{ c.name }}</b> ({{ c.uid }})</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Container quota <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for c in containers %}
+                <li>
+                    <a href="{% url 'container_quota' c.uid %}"><b>{{ c.name }}</b> ({{ c.uid }})</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+</div>
+
+{% block metrics %}
+{% endblock %}
+
+{% endblock %}

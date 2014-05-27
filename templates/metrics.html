@@ -1,0 +1,129 @@
+{% extends 'metrics_base.html' %}
+
+{% block extra_style %}
+    {{ block.super }}
+
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/graph.css">
+	<link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/detail.css">
+	<link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/legend.css">
+{#	<link type="text/css" rel="stylesheet" href="css/lines.css">#}
+{% endblock %}
+{% block extra_head %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}rickshaw/vendor/d3.v3.js"></script>
+
+	<script src="{{ STATIC_URL }}rickshaw/rickshaw.js"></script>
+{% endblock %}
+
+{% block metrics %}
+
+{#{{ stats }}#}
+{#<hr>#}
+
+<div  class="clearfix">
+    <form action="" method="post" class="form-horizontal">
+        {% csrf_token %}
+        {{ calendar }}
+        <button type="submit">Go</button>
+    </form>
+</div>
+
+
+<div id="chart_container" class="clearfix">
+	<div id="chart"></div>
+    <div id="legend_container">
+		<div id="smoother" title="Smoothing"></div>
+		<div id="legend"></div>
+	</div>
+	<div id="slider"></div>
+</div>
+
+{% endblock %}
+
+{% block footer_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+
+        function parseTimestamps(list, metric){
+
+            var data = {};
+
+            if (list.length < 2){
+                return [];
+            }
+
+            for (var i = 1; i < list.length; i++){
+                var date = new Date(list[i][0] * 1000);
+                var value = list[i][1] - list[i-1][1];
+                if (value < 0){
+                    value = list[i][1];
+                }
+
+                value = value / (1024*1024);
+
+                var date_value;
+
+                if (metric == 'h'){
+                    date_value = date.getHours();
+                }
+                else if(metric == 'd'){
+                    date_value = date.getUTCDate();
+                }
+                else if(metric == 'm'){
+                    date_value = date.getUTCMonth();
+                }
+
+                if(data[date_value] != undefined){
+                    data[date_value] += value;
+                }
+                else{
+                    data[date_value] = value;
+                }
+            }
+            var res = [];
+            for(var el in data){
+                res.push({x: parseInt(el), y: data[el]});
+            }
+            return res;
+        }
+
+        var data = parseTimestamps({{ stats }}, '{{ metric_type }}');
+        console.log(data);
+
+        var graph = new Rickshaw.Graph( {
+            element: document.getElementById("chart"),
+
+            height: 300,
+            renderer: 'line',
+            series: [
+                {
+                    color: "#c05020",
+                    data: data,
+                    name: ''
+                }
+            ]
+        } );
+
+        graph.render();
+
+        var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+            graph: graph,
+            xFormatter: function(x) {
+                return x;
+            }
+        } );
+
+
+        var axes = new Rickshaw.Graph.Axis.X( {
+            graph: graph
+        } );
+        axes.render();
+        var axes = new Rickshaw.Graph.Axis.Y( {
+            graph: graph
+        } );
+        axes.render();
+
+
+    </script>
+
+{% endblock %}

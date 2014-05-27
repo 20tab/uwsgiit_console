@@ -19,3 +19,7 @@ body { padding-top: 70px; }
 .inline{
     display: inline-block;
 }
+
+#chart_container{
+    margin-top: 20px;
+}

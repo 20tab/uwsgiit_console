@@ -14,7 +14,13 @@
             </tr>
             <tr>
                 <td>Servers</td>
-                <td>{{ me.servers }}</td>
+                <td>
+                    <ul>
+                    {% for s in me.servers %}
+                        <li>{{ s }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
             </tr>
         </table>
     </div>

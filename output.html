@@ -1,0 +1,407 @@
+
+<HTML>
+    <HEAD>
+        <TITLE> CloneDigger Report </TITLE>
+        <script type="text/javascript">
+        function unhide(divID) {
+            var item = document.getElementById(divID);
+            if (item) {
+                item.className=(item.className=='hidden')?'unhidden':'hidden';
+            }
+        }
+</script>
+
+<style type="text/css">
+.hidden { display: none; }
+.unhidden { display: block; }
+.preformatted {
+        border: 1px dashed #3c78b5;
+    font-size: 11px;
+        font-family: Courier;
+    margin: 10px;
+        line-height: 13px;
+}
+.preformattedHeader {
+    background-color: #f0f0f0;
+        border-bottom: 1px dashed #3c78b5;
+    padding: 3px;
+        text-align: center;
+}
+.preformattedContent {
+    background-color: #f0f0f0;
+    padding: 3px;
+}
+<!--
+<div class="preformatted"><div class="preformattedContent">
+<pre>Clone Digger
+</pre>
+</div></div>
+-->
+
+</style>
+
+    </HEAD>
+    <BODY>
+    
+    
+    <P>Source files: 19</P>
+        <a href = "javascript:unhide('files');">Click here to show/hide file names</a><div id="files" class="hidden"><P><B>Source files:</B><BR>./dbdump.py, <BR>./fabfile.py, <BR>./manage.py, <BR>./console/__init__.py, <BR>./console/admin.py, <BR>./console/decorators.py, <BR>./console/forms.py, <BR>./console/models.py, <BR>./console/utils.py, <BR>./console/views.py, <BR>./console/views_metrics.py, <BR>./console/template_context/__init__.py, <BR>./console/template_context/context_processors.py, <BR>./console/templatetags/__init__.py, <BR>./console/templatetags/console_tags.py, <BR>./uwsgiit_console/__init__.py, <BR>./uwsgiit_console/settings.py, <BR>./uwsgiit_console/urls.py, <BR>./uwsgiit_console/wsgi.py</P></div>
+        <P>Clones detected: 14</P>
+        <P>62 of 681 lines are duplicates (9.10%) </P>
+<P>
+<B>Parameters<BR> </B>
+clustering_threshold = 10<BR>
+distance_threshold = 5<BR>
+size_threshold = 5<BR>
+hashing_depth = 1<BR>
+clusterize_using_hash = False<BR>
+clusterize_using_dcup = False<BR>
+</P> 
+        
+    <B>Time elapsed</B><BR>Construction of AST : 0.16 seconds<BR>
+Building statement hash : 0.00 seconds<BR>
+Building patterns : 0.30 seconds<BR>
+Marking similar statements : 0.35 seconds<BR>
+Finding similar sequences of statements : 0.03 seconds<BR>
+Refining candidates : 1.10 seconds<BR>
+ Total time: 1.93<BR>
+ Started at: Mon May 26 16:11:50 2014<BR>
+ Finished at: Mon May 26 16:11:51 2014
+    <P><B>Clone # 1</B><BR>Distance between two fragments = 0 <BR>Clone size = 7<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 115</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 66</TD></TR><TR>
+<TD>
+for i in items:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;res.extend(json.loads(i.json))</TD>
+<TD style="width: 10px;" BGCOLOR=AQUA> </TD><TD>
+for i in items:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;res.extend(json.loads(i.json))</TD>
+</TR>
+<TR>
+<TD>
+all_days = all_days_of(year, month)</TD>
+<TD style="width: 10px;" BGCOLOR=AQUA> </TD><TD>
+all_days = all_days_of(year, month)</TD>
+</TR>
+<TR>
+<TD>
+dates_in_db = [date(d.year, d.month, d.day) for d in items ]</TD>
+<TD style="width: 10px;" BGCOLOR=AQUA> </TD><TD>
+dates_in_db = [date(d.year, d.month, d.day) for d in items ]</TD>
+</TR>
+<TR>
+<TD>
+for d in exluded_days(all_days, dates_in_db):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;params['day'] = d.day<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;res.extend(self.metrics(client, params))</TD>
+<TD style="width: 10px;" BGCOLOR=AQUA> </TD><TD>
+for d in exluded_days(all_days, dates_in_db):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;params['day'] = d.day<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;res.extend(self.metrics(client, params))</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 2</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 141</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 135</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">NetworkTXContainerMetric</span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">container_net_tx</span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);">NetworkRXContainerMetric</span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">container_net_rx</span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">CPUContainerMetric</span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">container_cpu</span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkTXContainerMetric</span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_tx</span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 3</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 153</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 147</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">MemoryContainerMetric</span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">container_mem</span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">CPUContainerMetric</span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_cpu</span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">IOReadContainerMetric</span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">container_io_read</span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">MemoryContainerMetric</span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_mem</span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 4</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 165</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 159</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">IOWriteContainerMetric</span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">container_io_write</span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOReadContainerMetric</span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_read</span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">QuotaContainerMetric</span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">container_quota</span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOWriteContainerMetric</span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_write</span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 5</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 181</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 176</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">NetworkRXDomainMetric</span>(DomainMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">domain_net_rx</span>(self.domain, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);">HitsDomainMetric</span>(DomainMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">domain_hits</span>(self.domain, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);">NetworkTXDomainMetric</span>(DomainMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);">domain_net_tx</span>(self.domain, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkRXDomainMetric</span></span>(DomainMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">domain_net_rx</span></span>(self.domain, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 6</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 147</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 135</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">CPUContainerMetric</span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_cpu</span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkRXContainerMetric</span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_rx</span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">MemoryContainerMetric</span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_mem</span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkTXContainerMetric</span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_tx</span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 7</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 159</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 147</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOReadContainerMetric</span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_read</span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">CPUContainerMetric</span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_cpu</span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOWriteContainerMetric</span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_write</span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">MemoryContainerMetric</span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_mem</span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 8</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 153</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 135</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">MemoryContainerMetric</span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_mem</span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkRXContainerMetric</span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_rx</span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOReadContainerMetric</span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_read</span></span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkTXContainerMetric</span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_tx</span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 9</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 165</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 147</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOWriteContainerMetric</span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_write</span></span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">CPUContainerMetric</span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_cpu</span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">QuotaContainerMetric</span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_quota</span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">MemoryContainerMetric</span></span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_mem</span></span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 10</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 159</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 135</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOReadContainerMetric</span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_read</span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkRXContainerMetric</span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_rx</span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOWriteContainerMetric</span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_write</span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkTXContainerMetric</span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_tx</span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 11</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./console/models.py"<BR>The first line is 165</TD><TD></TD><TD>Source file "./console/models.py"<BR>The first line is 135</TD></TR><TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">IOWriteContainerMetric</span></span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_io_write</span></span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkRXContainerMetric</span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_rx</span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+<TR>
+<TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">QuotaContainerMetric</span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_quota</span></span></span>(self.container, params).json()<BR>
+</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+class <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">NetworkTXContainerMetric</span></span></span></span></span></span>(ContainerMetric):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;def api_metrics(self, client, params):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return client.<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">container_net_tx</span></span></span></span></span></span>(self.container, params).json()<BR>
+</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 12</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./fabfile.py"<BR>The first line is 107</TD><TD></TD><TD>Source file "./fabfile.py"<BR>The first line is 99</TD></TR><TR>
+<TD>
+def <span style="color: rgb(255, 0, 0);">media_from_server</span>(debug=True):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if debug:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output['everything'] = True<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if confirm(<span style="color: rgb(255, 0, 0);">'Stai sovrascrivendo tutti i file contenuti in /media/ in locale con quelli sul server. Vuoi procedere? '</span>):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;local((<span style="color: rgb(255, 0, 0);">'rsync -av --progress --inplace %s:%s/media/ ./media/'</span>) % ((host, project_dir)))<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fastprint(<span style="color: rgb(255, 0, 0);">u"Ricordati che sincronizzando i file media e' necessario sincronizzare anche il database con il comando 'fab db_from_server'."</span>)</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+def <span style="color: rgb(255, 0, 0);">media_to_server</span>(debug=True):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if debug:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output['everything'] = True<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if confirm(<span style="color: rgb(255, 0, 0);">'Stai sovrascrivendo tutti i file contenuti in /media/ sul server con quelli in locale. Vuoi procedere? '</span>):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;local((<span style="color: rgb(255, 0, 0);">'rsync -av --progress --inplace ./media/ %s:%s/media/'</span>) % ((host, project_dir)))<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fastprint(<span style="color: rgb(255, 0, 0);">u"Ricordati che sincronizzando i file media e' necessario sincronizzare anche il database con il comando 'fab db_to_server'."</span>)</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 13</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./fabfile.py"<BR>The first line is 115</TD><TD></TD><TD>Source file "./fabfile.py"<BR>The first line is 107</TD></TR><TR>
+<TD>
+def <span style="color: rgb(255, 0, 0);">bkp_to_server</span>(debug=True):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if debug:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output['everything'] = True<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if confirm(<span style="color: rgb(255, 0, 0);">'Stai sovrascrivendo tutti i file contenuti in /bkp/ sul server con quelli in locale. Vuoi procedere? '</span>):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;local((<span style="color: rgb(255, 0, 0);">'rsync -av --progress --inplace ./bkp/ %s:%s/bkp/'</span>) % ((host, project_dir)))<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fastprint(<span style="color: rgb(255, 0, 0);">u'Operazione completata.'</span>)</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+def <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">media_from_server</span></span>(debug=True):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if debug:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output['everything'] = True<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if confirm(<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">'Stai sovrascrivendo tutti i file contenuti in /media/ in locale con quelli sul server. Vuoi procedere? '</span></span>):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;local((<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">'rsync -av --progress --inplace %s:%s/media/ ./media/'</span></span>) % ((host, project_dir)))<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fastprint(<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">u"Ricordati che sincronizzando i file media e' necessario sincronizzare anche il database con il comando 'fab db_from_server'."</span></span>)</TD>
+</TR>
+</TABLE> </P> <HR><BR>
+<P><B>Clone # 14</B><BR>Distance between two fragments = 4 <BR>Clone size = 6<TABLE NOWRAP WIDTH=100% BORDER=1><TD>Source file "./fabfile.py"<BR>The first line is 115</TD><TD></TD><TD>Source file "./fabfile.py"<BR>The first line is 99</TD></TR><TR>
+<TD>
+def <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">bkp_to_server</span></span>(debug=True):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if debug:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output['everything'] = True<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if confirm(<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">'Stai sovrascrivendo tutti i file contenuti in /bkp/ sul server con quelli in locale. Vuoi procedere? '</span></span>):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;local((<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">'rsync -av --progress --inplace ./bkp/ %s:%s/bkp/'</span></span>) % ((host, project_dir)))<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fastprint(<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">u'Operazione completata.'</span></span>)</TD>
+<TD style="width: 10px;" BGCOLOR=RED> </TD><TD>
+def <span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">media_to_server</span></span>(debug=True):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if debug:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output['everything'] = True<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;if confirm(<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">'Stai sovrascrivendo tutti i file contenuti in /media/ sul server con quelli in locale. Vuoi procedere? '</span></span>):<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;local((<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">'rsync -av --progress --inplace ./media/ %s:%s/media/'</span></span>) % ((host, project_dir)))<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fastprint(<span style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">u"Ricordati che sincronizzando i file media e' necessario sincronizzare anche il database con il comando 'fab db_to_server'."</span></span>)</TD>
+</TR>
+</TABLE> </P> <HR>
+    
+    
+    <HR>
+    Clone Digger is aimed to find software clones in Python and Java programs. It is provided under the GPL license and can be downloaded from the site <a href="http://clonedigger.sourceforge.net">http://clonedigger.sourceforge.net</a>
+    </BODY>
+</HTML>

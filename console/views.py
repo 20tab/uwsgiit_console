@@ -13,9 +13,8 @@ def logout(request):
 
 
 def main_render(request, template, v_dict={}):
-    v_dict['path'] = request.get_full_path()
     login_form = LoginForm()
-    if request.POST:
+    if 'action-login' in request.POST:
         login_form = LoginForm(request.POST)
         if login_form.is_valid():
             cd = login_form.cleaned_data
@@ -36,8 +35,10 @@ def main_render(request, template, v_dict={}):
 def home(request):
     return main_render(request, 'index.html', {})
 
+
 @login_required
 def me_page(request):
+
     client = UwsgiItClient(request.session.get('username'), request.session.get('password'), settings.CONSOLE_API)
     me = client.me().json()
     v_dict = {'me': me}
