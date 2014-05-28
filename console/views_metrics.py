@@ -3,6 +3,8 @@ from django.conf import settings
 from console.forms import CalendarForm
 from console.decorators import login_required
 from console.views import main_render
+import uwsgiit
+print uwsgiit
 
 
 def metrics(request):
