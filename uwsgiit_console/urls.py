@@ -28,7 +28,10 @@ urlpatterns += patterns(
     url(r'^metrics/container.net.rx/(\d+)$', 'container', {'model': NetworkRXContainerMetric}, name='container_net_rx'),
     url(r'^metrics/container.net.tx/(\d+)$', 'container', {'model': NetworkTXContainerMetric}, name='container_net_tx'),
     url(r'^metrics/container.cpu/(\d+)$', 'container', {'model': CPUContainerMetric}, name='container_cpu'),
-    url(r'^metrics/container.mem/(\d+)$', 'container', {'model': MemoryContainerMetric}, name='container_mem'),
+    url(r'^metrics/container.mem/(\d+)$', 'container',
+        {'model': MemoryContainerMetric, 'absolute_values': True},
+        name='container_mem'
+    ),
     url(r'^metrics/container.quota/(\d+)$', 'container', {'model': QuotaContainerMetric}, name='container_quota'),
 
     url(r'^metrics/domain.net.rx/(?P<domain_id>\d+)/(?P<container_id>\d+)$', 'domain',

@@ -1,4 +1,4 @@
-#isoweek
+isoweek
 Django>=1.6.2
 South
 django-debug-toolbar
