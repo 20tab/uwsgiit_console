@@ -165,7 +165,7 @@ def domains(request):
         client.delete_domain(name)
 
     doms = client.domains().json()
-
+    doms = sorted(doms, key=lambda k: k['name'])
     tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
     domains_list = []
     for d in doms:
