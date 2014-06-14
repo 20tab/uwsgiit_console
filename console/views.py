@@ -26,7 +26,7 @@ def main_render(request, template, v_dict={}):
     if request.session.get('username', False) and request.session.get('password', False):
         client = UwsgiItClient(request.session.get('username'), request.session.get('password'), settings.CONSOLE_API)
 
-        v_dict['containers'] = client.containers().json()
+        v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
         v_dict['login_form'] = None
 
     return render_to_response(template, v_dict, context_instance=RequestContext(request))
