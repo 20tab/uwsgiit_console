@@ -134,55 +134,55 @@ class DomainMetric(GenericMetric):
 # stores values from the tuntap router
 class NetworkRXContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
-        return client.container_net_rx(self.container, params).json()
+        return client.container_metric(self.container, 'net.rx', params).json()
 
 
 # stores values from the tuntap router
 class NetworkTXContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
-        return client.container_net_tx(self.container, params).json()
+        return client.container_metric(self.container, 'net.tx', params).json()
 
 
 # stores values from the container cgroup
 class CPUContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
-        return client.container_cpu(self.container, params).json()
+        return client.container_metric(self.container, 'cpu', params).json()
 
 
 # stores values from the container cgroup
 class MemoryContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
-        return client.container_mem(self.container, params).json()
+        return client.container_metric(self.container, 'mem', params).json()
 
 
 # stores values from the container cgroup
 class IOReadContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
-        return client.container_io_read(self.container, params).json()
+        return client.container_metric(self.container, 'io.read', params).json()
 
 
 # stores values from the container cgroup
 class IOWriteContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
-        return client.container_io_write(self.container, params).json()
+        return client.container_metric(self.container, 'io.write', params).json()
 
 
 # uses perl Quota package
 class QuotaContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
-        return client.container_quota(self.container, params).json()
+        return client.container_metric(self.container, 'quota', params).json()
 
 
 class HitsDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
-        return client.domain_hits(self.domain, params).json()
+        return client.domain_metric(self.domain, 'hits', params).json()
 
 
 class NetworkRXDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
-        return client.domain_net_rx(self.domain, params).json()
+        return client.domain_metric(self.domain, 'net.rx', params).json()
 
 
 class NetworkTXDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
-        return client.domain_net_tx(self.domain, params).json()
+        return client.domain_metric(self.domain, 'net.tx', params).json()
