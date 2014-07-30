@@ -24,7 +24,10 @@ def main_render(request, template, v_dict={}):
     v_dict['login_form'] = login_form
 
     if request.session.get('username', False) and request.session.get('password', False):
-        client = UwsgiItClient(request.session.get('username'), request.session.get('password'), settings.CONSOLE_API)
+        client = UwsgiItClient(
+            request.session.get('username'),
+            request.session.get('password'),
+            settings.CONSOLE_API)
 
         v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
         v_dict['login_form'] = None
@@ -39,7 +42,11 @@ def home(request):
 @login_required
 def me_page(request):
 
-    client = UwsgiItClient(request.session.get('username'), request.session.get('password'), settings.CONSOLE_API)
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+
     me = client.me().json()
     v_dict = {'me': me}
     me_form = MeForm(initial={'company': me['company'],
@@ -64,7 +71,11 @@ def me_page(request):
 @login_required
 def containers(request, id):
     res = {}
-    client = UwsgiItClient(request.session.get('username'), request.session.get('password'), settings.CONSOLE_API)
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+
     if id:
         container = client.container(id).json()
         container_copy = container.copy()
@@ -141,7 +152,11 @@ def containers(request, id):
 @login_required
 def domains(request):
     res = {}
-    client = UwsgiItClient(request.session.get('username'), request.session.get('password'), settings.CONSOLE_API)
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+
     new_domain = NewDomainForm()
 
     if request.POST:
@@ -192,7 +207,11 @@ def domains(request):
 def tags(request):
     res = {}
     tagform = TagForm()
-    client = UwsgiItClient(request.session.get('username'), request.session.get('password'), settings.CONSOLE_API)
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+
     if request.POST:
         tagform = TagForm(request.POST)
         if tagform.is_valid():

@@ -1,21 +1,18 @@
-isoweek
-Django>=1.6.2
-South
+Django
 django-debug-toolbar
-#psycopg2
+uwsgiit-py
+twentytab-select2
 
+#psycopg2
 #twentytab-utils
-twentytab-customadmin
+#twentytab-customadmin
 #twentytab-highlighter
 #twentytab-image-ui
 #twentytab-immortalmodel
 #twentytab-inspectmodel
-twentytab-select2
 #twentytab-seo
 #twentytab-sortable
 #twentytab-tab-translation
 #twentytab-tree
 #twentytab-cked
 #twentytab-choicesfilter
-
-git+git@github.com:rafleze/uwsgiit-py.git
