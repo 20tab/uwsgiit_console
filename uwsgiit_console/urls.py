@@ -19,9 +19,10 @@ urlpatterns += patterns(
     url(r'^domains/$', 'domains', name='domains'),
     url(r'^tags/$', 'tags', name='tags'),
 )
+
 urlpatterns += patterns(
     'console.views_metrics',
-    url(r'^metrics/$', 'metrics'),
+    url(r'^metrics/$', 'metrics', name='metrics'),
     url(r'^metrics/container.io.read/(\d+)$', 'container',
         kwargs={'model': IOReadContainerMetric}, name='container_io_read'),
     url(r'^metrics/container.io.write/(\d+)$', 'container',

@@ -1,110 +1,251 @@
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import resolve, reverse
+from django.http import HttpResponseRedirect
 
 from uwsgiit_console import settings
-
 from console.views import home, me_page, logout, domains, tags
-
-
+from console.views_metrics import metrics, container, domain
+from console.forms import NewDomainForm, TagForm
+from console.models import NetworkRXContainerMetric, NetworkTXContainerMetric,\
+    CPUContainerMetric, MemoryContainerMetric, IOReadContainerMetric,\
+    IOWriteContainerMetric, QuotaContainerMetric, HitsDomainMetric,\
+    NetworkRXDomainMetric, NetworkTXDomainMetric
 #TODO TEST FORMS
 #TODO TEST CONTAINERS
 
 
-class ConsoleViewTests(TestCase):
+class HomeViewTests(TestCase):
 
-    def test_home_view(self):
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.request = request_factory.get('/', follow=True)
+        cls.request.session = {}
+        cls.request_post = request_factory.post('/', follow=True, data={
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'action-login': 1})
+        cls.request_post.session = {}
+
+    def test_home_name_resolves_to_home_url(self):
         url = reverse('home')
         self.assertEqual(url, '/')
-        resolver = resolve(url)
+
+    def test_home_url_resolves_to_home_view(self):
+        resolver = resolve('/')
         self.assertEqual(resolver.func, home)
-        response = self.client.get(url)
+
+    def test_home_returns_appropriate_html_respons_code(self):
+        response = home(self.request)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "index.html")
-        self.assertContains(response, settings.CONSOLE_TITLE)
+
+    def test_home_contains_right_html(self):
+        response = home(self.request)
+        self.assertContains(response, '<input name="action-login" type="hidden" value="1">')
+        self.assertNotContains(response, 'href="#">Containers <span class="caret"></span></a>')
+
+    def test_home_handles_logged_in_user(self):
+        self.request.session = {
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD}
+        response = home(self.request)
+        self.request.session = {}
+        self.assertContains(response, 'href="#">Containers <span class="caret"></span></a>')
+        self.assertNotContains(response, '<input name="action-login" type="hidden" value="1">')
 
     def test_home_view_login_redirects_to_me_html(self):
-        response = self.client.post('/', follow=True, data={
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD,
-            'action-login': 1})
-        self.assertTemplateUsed(response, "me.html")
+        response = home(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/me/')
 
-    def test_me_view_anonymous(self):
+
+class MeViewTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.request_get = request_factory.get('/me/', follow=True)
+        cls.request_post = request_factory.post('/me/', follow=True)
+        cls.request_get.session = {}
+        cls.request_post.session = {}
+
+    def test_me_name_resolves_to_me_url(self):
         url = reverse('me')
         self.assertEqual(url, '/me/')
-        resolver = resolve(url)
+
+    def test_me_url_resolves_to_me_view(self):
+        resolver = resolve('/me/')
         self.assertEqual(resolver.func, me_page)
 
-        response = self.client.get(url, follow=True)
-        self.assertRedirects(response, '/')
-        response = self.client.post(url, follow=True)
-        self.assertRedirects(response, '/')
+    def test_me_doesnt_allow_anonymous(self):
+        response = me_page(self.request_get)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
 
-    def test_me_view_loads(self):
-        #login
-        self.client.post('/', follow=True, data={
+        response = me_page(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_me_handles_logged_in_user(self):
+        self.request_get.session = {
             'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD,
-            'action-login': 1})
-        response = self.client.get('/me/')
+            'password': settings.TEST_PASSWORD}
+        response = me_page(self.request_get)
+        self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'me.html')
-        self.assertContains(response, '<h2>Available distributions</h2>')
+        self.assertContains(response, '<tr><th><label for="id_company">Company:')
 
-    def test_domains_view_anonymous(self):
+
+class DomainsViewTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.request_get = request_factory.get('/domains/', follow=True)
+        cls.request_post = request_factory.post('/domains/', follow=True)
+        cls.request_get.session = {}
+        cls.request_post.session = {}
+
+    def test_me_name_resolves_to_me_url(self):
         url = reverse('domains')
         self.assertEqual(url, '/domains/')
-        resolver = resolve(url)
+
+    def test_domains_url_resolves_to_domains_view(self):
+        resolver = resolve('/domains/')
         self.assertEqual(resolver.func, domains)
 
-        response = self.client.get(url, follow=True)
-        self.assertRedirects(response, '/')
-        response = self.client.post(url, follow=True)
-        self.assertRedirects(response, '/')
+    def test_domains_doesnt_allow_anonymous(self):
+        response = domains(self.request_get)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
 
-    def test_domains_view_loads(self):
-        #login
-        self.client.post('/', follow=True, data={
+        response = domains(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_domains_handles_logged_in_user(self):
+        self.request_get.session = {
             'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD,
-            'action-login': 1})
-        response = self.client.get('/domains/')
+            'password': settings.TEST_PASSWORD}
+        response = domains(self.request_get)
+        self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'domains.html')
-        self.assertContains(response, '<th>TAGS</th>')
+        self.assertContains(response, NewDomainForm())
 
-    def test_tags_view_anonymous(self):
+
+class TagsViewTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.request_get = request_factory.get('/tags/', follow=True)
+        cls.request_post = request_factory.post('/tags/', follow=True)
+        cls.request_get.session = {}
+        cls.request_post.session = {}
+
+    def test_me_name_resolves_to_me_url(self):
         url = reverse('tags')
         self.assertEqual(url, '/tags/')
-        resolver = resolve(url)
+
+    def test_tags_url_resolves_to_tags_view(self):
+        resolver = resolve('/tags/')
         self.assertEqual(resolver.func, tags)
 
-        response = self.client.get(url, follow=True)
-        self.assertRedirects(response, '/')
-        response = self.client.post(url, follow=True)
-        self.assertRedirects(response, '/')
+    def test_tags_doesnt_allow_anonymous(self):
+        response = tags(self.request_get)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
 
-    def test_tags_view_loads(self):
-        #login
-        self.client.post('/', follow=True, data={
+        response = tags(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_tags_handles_logged_in_user(self):
+        self.request_get.session = {
             'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD,
-            'action-login': 1})
-        response = self.client.get('/tags/')
+            'password': settings.TEST_PASSWORD}
+        response = tags(self.request_get)
+        self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'tags.html')
-        self.assertContains(response, '<span class="glyphicon glyphicon-remove-circle"></span>')
+        self.assertContains(response, TagForm())
 
-    def test_logout(self):
+
+class MetricsViewTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.request_get = request_factory.get('/metrics/', follow=True)
+        cls.request_post = request_factory.post('/metrics/', follow=True)
+        cls.request_get.session = {}
+        cls.request_post.session = {}
+
+    def test_metrics_name_resolves_to_metrics_url(self):
+        url = reverse('metrics')
+        self.assertEqual(url, '/metrics/')
+
+    def test_metrics_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/')
+        self.assertEqual(resolver.func, metrics)
+
+    def test_metrics_doesnt_allow_anonymous(self):
+        response = metrics(self.request_get)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+        response = metrics(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_metrics_handles_logged_in_user(self):
+        self.request_get.session = {
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD}
+        response = metrics(self.request_get)
+        self.request_get.session = {}
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Container IO read <span class="caret"></span>')
+
+
+class LogoutViewTest(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.request_get = request_factory.get('/logout/', follow=True)
+        cls.request_get.session = {}
+        cls.request_post = request_factory.post('/logout/', follow=True)
+        cls.request_post.session = {}
+
+    def test_logout_name_resolves_to_logout_url(self):
         url = reverse('logout')
         self.assertEqual(url, '/logout/')
-        resolver = resolve(url)
+
+    def test_logout_url_resolves_to_logout_view(self):
+        resolver = resolve('/logout/')
         self.assertEqual(resolver.func, logout)
-        response = self.client.get(url, follow=True)
-        self.assertRedirects(response, '/')
-        response = self.client.post(url, follow=True)
-        self.assertRedirects(response, '/')
 
+    def test_logout_redirects_anonymous(self):
+        response = tags(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+        response = tags(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_logout_logs_out_logged_in_user(self):
         #login
         self.client.post('/', follow=True, data={
                 'username': settings.TEST_USER,
@@ -113,7 +254,7 @@ class ConsoleViewTests(TestCase):
         response = self.client.get('/me/')
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(url, follow=True)
+        response = self.client.get('/logout/', follow=True)
         self.assertRedirects(response, '/')
         response = self.client.get('/me/', follow=True)
         self.assertRedirects(response, '/')
@@ -126,9 +267,7 @@ class ConsoleViewTests(TestCase):
         response = self.client.get('/me/')
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(url, follow=True)
+        response = self.client.post('/logout/', follow=True)
         self.assertRedirects(response, '/')
         response = self.client.get('/me/', follow=True)
         self.assertRedirects(response, '/')
-
-

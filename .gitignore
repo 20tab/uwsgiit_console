@@ -9,6 +9,5 @@
 .DS_Store
 .swp
 .coverage
-uwsgiit_console/settings.py
 media/
 analysis

@@ -7,8 +7,8 @@ import uwsgiit
 print uwsgiit
 
 
+@login_required
 def metrics(request):
-
     return main_render(request, 'metrics_base.html', {})
 
 
