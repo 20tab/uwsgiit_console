@@ -32,7 +32,8 @@ class GenericMetric(models.Model):
     json = models.TextField(null=True)
 
     def __unicode__(self):
-        return "%s-%s-%s" % (self.year, self.month, self.day)
+        return "{year}-{month}-{day}".format(
+            year=self.year, month=self.month, day=self.day)
 
     class Meta:
         abstract = True
