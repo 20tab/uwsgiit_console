@@ -13,25 +13,27 @@ def metrics(request):
 
 
 def stats_render(request, container_id, domain_id=None, **kwargs):
+    get_metrics_without_parameters = True
     client = UwsgiItClient(
         request.session.get('username'),
         request.session.get('password'),
         settings.CONSOLE_API)
 
     calendar = CalendarForm()
-
     m = kwargs['model'](container=container_id)
     if domain_id:
         m.domain = domain_id
-    stats = m.metrics(client)
     metric_type = u'h'
-
     if request.POST:
         calendar = CalendarForm(request.POST)
         if calendar.is_valid():
             params = calendar.get_params()
             stats = m.metrics(client, params)
             metric_type = calendar.metric_type()
+            get_metrics_without_parameters = False
+    
+    if get_metrics_without_parameters:
+        stats = m.metrics(client)
 
     return main_render(request, 'metrics.html', {
         'stats': stats,
