@@ -57,7 +57,7 @@ class ContainerMetric(GenericMetric):
                 item = model(container=self.container, json=result, **params)
                 if date(year, month, day) != date.today():
                     item.save()
-            return [result]
+            return result
 
         results = []
         to_save = []
@@ -89,8 +89,7 @@ class DomainMetric(GenericMetric):
     def metrics(self, client, params={}):
         if not params:
             for elem in self.api_metrics(client, params):
-                if elem['container'] == int(self.container):
-                    return elem['metrics']
+                return elem['metrics']
         res = []
         to_save = []
 
@@ -100,19 +99,20 @@ class DomainMetric(GenericMetric):
 
         if day and month:
             try:
-                result = model.objects.get(domain=self.domain, container=self.container, **params)
+                result = model.objects.get(domain=self.domain, **params)
                 res.extend(json.loads(result.json))
             except model.DoesNotExist:
                 result = self.api_metrics(client, params)
                 for elem in result:
-                    item = model(domain=self.domain, container=self.container, json=elem['metrics'], **params)
+                    item = model(domain=self.domain,
+                                 container=elem['container'],
+                                 json=elem['metrics'],
+                                 **params)
                     if date(year, month, day) != date.today():
                         to_save.append(item)
-                    if int(self.container) == elem['container']:
-                        res.extend(elem['metrics'])
+                    res.extend(elem['metrics'])
         elif month:
-
-            items = model.objects.filter(domain=self.domain, container=self.container, **params)
+            items = model.objects.filter(domain=self.domain, **params)
             for i in items:
                 res.extend(json.loads(i.json))
             all_days = all_days_of(year, month)
