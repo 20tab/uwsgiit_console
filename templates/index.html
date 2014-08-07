@@ -53,7 +53,15 @@
                         <a href="/tags/">Tags</a>
                     </li>
                     <li {% if "/metrics/" in path %} class="active"{% endif %}>
-                        <a href="/metrics/">Metrics</a>
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Metrics <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li{% if "/container/" in path %} class="active"{% endif %}>
+                                <a href="/metrics/container/">Container Metrics</a>
+                            </li>
+                            <li{% if "/domain/" in path %} class="active"{% endif %}>
+                                <a href="/metrics/domain/">Domain Metrics</a>
+                            </li>
+                        </ul>
                     </li>
                     <li><a href="/logout/">Logout</a></li>
                 </ul>

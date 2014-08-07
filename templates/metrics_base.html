@@ -4,6 +4,7 @@
 
 <div class="clearfix">
     <ul class="nav navbar-nav">
+    {% if '/container/' in path %}
         <li class="dropdown">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                 Container IO read <span class="caret"></span>
@@ -88,6 +89,44 @@
                 {% endfor %}
             </ul>
         </li>
+    {% elif '/domain/' in path %}
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Domain Network RX <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for d in domains %}
+                <li>
+                    <a href="{% url 'domain_net_rx' d.id %}"><b>{{ d.name }}</b></a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Domain Network TX <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for d in domains %}
+                <li>
+                    <a href="{% url 'domain_net_rx' d.id %}"><b>{{ d.name }}</b></a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Domain Hits <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for d in domains %}
+                <li>
+                    <a href="{% url 'domain_net_rx' d.id %}"><b>{{ d.name }}</b></a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endif %}
     </ul>
 </div>
 
