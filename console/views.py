@@ -12,7 +12,7 @@ def logout(request):
     return HttpResponseRedirect('/')
 
 
-def main_render(request, template, v_dict={}):
+def main_render(request, template, v_dict={}, client=None):
     login_form = LoginForm()
     if 'action-login' in request.POST:
         login_form = LoginForm(request.POST)
@@ -24,10 +24,11 @@ def main_render(request, template, v_dict={}):
     v_dict['login_form'] = login_form
 
     if request.session.get('username', False) and request.session.get('password', False):
-        client = UwsgiItClient(
-            request.session.get('username'),
-            request.session.get('password'),
-            settings.CONSOLE_API)
+        if client is None:
+            client = UwsgiItClient(
+                request.session.get('username'),
+                request.session.get('password'),
+                settings.CONSOLE_API)
 
         v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
         v_dict['login_form'] = None
@@ -65,7 +66,7 @@ def me_page(request):
     v_dict['me_form'] = me_form
     v_dict['distros'] = client.distros().json()
 
-    return main_render(request, 'me.html', v_dict)
+    return main_render(request, 'me.html', v_dict, client)
 
 
 @login_required
@@ -114,9 +115,7 @@ def containers(request, id):
                     list_link_to = [x['uid'] for x in containers_actual_link_to]
 
                     for link in cd['link_to']:
-                        print link
                         if link not in list_link_to:
-                            print "\n\nQUI"
                             client.update_container(id, {'link': link})
                     for link in list_link_to:
                         if unicode(link) not in cd['link_to']:
@@ -146,7 +145,7 @@ def containers(request, id):
         res['sshform'] = sshform
 
         res['active_panel'] = active_panel
-    return main_render(request, 'containers.html', res)
+    return main_render(request, 'containers.html', res, client)
 
 
 @login_required
@@ -200,7 +199,7 @@ def domains(request):
     res['domains'] = domains_list
     res['new_domain'] = new_domain
 
-    return main_render(request, 'domains.html', res)
+    return main_render(request, 'domains.html', res, client)
 
 
 @login_required
@@ -224,4 +223,4 @@ def tags(request):
 
     res['tags'] = client.list_tags().json()
     res['tagform'] = tagform
-    return main_render(request, 'tags.html', res)
+    return main_render(request, 'tags.html', res, client)
