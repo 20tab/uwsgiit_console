@@ -1,5 +1,6 @@
 import random
-from datetime import date
+import json
+from datetime import date, timedelta
 
 from django.test import TestCase
 from django.conf import settings
@@ -8,20 +9,20 @@ from uwsgiit.api import UwsgiItClient
 
 from console.utils import daterange
 from console.models import ContainerMetric, DomainMetric,\
-    NetworkRXContainerMetric, HitsDomainMetric
+    NetworkRXContainerMetric, NetworkRXDomainMetric
 
 
 class MetricTesterMixin():
 
     @classmethod
-    def createUwsgiItClient(cls):
+    def istanceUwsgiItClient(cls):
         cls.client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
             settings.CONSOLE_API)
 
     @classmethod
-    def createTestMetric(cls, metric_class):
+    def createTestMetrics(cls, metric_class):
         parameters = {'container': 1}
 
         if issubclass(metric_class, ContainerMetric):
@@ -54,20 +55,21 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.createTestMetric(NetworkRXContainerMetric)
-        cls.createUwsgiItClient()
+        cls.createTestMetrics(NetworkRXContainerMetric)
         cls.today = date.today()
+        cls.yesterday = cls.today - timedelta(1)
+        cls.tomorrow = cls.today + timedelta(1)
 
     def test_generic_metric_to_string_prints_date(self):
         self.assertEqual(str(self.test_metrics[0]), '2010-1-1')
 
-    def test_metric_returns_right_json_for_specific_day_from_db(self):
+    def test_metrics_returns_right_json_for_specific_day_from_db(self):
         result = NetworkRXContainerMetric(container=1).metrics(
             self.client, params={'year': 2010, 'month': 1, 'day': 1})
         self.assertEqual(len(result), len(self.test_metrics[0].json))
         self.assertEqual(sorted(result), sorted(self.test_metrics[0].json))
 
-    def test_metric_returns_right_json_for_specific_month_from_db(self):
+    def test_metrics_returns_right_json_for_specific_month_from_db(self):
         results = NetworkRXContainerMetric(container=1).metrics(
             self.client, params={'year': 2010, 'month': 2})
         january_metrics = []
@@ -75,7 +77,7 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         self.assertEqual(len(results), len(january_metrics))
         self.assertEqual(sorted(results), sorted(january_metrics))
 
-    def test_metric_returns_right_json_for_specific_year_from_db(self):
+    def test_metrics_returns_right_json_for_specific_year_from_db(self):
         results = NetworkRXContainerMetric(container=1).metrics(
             self.client, params={'year': 2010})
         year_metrics = []
@@ -83,15 +85,207 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         self.assertEqual(len(results), len(year_metrics))
         self.assertEqual(sorted(results), sorted(year_metrics))
 
-    # def test_metric_returns_right_json_for_specific_day_from_api(self):
-    #     print dir(self.client)
-    #     self.client1 = UwsgiItClient(
-    #         settings.TEST_USER,
-    #         settings.TEST_PASSWORD,
-    #         settings.CONSOLE_API)
-    #     print(dir(self.client1))
-    #     results = NetworkRXContainerMetric(container=1).metrics(
-    #         self.client, params={
-    #         'year': self.today.year,
-    #         'month': self.today.month,
-    #         'day': self.today.day})
+    def test_metrics_does_not_save_current_day_in_db(self):
+        client = UwsgiItClient(
+            settings.TEST_USER,
+            settings.TEST_PASSWORD,
+            settings.CONSOLE_API)
+
+        NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
+            client, params={
+                'year': self.today.year,
+                'month': self.today.month,
+                'day': self.today.day})
+
+        self.assertRaises(
+            NetworkRXContainerMetric.DoesNotExist,
+            NetworkRXContainerMetric.objects.get,
+            **{'container': settings.TEST_CONTAINER,
+               'year': self.yesterday.year,
+               'month': self.yesterday.month,
+               'day': self.yesterday.day})
+
+    def test_metrics_returns_right_json_for_specific_day_from_api_and_saves_in_db(self):
+        client = UwsgiItClient(
+            settings.TEST_USER,
+            settings.TEST_PASSWORD,
+            settings.CONSOLE_API)
+
+        results = NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
+            client, params={
+                'year': self.yesterday.year,
+                'month': self.yesterday.month,
+                'day': self.yesterday.day})
+
+        metric_from_db = NetworkRXContainerMetric.objects.get(
+            container=settings.TEST_CONTAINER,
+            year=self.yesterday.year,
+            month=self.yesterday.month,
+            day=self.yesterday.day)
+
+        self.assertEqual(results, json.loads(metric_from_db.json))
+
+    def test_metrics_does_not_return_metrics_from_future_asking_for_current_month(self):
+        """Assumes that today is not the last day of month"""
+
+        client = UwsgiItClient(
+            settings.TEST_USER,
+            settings.TEST_PASSWORD,
+            settings.CONSOLE_API)
+
+        NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
+            client, params={
+                'year': self.today.year,
+                'month': self.today.month})
+
+        self.assertRaises(
+            NetworkRXContainerMetric.DoesNotExist,
+            NetworkRXContainerMetric.objects.get,
+            **{'container': settings.TEST_CONTAINER,
+               'year': self.tomorrow.year,
+               'month': self.tomorrow.month,
+               'day': self.tomorrow.day})
+
+    def test_metrics_returns_presents_metrics_from_db_and_missing_metrics_from_api(self):
+        """Assumes that today is not the first day of month"""
+
+        client = UwsgiItClient(
+            settings.TEST_USER,
+            settings.TEST_PASSWORD,
+            settings.CONSOLE_API)
+
+        test_metric = NetworkRXContainerMetric(
+            container=settings.TEST_CONTAINER,
+            json=[[-1, -2], [-3, -4]],
+            year=self.yesterday.year,
+            month=self.yesterday.month,
+            day=self.yesterday.day)
+        test_metric.save()
+
+        results = NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
+            client, params={
+                'year': self.today.year,
+                'month': self.today.month})
+
+        self.assertIn(test_metric.json[0], results)
+        self.assertIn(test_metric.json[1], results)
+
+
+# class DomainMetricTests(MetricTesterMixin, TestCase):
+
+#     @classmethod
+#     def setUpClass(cls):
+#         cls.createTestMetrics(NetworkRXDomainMetric)
+#         cls.today = date.today()
+#         cls.yesterday = cls.today - timedelta(1)
+#         cls.tomorrow = cls.today + timedelta(1)
+
+#     def test_generic_metric_to_string_prints_date(self):
+#         self.assertEqual(str(self.test_metrics[0]), '2010-1-1')
+
+#     def test_metrics_returns_right_json_for_specific_day_from_db(self):
+#         result = NetworkRXDomainMetric(domain=1).metrics(
+#             self.client, params={'year': 2010, 'month': 1, 'day': 1})
+#         self.assertEqual(len(result), len(self.test_metrics[0].json))
+#         self.assertEqual(sorted(result), sorted(self.test_metrics[0].json))
+
+#     def test_metrics_returns_right_json_for_specific_month_from_db(self):
+#         results = NetworkRXDomainMetric(domain=1).metrics(
+#             self.client, params={'year': 2010, 'month': 2})
+#         january_metrics = []
+#         [january_metrics.extend(el.json) for el in self.test_metrics[31:59]]
+#         self.assertEqual(len(results), len(january_metrics))
+#         self.assertEqual(sorted(results), sorted(january_metrics))
+
+#     def test_metrics_returns_right_json_for_specific_year_from_db(self):
+#         results = NetworkRXDomainMetric(domain=1).metrics(
+#             self.client, params={'year': 2010})
+#         year_metrics = []
+#         [year_metrics.extend(el.json) for el in self.test_metrics]
+#         self.assertEqual(len(results), len(year_metrics))
+#         self.assertEqual(sorted(results), sorted(year_metrics))
+
+#     def test_metrics_does_not_save_current_day_in_db(self):
+#         client = UwsgiItClient(
+#             settings.TEST_USER,
+#             settings.TEST_PASSWORD,
+#             settings.CONSOLE_API)
+
+#         NetworkRXDomainMetric(domain=settings.TEST_DOMAIN).metrics(
+#             client, params={
+#                 'year': self.today.year,
+#                 'month': self.today.month,
+#                 'day': self.today.day})
+
+#         self.assertRaises(
+#             NetworkRXDomainMetric.DoesNotExist,
+#             NetworkRXDomainMetric.objects.get,
+#             **{'domain': settings.TEST_DOMAIN,
+#                'year': self.yesterday.year,
+#                'month': self.yesterday.month,
+#                'day': self.yesterday.day})
+
+#     def test_metrics_returns_right_json_for_specific_day_from_api_and_saves_in_db(self):
+#         client = UwsgiItClient(
+#             settings.TEST_USER,
+#             settings.TEST_PASSWORD,
+#             settings.CONSOLE_API)
+
+#         results = NetworkRXDomainMetric(domain=settings.TEST_DOMAIN).metrics(
+#             client, params={
+#                 'year': self.yesterday.year,
+#                 'month': self.yesterday.month,
+#                 'day': self.yesterday.day})
+
+#         metric_from_db = NetworkRXDomainMetric.objects.get(
+#             domain=settings.TEST_DOMAIN,
+#             year=self.yesterday.year,
+#             month=self.yesterday.month,
+#             day=self.yesterday.day)
+
+#         self.assertEqual(results, json.loads(metric_from_db.json))
+
+#     def test_metrics_does_not_return_metrics_from_future_asking_for_current_month(self):
+#         """Assumes that today is not the last day of month"""
+
+#         client = UwsgiItClient(
+#             settings.TEST_USER,
+#             settings.TEST_PASSWORD,
+#             settings.CONSOLE_API)
+
+#         NetworkRXDomainMetric(domain=settings.TEST_DOMAIN).metrics(
+#             client, params={
+#                 'year': self.today.year,
+#                 'month': self.today.month})
+
+#         self.assertRaises(
+#             NetworkRXDomainMetric.DoesNotExist,
+#             NetworkRXDomainMetric.objects.get,
+#             **{'domain': settings.TEST_DOMAIN,
+#                'year': self.tomorrow.year,
+#                'month': self.tomorrow.month,
+#                'day': self.tomorrow.day})
+
+#     def test_metrics_returns_presents_metrics_from_db_and_missing_metrics_from_api(self):
+#         """Assumes that today is not the first day of month"""
+
+#         client = UwsgiItClient(
+#             settings.TEST_USER,
+#             settings.TEST_PASSWORD,
+#             settings.CONSOLE_API)
+
+#         test_metric = NetworkRXDomainMetric(
+#             domain=settings.TEST_DOMAIN,
+#             json=[[-1, -2], [-3, -4]],
+#             year=self.yesterday.year,
+#             month=self.yesterday.month,
+#             day=self.yesterday.day)
+#         test_metric.save()
+
+#         results = NetworkRXDomainMetric(domain=settings.TEST_DOMAIN).metrics(
+#             client, params={
+#                 'year': self.today.year,
+#                 'month': self.today.month})
+
+#         self.assertIn(test_metric.json[0], results)
+#         self.assertIn(test_metric.json[1], results)
