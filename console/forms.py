@@ -31,7 +31,7 @@ class MeForm(forms.Form):
                                   widget=forms.PasswordInput(render_value=True,
                                                           attrs={'class': 'form-control'}))
     vat = forms.CharField(label=u'Vat', widget=forms.TextInput(
-        attrs={'class': 'form-control col-xs-8'}))
+        attrs={'class': 'form-control col-xs-8'}), required=False)
 
     def clean(self):
         cd = super(MeForm, self).clean()
