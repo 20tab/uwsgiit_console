@@ -1,9 +1,12 @@
+import re
+from datetime import datetime
+
 from django import forms
-from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
-from uwsgiit.api import UwsgiItClient
 from django.conf import settings
 from django.utils.dates import MONTHS
-from datetime import datetime
+
+from uwsgiit.api import UwsgiItClient
+from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
 
 
 class LoginForm(forms.Form):
@@ -45,6 +48,26 @@ class MeForm(forms.Form):
 class SSHForm(forms.Form):
     key = forms.CharField(label=u'ssh key', widget=forms.Textarea(
         attrs={'cols': 100, 'rows': 3, 'class': 'form-control'}))
+
+    def clean(self):
+        """Raise a ValidationError if the
+           value is longer than 4096 or doesn't
+           match an ssh-rsa regex
+        """
+        data = super(SSHForm, self).clean()
+        key = data['key']
+        if len(key) <= 4096:
+            result = 1
+            result = re.search(
+                r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@[^ \t\n\r]*$', key)
+            print result
+            if result is None:
+                msg = u'Insered value is not a ssh-rsa key'
+                raise forms.ValidationError(msg)
+        else:
+            msg = u'Key too long'
+            raise forms.ValidationError(msg)
+        return data
 
 
 class ContainerForm(forms.Form):
