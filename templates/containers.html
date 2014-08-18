@@ -41,6 +41,11 @@
             <!-- SSH -->
             <div class="tab-pane{% if active_panel == 'ssh' %} active{% endif %}" id="ssh">
                 <h2>Add or remove ssh keys</h2>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
                 <div class="div-as-tablerow row div-hover">
                     {{ sshform }}
                     <button id="add-key" type="button" class="btn btn-primary submit-container-form">Add</button>

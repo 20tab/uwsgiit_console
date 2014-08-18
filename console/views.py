@@ -2,6 +2,7 @@ from uwsgiit.api import UwsgiItClient
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm, DomainForm, NewDomainForm
 from console.decorators import login_required
@@ -127,8 +128,15 @@ def containers(request, id):
                     cd = sshform.cleaned_data
                     if cd['key'] not in container['ssh_keys']:
                         container['ssh_keys'].append(cd['key'].strip())
-                        client.container_set_keys(id, container['ssh_keys'])
+                        response = client.container_set_keys(id, container['ssh_keys'])
+                        if response.status_code == 200:
+                            messages.success(request, 'New key successfully added')
+                        else:
+                            messages.error(request, 'An error occurred, please try again')
                         sshform = SSHForm()
+                    else:
+                        msg = 'Key {key} was already added to container {id}'.format(key=cd['key'], id=id)
+                        messages.warning(request, msg)
             elif action == 'del-key':
                 active_panel = 'ssh'
                 sshform = SSHForm(request.POST)
@@ -136,7 +144,11 @@ def containers(request, id):
                     cd = sshform.cleaned_data
                     if cd['key'] in container['ssh_keys']:
                         container['ssh_keys'].remove(cd['key'])
-                        client.container_set_keys(id, container['ssh_keys'])
+                        print(client.container_set_keys(id, container['ssh_keys']))
+                    else:
+                        print(container['ssh_keys'][-1], cd['key'])
+                else:
+                    print "non valid"
 
         containerform.fields['distro'].widget.choices = distro_choices
         containerform.fields['tags'].initial = container['tags']
