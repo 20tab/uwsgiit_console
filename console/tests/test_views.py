@@ -5,7 +5,7 @@ from django.conf import settings
 
 from console.views import home, me_page, logout, domains, tags
 from console.views_metrics import metrics_container, container,\
-     domain, metrics_domain
+    domain, metrics_domain
 from console.forms import NewDomainForm, TagForm
 from console.models import IOReadContainerMetric, NetworkRXDomainMetric
 #TODO TEST FORMS

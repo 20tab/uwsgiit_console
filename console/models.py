@@ -1,6 +1,6 @@
 import json
 from datetime import date
-from django.utils.dates import MONTHS
+
 from django.db import models
 from console.utils import all_days_of, excluded_days
 
@@ -86,44 +86,63 @@ class ContainerMetric(GenericMetric):
 class DomainMetric(GenericMetric):
     domain = models.PositiveIntegerField()
 
-    def metrics(self, client, params={}):
+    def metrics(self, client, params={}, container=None):
         if not params:
+            results = []
             for elem in self.api_metrics(client, params):
-                return elem['metrics']
+                if container:
+                    if elem['container'] == container:
+                        return elem['metrics']
+                else:
+                    results.extend(elem['metrics'])
+                return results
+
         res = []
         to_save = []
 
         params, year, month, day = date_from_params(params)
 
+        query_params = params.copy()
+
+        if container:
+            query_params['container'] = container
+
         model = self.__class__
 
+        results = model.objects.filter(domain=self.domain, **query_params)
+
+        for result in results:
+            res.extend(json.loads(result.json))
+
         if day and month:
-            try:
-                result = model.objects.get(domain=self.domain, **params)
-                res.extend(json.loads(result.json))
-            except model.DoesNotExist:
-                result = self.api_metrics(client, params)
-                for elem in result:
+            if not results.exists():
+                results = self.api_metrics(client, params)
+                for elem in results:
                     item = model(domain=self.domain,
                                  container=elem['container'],
                                  json=elem['metrics'],
                                  **params)
-                    if date(year, month, day) != date.today():
+                    if date(params['year'], params['month'], params['day']) != date.today():
                         to_save.append(item)
-                    res.extend(elem['metrics'])
-        elif month:
-            items = model.objects.filter(domain=self.domain, **params)
-            for i in items:
-                res.extend(json.loads(i.json))
-            all_days = all_days_of(year, month)
-            dates_in_db = [date(d.year, d.month, d.day) for d in items]
-            for d in excluded_days(all_days, dates_in_db):
-                params['day'] = d.day
-                res.extend(self.metrics(client, params))
+                    if not container or container == item.container:
+                        res.extend(elem['metrics'])
         else:
-            for m in MONTHS.keys():
-                params['month'] = m
-                res.extend(self.metrics(client, params))
+            all_days = all_days_of(**params)
+            dates_in_db = [date(d.year, d.month, d.day) for d in results]
+            for d in excluded_days(all_days, dates_in_db):
+                if not month:
+                    params['month'] = d.month
+                params['day'] = d.day
+                results = self.api_metrics(client, params)
+                for elem in results:
+                    item = model(domain=self.domain,
+                                 container=elem['container'],
+                                 json=elem['metrics'],
+                                 **params)
+                    if date(params['year'], params['month'], params['day']) != date.today():
+                        to_save.append(item)
+                    if not container or container == item.container:
+                            res.extend(elem['metrics'])
         model.objects.bulk_create(to_save)
         return res
 
