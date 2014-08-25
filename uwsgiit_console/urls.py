@@ -15,10 +15,11 @@ urlpatterns += patterns(
     url(r'^$', 'home', name='home'),
     url(r'^me/$', 'me_page', name='me'),
     url(r'^logout/$', 'logout', name='logout'),
-    url(r'^containers/(?P<id>\d+)?$', 'containers', name='containers'),
+    url(r'^containers/(?P<id>\d+)$', 'containers', name='containers'),
     url(r'^domains/$', 'domains', name='domains'),
-    url(r'?domains/(?P<id>\d+)?$', 'domain', name="domain"),
+    url(r'^domains/(?P<id>\d+)$', 'domain', name='domain'),
     url(r'^tags/$', 'tags', name='tags'),
+    url(r'^tags/(?P<tag>\w+)$', 'tag', name='tag'),
 )
 
 urlpatterns += patterns(

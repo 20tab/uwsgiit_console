@@ -4,8 +4,9 @@ from django.shortcuts import render_to_response
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm, DomainForm, NewDomainForm, CalendarForm
 from console.decorators import login_required
+from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
+    DomainForm, NewDomainForm, CalendarForm
 
 
 def logout(request):
@@ -24,7 +25,8 @@ def main_render(request, template, v_dict={}, client=None):
             return HttpResponseRedirect('/me/')
     v_dict['login_form'] = login_form
 
-    if request.session.get('username', False) and request.session.get('password', False):
+    if (request.session.get('username', False) and
+       request.session.get('password', False)):
         if client is None:
             client = UwsgiItClient(
                 request.session.get('username'),
@@ -251,3 +253,16 @@ def tags(request):
     res['tags'] = client.list_tags().json()
     res['tagform'] = tagform
     return main_render(request, 'tags.html', res, client)
+
+
+@login_required
+def tag(request, tag):
+    res = {}
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+    res['tag'] = tag
+    res['domains'] = client.domains(tags=[tag]).json()
+    res['containers'] = client.containers(tags=[tag]).json()
+    return main_render(request, 'tag.html', res, client)

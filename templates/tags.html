@@ -20,7 +20,7 @@
         {% for t in tags %}
             <tr>
                 <td>{{ t.id }}</td>
-                <td>{{ t.name }}</td>
+                <td><a href="{% url 'tag' t.name %}">{{ t.name }}</a></td>
                 <td>
                     <a href="{% url 'tags' %}?id={{ t.id }}" title="Remove">
                         <span class="glyphicon glyphicon-remove-circle"></span>
