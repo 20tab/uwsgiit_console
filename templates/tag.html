@@ -1,0 +1,49 @@
+{% extends 'index.html' %}
+
+{% block content %}
+    <h3><b>{{ tag }}</b> Tag</h3>
+    <h4>Containers</h4>
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <tr>
+                <th>UID</th>
+                <th>Name</th>
+                <th>Hostname</th>
+                <th>Server</th>
+                <th>Tags</th>
+            </tr>
+        {% for c in containers %}
+            <tr>
+                <td><a href="{% url 'containers' id=c.uid %}">{{ c.uid }}</a></td>
+                <td>{{ c.name }}</td>
+                <td>{{ c.hostname }}</td>
+                <td>{{ c.server }}</td>
+                <td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+    <h4>Domains</h4>
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>UUID</th>
+                <th>TAGS</th>
+            </tr>
+        {% for d in domains %}
+            <tr>
+                <td><a href="{% url 'domain' id=d.id %}">{{ d.id }}</a></td>
+                <td>{{ d.name }}</td>
+                <td>{{ d.uuid }}</td>
+                <td>
+                    {% for t in d.tags %}
+                        <a href="{% url 'tag' tag=t%}">{{t}}</a>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+{% endblock %}
