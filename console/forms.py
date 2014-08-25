@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django import forms
 from django.conf import settings
@@ -55,12 +55,10 @@ class SSHForm(forms.Form):
            match an ssh-rsa regex
         """
         data = super(SSHForm, self).clean()
-        key = data['key']
+        key = data['key'].strip()
         if len(key) <= 4096:
-            result = 1
             result = re.search(
-                r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@[^ \t\n\r]*$', key)
-            print result
+                r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@*$', key)
             if result is None:
                 msg = u'Insered value is not a ssh-rsa key'
                 raise forms.ValidationError(msg)
@@ -107,16 +105,18 @@ class NewDomainForm(forms.Form):
 
 class CalendarForm(forms.Form):
     year = forms.IntegerField(required=False)
-    month = forms.ChoiceField(required=False, widget=SelectAutocomplete(plugin_options={"width": "300px"}),
+    month = forms.ChoiceField(required=False,
+                              widget=SelectAutocomplete(plugin_options={"width": "300px"}),
                               choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
     day = forms.IntegerField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(CalendarForm, self).__init__(*args, **kwargs)
         today = datetime.today()
-        self.fields['year'].initial = today.year
-        self.fields['month'].initial = today.month
-        self.fields['day'].initial = today.day
+        yesterday = today - timedelta(1)
+        self.fields['year'].initial = yesterday.year
+        self.fields['month'].initial = yesterday.month
+        self.fields['day'].initial = yesterday.day
 
     def has_value(self, field):
         data = self.cleaned_data
@@ -135,12 +135,23 @@ class CalendarForm(forms.Form):
             res[u'day'] = data[u'day']
         return res
 
+    def metric_name(self):
+        metric_name = ''
+        data = self.cleaned_data
+        if self.has_value(u'year'):
+            metric_name = str(data[u'year'])
+            if self.has_value(u'month'):
+                metric_name = str(data[u'month']) + '-' + metric_name
+                if self.has_value(u'day'):
+                    metric_name = str(data[u'day']) + '-' + metric_name
+        return metric_name
+
     def metric_type(self):
         if self.has_value(u'day'):
-            return u'h'
+            return u'hour'
         elif self.has_value(u'month'):
-            return u'd'
-        return u'm'
+            return u'day'
+        return u'month'
 
     def is_in_the_future(self):
         data = self.get_params()
@@ -163,4 +174,3 @@ class CalendarForm(forms.Form):
         if self.is_in_the_future():
             raise forms.ValidationError(u'Set a date in the past not in future.')
         return data
-
