@@ -17,6 +17,7 @@ urlpatterns += patterns(
     url(r'^logout/$', 'logout', name='logout'),
     url(r'^containers/(?P<id>\d+)?$', 'containers', name='containers'),
     url(r'^domains/$', 'domains', name='domains'),
+    url(r'?domains/(?P<id>\d+)?$', 'domain', name="domain"),
     url(r'^tags/$', 'tags', name='tags'),
 )
 
@@ -37,7 +38,7 @@ urlpatterns += patterns(
     url(r'^metrics/container/mem/(\d+)/$', 'container',
         kwargs={'model': MemoryContainerMetric, 'absolute_values': True}, name='container_mem'),
     url(r'^metrics/container/quota/(\d+)/$', 'container',
-        kwargs={'model': QuotaContainerMetric}, name='container_quota'),
+        kwargs={'model': QuotaContainerMetric, 'absolute_values': True}, name='container_quota'),
 
     url(r'^metrics/domain/net.rx/(\d+)/$', 'domain',
         kwargs={'model': NetworkRXDomainMetric}, name='domain_net_rx'),
