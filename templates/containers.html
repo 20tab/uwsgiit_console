@@ -1,10 +1,22 @@
 {% extends 'index.html' %}
 {% load console_tags %}
 
+{% block extra_style %}
+    {{ block.super }}
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/graph.css">
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/detail.css">
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/legend.css">
+{#  <link type="text/css" rel="stylesheet" href="css/lines.css">#}
+{% endblock %}
+{% block extra_head %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}rickshaw/vendor/d3.v3.js"></script>
+    <script src="{{ STATIC_URL }}rickshaw/rickshaw.js"></script>
+{% endblock %}
 {% block content %}
-<form id="container-form" class="form-inline" role="form" action="{% url 'containers' container.uid %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" id="id_action">
+
+    <h3>{{ container.name }} ({{ container.uid }})</h3>
+
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
       <li class="{% if not active_panel %}active{% endif %}">
@@ -13,13 +25,20 @@
       <li{% if active_panel == 'ssh' %} class="active"{% endif %}>
           <a href="#ssh" data-toggle="tab">SSH keys</a>
       </li>
+      <li{% if active_panel == 'metrics' %} class="active"{% endif %}>
+          <a href="#metrics" data-toggle="tab">Metrics</a>
+      </li>
     </ul>
+
 
     <!-- Tab panes -->
     <div class="tab-content">
 
-            <!-- INFO -->
-            <div class="tab-pane{% if not active_panel %} active{% endif %}" id="infos">
+        <!-- INFO -->
+        <div class="tab-pane{% if not active_panel %} active{% endif %}" id="infos">
+            <form id="container-form" class="form-inline" role="form" action="{% url 'containers' container.uid %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" id="id_action"/>
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered">
                     {% for k, v in container_copy.items %}
@@ -35,36 +54,91 @@
                         Update
                     </button>
                 </div>
-            </div>
+            </form>
+        </div>
 
 
-            <!-- SSH -->
-            <div class="tab-pane{% if active_panel == 'ssh' %} active{% endif %}" id="ssh">
-                <h2>Add or remove ssh keys</h2>
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-                <div class="div-as-tablerow row div-hover">
-                    {{ sshform }}
-                    <button id="add-key" type="button" class="btn btn-primary submit-container-form">Add</button>
-                </div>
-
-                {% for k in container.ssh_keys %}
-                    <div class="div-as-tablerow row div-hover">
-                        <div id="ssh-{{ forloop.counter }}" class="col-md-11 word-break">{{ k }}</div>
-                        <div class="col-md-1">
-                            <a class="remove-key submit-container-form" href="#" title="Remove" data-id="ssh-{{ forloop.counter }}" data-action="del-key" data-field="key">
-                                <span class="glyphicon glyphicon-remove-circle"></span>
-                            </a>
-                        </div>
-                    </div>
+        <!-- SSH -->
+        <div class="tab-pane{% if active_panel == 'ssh' %} active{% endif %}" id="ssh">
+            <h2>Add or remove ssh keys</h2>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
                 {% endfor %}
+            {% endif %}
+            <div class="div-as-tablerow row div-hover">
+                {{ sshform }}
+                <button id="add-key" type="button" class="btn btn-primary submit-container-form">Add</button>
             </div>
 
+            {% for k in container.ssh_keys %}
+                <div class="div-as-tablerow row div-hover">
+                    <div id="ssh-{{ forloop.counter }}" class="col-md-11 word-break">{{ k }}</div>
+                    <div class="col-md-1">
+                        <a class="remove-key submit-container-form" href="#" title="Remove" data-id="ssh-{{ forloop.counter }}" data-action="del-key" data-field="key">
+                            <span class="glyphicon glyphicon-remove-circle"></span>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
 
+        <!-- Metrics -->
+        <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
+            <div class="row margin-top">
+                <div class="col-sm-3 col-lg-2">
+                    <ul class="nav nav-pills nav-stacked">
+                        <li class="{% if not active_panel %}active{% endif %}">
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_io_read' container.uid %}'); clearGraph();">Container IO read</a>
+                        </li>
+                        <li{% if active_panel == 'container_io_write' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_io_write' container.uid %}'); clearGraph();">Container IO write</a>
+                        </li>
+                        <li{% if active_panel == 'container_net_rx' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_net_rx' container.uid %}'); clearGraph();">Container NET rx</a>
+                        </li>
+                        <li{% if active_panel == 'container_net_tx' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_net_tx' container.uid %}'); clearGraph();">Container NET tx</a>
+                        </li>
+                        <li{% if active_panel == 'container_cpu' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_cpu' container.uid %}'); clearGraph();">Container cpu</a>
+                        </li>
+                        <li{% if active_panel == 'container_mem' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_mem' container.uid %}'); clearGraph();">Container mem</a>
+                        </li>
+                        <li{% if active_panel == 'container_quota' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_quota' container.uid %}'); clearGraph();">Container quota</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-sm-9 col-lg-10">
+                    <form action="{% url 'container_io_read' container.uid %}" method="post" class="form-horizontal inline" id="calendar">
+                        {% csrf_token %}
+                        {{ calendar }}
+                        <button type="submit">Go</button>
+                    </form>
+                    <button class="inline" onclick="clearGraph();">Clear Graphs</button>
+                    <div id="chart_container" class="clearfix">
+                        <div id="chart"></div>
+                        <div id="timeline"></div>
+                        <div id="legend_container">
+                            <div id="smoother" title="Smoothing"></div>
+                            <div id="legend"></div>
+                        </div>
+                        <div id="slider"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
-</form>
+
+{% endblock %}
+
+{% block footer_js %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}js/metrics.js"></script>
+    <script type="text/javascript">
+    </script>
 
 {% endblock %}

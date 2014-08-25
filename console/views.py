@@ -4,7 +4,7 @@ from django.shortcuts import render_to_response
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm, DomainForm, NewDomainForm
+from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm, DomainForm, NewDomainForm, CalendarForm
 from console.decorators import login_required
 
 
@@ -81,6 +81,7 @@ def containers(request, id):
     if id:
         container = client.container(id).json()
         container_copy = container.copy()
+
         del container_copy['ssh_keys']
         del container_copy['distro']
         del container_copy['distro_name']
@@ -90,6 +91,7 @@ def containers(request, id):
         res['container_copy'] = container_copy
         res['container'] = container
         distros_list = client.distros().json()
+        distros_list = sorted(distros_list, key=lambda distro: distro['id'], reverse=True)
         res['distros'] = distros_list
         distro_choices = [(x['id'], x['name']) for x in distros_list]
 
@@ -102,6 +104,7 @@ def containers(request, id):
         containerform = ContainerForm(initial={'distro': "{}".format(container['distro'])},
                                       tags_choices=tag_list, link_to_choices=link_to)
         sshform = SSHForm()
+        calendar = CalendarForm()
 
         active_panel = None
         if request.POST and 'action' in request.POST:
@@ -142,20 +145,17 @@ def containers(request, id):
                 sshform = SSHForm(request.POST)
                 if sshform.is_valid():
                     cd = sshform.cleaned_data
+                    cd['key'] = cd['key'].strip()
                     if cd['key'] in container['ssh_keys']:
                         container['ssh_keys'].remove(cd['key'])
-                        print(client.container_set_keys(id, container['ssh_keys']))
-                    else:
-                        print(container['ssh_keys'][-1], cd['key'])
-                else:
-                    print "non valid"
+                        client.container_set_keys(id, container['ssh_keys'])
 
         containerform.fields['distro'].widget.choices = distro_choices
         containerform.fields['tags'].initial = container['tags']
         containerform.fields['link_to'].initial = container['linked_to']
         res['containerform'] = containerform
         res['sshform'] = sshform
-
+        res['calendar'] = calendar
         res['active_panel'] = active_panel
     return main_render(request, 'containers.html', res, client)
 
@@ -169,6 +169,7 @@ def domains(request):
         settings.CONSOLE_API)
 
     new_domain = NewDomainForm()
+    calendar = CalendarForm()
 
     if request.POST:
         if 'name' in request.POST:
@@ -210,8 +211,22 @@ def domains(request):
 
     res['domains'] = domains_list
     res['new_domain'] = new_domain
+    res['calendar'] = calendar
 
     return main_render(request, 'domains.html', res, client)
+
+
+@login_required
+def domain(request, id):
+    calendar = CalendarForm()
+    res = {}
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+
+    res['calendar'] = calendar
+    return main_render(request, 'domain.html', res, client)
 
 
 @login_required
