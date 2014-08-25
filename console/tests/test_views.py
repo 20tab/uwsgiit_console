@@ -371,7 +371,6 @@ class ContainerMetricViewTests(TestCase):
         )
         self.request_post.session = {}
         self.assertEqual(response.status_code, 200)
-        # self.assertContains(response, 'Container IO read <span class="caret"></span>')
 
 
 class DomainMetricViewTests(TestCase):
@@ -467,7 +466,6 @@ class DomainMetricViewTests(TestCase):
             self.request_post, 1, **{'model': NetworkRXDomainMetric})
         self.request_post.session = {}
         self.assertEqual(response.status_code, 200)
-        # self.assertContains(response, 'Container IO read <span class="caret"></span>')
 
 
 class LogoutViewTest(TestCase):
