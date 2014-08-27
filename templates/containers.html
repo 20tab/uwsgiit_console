@@ -15,7 +15,7 @@
 {% endblock %}
 {% block content %}
 
-    <h3>{{ container.name }} ({{ container.uid }})</h3>
+    <h3>Container <b>{{ container.name }} ({{ container.uid }})</b></h3>
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
@@ -138,7 +138,4 @@
 {% block footer_js %}
     {{ block.super }}
     <script src="{{ STATIC_URL }}js/metrics.js"></script>
-    <script type="text/javascript">
-    </script>
-
 {% endblock %}

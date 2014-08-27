@@ -12,15 +12,15 @@
                 <th>Server</th>
                 <th>Tags</th>
             </tr>
-        {% for c in containers %}
+            {% for c in tagged_containers %}
             <tr>
                 <td><a href="{% url 'containers' id=c.uid %}">{{ c.uid }}</a></td>
                 <td>{{ c.name }}</td>
                 <td>{{ c.hostname }}</td>
                 <td>{{ c.server }}</td>
-                <td>
+                <td>{{ c.tags }}</td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </table>
     </div>
     <h4>Domains</h4>
@@ -30,20 +30,26 @@
                 <th>ID</th>
                 <th>Name</th>
                 <th>UUID</th>
-                <th>TAGS</th>
+                <th>Tags</th>
             </tr>
-        {% for d in domains %}
+            {% for d in tagged_domains %}
             <tr>
-                <td><a href="{% url 'domain' id=d.id %}">{{ d.id }}</a></td>
-                <td>{{ d.name }}</td>
-                <td>{{ d.uuid }}</td>
+                <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
+                <td>{{ d.0.name }}</td>
+                <td>{{ d.0.uuid }}</td>
                 <td>
-                    {% for t in d.tags %}
-                        <a href="{% url 'tag' tag=t%}">{{t}}</a>
-                    {% endfor %}
+                    <form class="inline form-inline" role="form" action="{% url 'tag' tag %}" method="post">{% csrf_token %}
+                        <input name="did" value="{{ d.0.id }}" type="hidden">
+                        {{ d.1.tags }}
+                        <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
+                    </form>
+
+                    <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+
                 </td>
             </tr>
         {% endfor %}
+
         </table>
     </div>
 {% endblock %}

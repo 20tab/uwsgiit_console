@@ -19,9 +19,9 @@
                 <th>UUID</th>
                 <th>TAGS</th>
             </tr>
-        {% for d in domains %}
+            {% for d in domains %}
             <tr>
-                <td>{{ d.0.id }}</td>
+                <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
                 <td>{{ d.0.name }}</td>
                 <td>{{ d.0.uuid }}</td>
                 <td>
@@ -35,7 +35,7 @@
 
                 </td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </table>
     </div>
 

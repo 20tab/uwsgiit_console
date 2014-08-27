@@ -188,7 +188,7 @@ def domains(request):
                 tags_post = []
                 if u'{}-tags'.format(did) in request.POST:
                     tags_post = request.POST.getlist(u'{}-tags'.format(did))
-                client.update_domain(did,{'tags': tags_post})
+                client.update_domain(did, {'tags': tags_post})
     if 'del' in request.GET:
         name = request.GET['del']
         client.delete_domain(name)
@@ -227,7 +227,35 @@ def domain(request, id):
         request.session.get('password'),
         settings.CONSOLE_API)
 
+    if request.POST:
+        if 'did' in request.POST:
+            domain_form = DomainForm(request.POST)
+            if domain_form.is_valid():
+                cd = domain_form.cleaned_data
+                did = cd['did']
+                params = {}
+                if u'tags'.format(did) in request.POST:
+                    params['tags'] = request.POST.getlist(u'{}-tags'.format(did))
+                if u'note' in request.POST:
+                    params['note'] = cd['note']
+                client.update_domain(did, params)
+    elif 'del' in request.GET:
+        name = request.GET['del']
+        client.delete_domain(name)
+
+    domain = client.domain(id).json()
+    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
+    form = DomainForm(initial={'did': id}, prefix=id)
+    form.fields['tags'].widget.choices = tags_list
+    form.fields['tags'].initial = domain['tags']
+    form.fields['note'].initial = domain['note']
+
+    del domain['tags']
+    del domain['note']
+
     res['calendar'] = calendar
+    res['domain'] = domain
+    res['domainform'] = form
     return main_render(request, 'domain.html', res, client)
 
 
@@ -262,7 +290,29 @@ def tag(request, tag):
         request.session.get('username'),
         request.session.get('password'),
         settings.CONSOLE_API)
+    doms = client.domains(tags=[tag]).json()
+    domains = []
+    if request.POST:
+        if 'did' in request.POST:
+            domain_form = DomainForm(request.POST)
+            if domain_form.is_valid():
+                cd = domain_form.cleaned_data
+                did = cd['did']
+                tags_post = []
+                if u'{}-tags'.format(did) in request.POST:
+                    tags_post = request.POST.getlist(u'{}-tags'.format(did))
+                client.update_domain(did, {'tags': tags_post})
+    elif 'del' in request.GET:
+        name = request.GET['del']
+        client.delete_domain(name)
+
+    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
+    for d in doms:
+        form = DomainForm(initial={'did': d['id']}, prefix=d['id'])
+        form.fields['tags'].widget.choices = tags_list
+        form.fields['tags'].initial = d['tags']
+        domains.append((d, form))
     res['tag'] = tag
-    res['domains'] = client.domains(tags=[tag]).json()
-    res['containers'] = client.containers(tags=[tag]).json()
+    res['tagged_domains'] = domains
+    res['tagged_containers'] = client.containers(tags=[tag]).json()
     return main_render(request, 'tag.html', res, client)
