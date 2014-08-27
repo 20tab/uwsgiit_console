@@ -97,6 +97,8 @@ class DomainForm(forms.Form):
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(), required=False
     )
+    note = forms.CharField(required=False, widget=forms.Textarea(
+        attrs={'cols': 50, 'rows': 2, 'class': 'form-control'}))
 
 
 class NewDomainForm(forms.Form):
