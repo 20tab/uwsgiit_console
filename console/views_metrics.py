@@ -1,5 +1,4 @@
 import json
-import datetime
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -8,23 +7,6 @@ from uwsgiit.api import UwsgiItClient
 
 from console.forms import CalendarForm
 from console.decorators import login_required
-from console.views import main_render
-
-
-@login_required
-def metrics_domain(request):
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
-    domains = client.domains().json()
-    return main_render(
-        request, 'metrics_base.html', {'domains': domains}, client)
-
-
-@login_required
-def metrics_container(request):
-    return main_render(request, 'metrics_base.html', {})
 
 
 def stats_render(request, client, metric, v_dict={}):
@@ -50,7 +32,7 @@ def stats_render(request, client, metric, v_dict={}):
 
 
 @login_required
-def container(request, container, **kwargs):
+def container_metrics(request, container, **kwargs):
     client = UwsgiItClient(
         request.session.get('username'),
         request.session.get('password'),
@@ -63,7 +45,7 @@ def container(request, container, **kwargs):
 
 
 @login_required
-def domain(request, domain, **kwargs):
+def domain_metrics(request, domain, **kwargs):
     client = UwsgiItClient(
         request.session.get('username'),
         request.session.get('password'),
