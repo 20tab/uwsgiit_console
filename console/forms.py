@@ -32,7 +32,7 @@ class MeForm(forms.Form):
                                                           attrs={'class': 'form-control'}))
     re_password = forms.CharField(label=u'Retype password',
                                   widget=forms.PasswordInput(render_value=True,
-                                                          attrs={'class': 'form-control'}))
+                                                             attrs={'class': 'form-control'}))
     vat = forms.CharField(label=u'Vat', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}), required=False)
 
@@ -92,13 +92,16 @@ class TagForm(forms.Form):
 
 
 class DomainForm(forms.Form):
+
     did = forms.IntegerField(widget=forms.HiddenInput, required=False)
-    tags = forms.MultipleChoiceField(
-        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(), required=False
-    )
     note = forms.CharField(required=False, widget=forms.Textarea(
-        attrs={'cols': 50, 'rows': 2, 'class': 'form-control'}))
+        attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}))
+
+    def __init__(self, choices=(), *args, **kwargs):
+        super(DomainForm, self).__init__(*args, **kwargs)
+        self.fields['tags'] = forms.MultipleChoiceField(
+            widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
+            choices=choices, required=False)
 
 
 class NewDomainForm(forms.Form):
