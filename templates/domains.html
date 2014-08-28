@@ -1,5 +1,8 @@
 {% extends 'index.html' %}
-
+{% block extra_head %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}js/jquery.tablesorter.min.js"></script>
+{% endblock %}
 {% block content %}
 
     <div>
@@ -12,31 +15,42 @@
     <br>
 
     <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>UUID</th>
-                <th>TAGS</th>
-            </tr>
-            {% for d in domains %}
-            <tr>
-                <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
-                <td>{{ d.0.name }}</td>
-                <td>{{ d.0.uuid }}</td>
-                <td>
-                    <form class="inline form-inline" role="form" action="." method="post">{% csrf_token %}
-                        <input name="did" value="{{ d.0.id }}" type="hidden">
-                        {{ d.1.tags }}
-                        <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
-                    </form>
+        <table class="table table-hover table-bordered tablesorter" id="domains-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>UUID</th>
+                    <th>TAGS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in domains %}
+                <tr>
+                    <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
+                    <td>{{ d.0.name }}</td>
+                    <td>{{ d.0.uuid }}</td>
+                    <td>
+                        <form class="inline form-inline" role="form" action="." method="post">{% csrf_token %}
+                            <input name="did" value="{{ d.0.id }}" type="hidden">
+                            {{ d.1.tags }}
+                            <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
+                        </form>
 
-                    <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
-
-                </td>
-            </tr>
-            {% endfor %}
+                        <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
+{% endblock %}
 
+{% block footer_js %}
+    {{ block.super }}
+    <script>
+        $(function(){
+            $("#domains-table").tablesorter();
+        });
+    </script>
 {% endblock %}

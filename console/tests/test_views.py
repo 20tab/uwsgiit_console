@@ -3,13 +3,12 @@ from django.core.urlresolvers import resolve, reverse
 from django.http import HttpResponseRedirect
 from django.conf import settings
 
-from console.views import home, me_page, logout, domains, tags
-from console.views_metrics import metrics_container, container,\
-    domain, metrics_domain
+from console.views import home, me_page, logout, domains, domain,\
+    tags, tag, containers
+from console.views_metrics import container_metrics, domain_metrics
 from console.forms import NewDomainForm, TagForm
 from console.models import IOReadContainerMetric, NetworkRXDomainMetric
 #TODO TEST FORMS
-#TODO TEST CONTAINERS
 
 
 class HomeViewTests(TestCase):
@@ -175,84 +174,124 @@ class TagsViewTests(TestCase):
         self.assertContains(response, TagForm())
 
 
-class Metrics_Domain_ViewTests(TestCase):
+class Tag_ViewTests(TestCase):
 
     @classmethod
     def setUpClass(cls):
         request_factory = RequestFactory()
-        cls.request_get = request_factory.get('/metrics/domain/', follow=True)
-        cls.request_post = request_factory.post('/metrics/domain/', follow=True)
+        cls.url = '/tags/{}'.format(settings.TEST_TAG)
+        cls.request_get = request_factory.get(cls.url, follow=True)
+        cls.request_post = request_factory.post(cls.url, follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
 
-    def test_metrics_name_resolves_to_metrics_url(self):
-        url = reverse('metrics_domain')
-        self.assertEqual(url, '/metrics/domain/')
+    def test_tag_name_resolves_to_metrics_url(self):
+        url = reverse('tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, self.url)
 
-    def test_metrics_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/domain/')
-        self.assertEqual(resolver.func, metrics_domain)
+    def test_tag_url_resolves_to_metrics_view(self):
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.func, tag)
 
-    def test_metrics_doesnt_allow_anonymous(self):
-        response = metrics_domain(self.request_get)
+    def test_tag_doesnt_allow_anonymous(self):
+        response = tag(self.request_get, settings.TEST_TAG)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
-        response = metrics_domain(self.request_post)
+        response = tag(self.request_post, settings.TEST_TAG)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
-    def test_metrics_handles_logged_in_user(self):
+    def test_tag_handles_logged_in_user(self):
         self.request_get.session = {
             'username': settings.TEST_USER,
             'password': settings.TEST_PASSWORD}
-        response = metrics_domain(self.request_get)
+        response = tag(self.request_get, settings.TEST_TAG)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Domain Network RX <span class="caret"></span>')
-        self.assertNotContains(response, 'Container IO read <span class="caret"></span>')
+        self.assertContains(response, '<h3><b>{tag}</b> Tag</h3>'.format(tag=settings.TEST_TAG))
 
 
-class Metrics_Container_ViewTests(TestCase):
+class Domain_ViewTests(TestCase):
 
     @classmethod
     def setUpClass(cls):
         request_factory = RequestFactory()
-        cls.request_get = request_factory.get('/metrics/container/', follow=True)
-        cls.request_post = request_factory.post('/metrics/container/', follow=True)
+        cls.url = '/domains/{}'.format(settings.TEST_DOMAIN)
+        cls.request_get = request_factory.get(cls.url, follow=True)
+        cls.request_post = request_factory.post(cls.url, follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
 
-    def test_metrics_name_resolves_to_metrics_url(self):
-        url = reverse('metrics_container')
-        self.assertEqual(url, '/metrics/container/')
+    def test_domain_name_resolves_to_metrics_url(self):
+        url = reverse('domain', args=(settings.TEST_DOMAIN,))
+        self.assertEqual(url, self.url)
 
-    def test_metrics_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/container/')
-        self.assertEqual(resolver.func, metrics_container)
+    def test_domain_url_resolves_to_metrics_view(self):
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.func, domain)
 
-    def test_metrics_doesnt_allow_anonymous(self):
-        response = metrics_container(self.request_get)
+    def test_domain_doesnt_allow_anonymous(self):
+        response = domain(self.request_get, settings.TEST_DOMAIN)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
-        response = metrics_container(self.request_post)
+        response = domain(self.request_post, settings.TEST_DOMAIN)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
-    def test_metrics_handles_logged_in_user(self):
+    def test_domain_handles_logged_in_user(self):
         self.request_get.session = {
             'username': settings.TEST_USER,
             'password': settings.TEST_PASSWORD}
-        response = metrics_container(self.request_get)
+        response = domain(self.request_get, settings.TEST_DOMAIN)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Container IO read <span class="caret"></span>')
-        self.assertNotContains(response, 'Domain Network RX <span class="caret"></span>')
+        self.assertContains(response, '<td>{id}</td>'.format(id=settings.TEST_DOMAIN))
+
+
+class Containers_ViewTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.url = '/containers/{}'.format(settings.TEST_CONTAINER)
+        cls.request_get = request_factory.get(cls.url, follow=True)
+        cls.request_post = request_factory.post(cls.url, follow=True)
+        cls.request_get.session = {}
+        cls.request_post.session = {}
+
+    def test_containers_name_resolves_to_containers_url(self):
+        url = reverse('containers', args=(settings.TEST_CONTAINER,))
+        self.assertEqual(url, self.url)
+
+    def test_containers_url_resolves_to_containers_view(self):
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.func, containers)
+
+    def test_containers_doesnt_allow_anonymous(self):
+        response = containers(self.request_get, settings.TEST_CONTAINER)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+        response = containers(self.request_post, settings.TEST_CONTAINER)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_containers_handles_logged_in_user(self):
+        self.request_get.session = {
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD}
+        response = containers(self.request_get, settings.TEST_CONTAINER)
+        self.request_get.session = {}
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<td>{id}</td>'.format(id=settings.TEST_CONTAINER))
 
 
 class ContainerMetricViewTests(TestCase):
@@ -306,7 +345,7 @@ class ContainerMetricViewTests(TestCase):
 
     def test_IOReadContainerMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/container/io.read/1/')
-        self.assertEqual(resolver.func, container)
+        self.assertEqual(resolver.func, container_metrics)
 
     def test_IOWriteContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_io_write', args=(1,))
@@ -314,7 +353,7 @@ class ContainerMetricViewTests(TestCase):
 
     def test_IOWriteContainerMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/container/io.write/1/')
-        self.assertEqual(resolver.func, container)
+        self.assertEqual(resolver.func, container_metrics)
 
     def test_NetworkRXContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_net_rx', args=(1,))
@@ -322,7 +361,7 @@ class ContainerMetricViewTests(TestCase):
 
     def test_NetworkRXContainerMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/container/net.rx/1/')
-        self.assertEqual(resolver.func, container)
+        self.assertEqual(resolver.func, container_metrics)
 
     def test_NetworkTXContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_net_tx', args=(1,))
@@ -330,7 +369,7 @@ class ContainerMetricViewTests(TestCase):
 
     def test_NetworkTXContainerMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/container/net.tx/1/')
-        self.assertEqual(resolver.func, container)
+        self.assertEqual(resolver.func, container_metrics)
 
     def test_CPUContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_cpu', args=(1,))
@@ -338,7 +377,7 @@ class ContainerMetricViewTests(TestCase):
 
     def test_CPUContainerMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/container/cpu/1/')
-        self.assertEqual(resolver.func, container)
+        self.assertEqual(resolver.func, container_metrics)
 
     def test_MemoryContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_mem', args=(1,))
@@ -346,16 +385,16 @@ class ContainerMetricViewTests(TestCase):
 
     def test_MemoryContainerMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/container/mem/1/')
-        self.assertEqual(resolver.func, container)
+        self.assertEqual(resolver.func, container_metrics)
 
     def test_container_view_doesnt_allows_anonymous(self):
-        response = container(
+        response = container_metrics(
             self.request_get, 1, **{'model': IOReadContainerMetric})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
-        response = container(
+        response = container_metrics(
             self.request_post, 1, **{'model': IOReadContainerMetric})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
@@ -366,7 +405,7 @@ class ContainerMetricViewTests(TestCase):
             'username': settings.TEST_USER,
             'password': settings.TEST_PASSWORD,
         }
-        response = container(
+        response = container_metrics(
             self.request_post, 1, **{'model': IOReadContainerMetric}
         )
         self.request_post.session = {}
@@ -426,7 +465,7 @@ class DomainMetricViewTests(TestCase):
 
     def test_NetworkRXDomainMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/domain/net.rx/1/')
-        self.assertEqual(resolver.func, domain)
+        self.assertEqual(resolver.func, domain_metrics)
 
     def test_NetworkTXDomainMetric_name_resolves_to_metrics_url(self):
         url = reverse('domain_net_tx', args=(1,))
@@ -434,7 +473,7 @@ class DomainMetricViewTests(TestCase):
 
     def test_NetworkTXDomainMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/domain/net.tx/1/')
-        self.assertEqual(resolver.func, domain)
+        self.assertEqual(resolver.func, domain_metrics)
 
     def test_HitsDomainMetric_name_resolves_to_metrics_url(self):
         url = reverse('domain_hits', args=(1,))
@@ -442,16 +481,16 @@ class DomainMetricViewTests(TestCase):
 
     def test_HitsDomainMetric_url_resolves_to_metrics_view(self):
         resolver = resolve('/metrics/domain/hits/1/')
-        self.assertEqual(resolver.func, domain)
+        self.assertEqual(resolver.func, domain_metrics)
 
     def test_domain_view_doesnt_allows_anonymous(self):
-        response = domain(
+        response = domain_metrics(
             self.request_get, 1, **{'model': NetworkRXDomainMetric})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
-        response = domain(
+        response = domain_metrics(
             self.request_post, 1, **{'model': NetworkRXDomainMetric})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
@@ -462,7 +501,7 @@ class DomainMetricViewTests(TestCase):
             'username': settings.TEST_USER,
             'password': settings.TEST_PASSWORD,
         }
-        response = domain(
+        response = domain_metrics(
             self.request_post, 1, **{'model': NetworkRXDomainMetric})
         self.request_post.session = {}
         self.assertEqual(response.status_code, 200)

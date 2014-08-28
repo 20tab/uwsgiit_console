@@ -173,6 +173,8 @@ def domains(request):
     new_domain = NewDomainForm()
     calendar = CalendarForm()
 
+    tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
+
     if request.POST:
         if 'name' in request.POST:
             new_domain = NewDomainForm(request.POST)
@@ -181,7 +183,7 @@ def domains(request):
                 client.add_domain(name)
                 new_domain = NewDomainForm()
         else:
-            domain_form = DomainForm(request.POST)
+            domain_form = DomainForm(data=request.POST, choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 did = cd['did']
@@ -203,12 +205,9 @@ def domains(request):
 
     doms = sorted(doms, key=lambda k: k['name'])
     doms = sorted(doms, key=lambda k: k['key_name'])
-    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
     domains_list = []
     for d in doms:
-        form = DomainForm(initial={'did': d['id']}, prefix=d['id'])
-        form.fields['tags'].widget.choices = tags_list
-        form.fields['tags'].initial = d['tags']
+        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], choices=tags_list)
         domains_list.append((d, form))
 
     res['domains'] = domains_list
@@ -227,28 +226,26 @@ def domain(request, id):
         request.session.get('password'),
         settings.CONSOLE_API)
 
+    tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
+
     if request.POST:
-        if 'did' in request.POST:
-            domain_form = DomainForm(request.POST)
+        if u'did' in request.POST:
+            domain_form = DomainForm(data=request.POST, choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
-                did = cd['did']
                 params = {}
-                if u'tags'.format(did) in request.POST:
-                    params['tags'] = request.POST.getlist(u'{}-tags'.format(did))
-                if u'note' in request.POST:
-                    params['note'] = cd['note']
-                client.update_domain(did, params)
-    elif 'del' in request.GET:
+                if u'tags' in cd:
+                    params[u'tags'] = cd[u'tags']
+                if u'note' in cd:
+                    params[u'note'] = cd[u'note']
+                client.update_domain(id, params)
+    elif u'del' in request.GET:
         name = request.GET['del']
         client.delete_domain(name)
 
     domain = client.domain(id).json()
-    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
-    form = DomainForm(initial={'did': id}, prefix=id)
-    form.fields['tags'].widget.choices = tags_list
-    form.fields['tags'].initial = domain['tags']
-    form.fields['note'].initial = domain['note']
+    form = DomainForm(choices=tags_list, initial={
+        'did': id, 'tags': domain['tags'], 'note': domain['note']})
 
     del domain['tags']
     del domain['note']
@@ -292,9 +289,11 @@ def tag(request, tag):
         settings.CONSOLE_API)
     doms = client.domains(tags=[tag]).json()
     domains = []
+    tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
+
     if request.POST:
-        if 'did' in request.POST:
-            domain_form = DomainForm(request.POST)
+        if '{}-did' in request.POST:
+            domain_form = DomainForm(request.POST, choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 did = cd['did']
@@ -306,11 +305,8 @@ def tag(request, tag):
         name = request.GET['del']
         client.delete_domain(name)
 
-    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
     for d in doms:
-        form = DomainForm(initial={'did': d['id']}, prefix=d['id'])
-        form.fields['tags'].widget.choices = tags_list
-        form.fields['tags'].initial = d['tags']
+        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], choices=tags_list)
         domains.append((d, form))
     res['tag'] = tag
     res['tagged_domains'] = domains

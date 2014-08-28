@@ -1,55 +1,85 @@
 {% extends 'index.html' %}
 
+{% block extra_head %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}js/jquery.tablesorter.min.js"></script>
+{% endblock %}
+
 {% block content %}
     <h3><b>{{ tag }}</b> Tag</h3>
-    <h4>Containers</h4>
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-            <tr>
-                <th>UID</th>
-                <th>Name</th>
-                <th>Hostname</th>
-                <th>Server</th>
-                <th>Tags</th>
-            </tr>
-            {% for c in tagged_containers %}
-            <tr>
-                <td><a href="{% url 'containers' id=c.uid %}">{{ c.uid }}</a></td>
-                <td>{{ c.name }}</td>
-                <td>{{ c.hostname }}</td>
-                <td>{{ c.server }}</td>
-                <td>{{ c.tags }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-    <h4>Domains</h4>
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>UUID</th>
-                <th>Tags</th>
-            </tr>
-            {% for d in tagged_domains %}
-            <tr>
-                <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
-                <td>{{ d.0.name }}</td>
-                <td>{{ d.0.uuid }}</td>
-                <td>
-                    <form class="inline form-inline" role="form" action="{% url 'tag' tag %}" method="post">{% csrf_token %}
-                        <input name="did" value="{{ d.0.id }}" type="hidden">
-                        {{ d.1.tags }}
-                        <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
-                    </form>
+    {% if tagged_containers %}
+        <h4>Containers</h4>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered tablesorter">
+                <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>Name</th>
+                        <th>Hostname</th>
+                        <th>Server</th>
+                        <th>Tags</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in tagged_containers %}
+                    <tr>
+                        <td><a href="{% url 'containers' id=c.uid %}">{{ c.uid }}</a></td>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.hostname }}</td>
+                        <td>{{ c.server }}</td>
+                        <td>{{ c.tags }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        No Containers tagged<br/>
+    {% endif %}
 
-                    <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+    {% if tagged_domains %}
+        <h4>Domains</h4>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered tablesorter">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>UUID</th>
+                        <th>Tags</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in tagged_domains %}
+                    <tr>
+                        <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
+                        <td>{{ d.0.name }}</td>
+                        <td>{{ d.0.uuid }}</td>
+                        <td>
+                            <form class="inline form-inline" role="form" action="{% url 'tag' tag %}" method="post">{% csrf_token %}
+                                <input name="did" value="{{ d.0.id }}" type="hidden">
+                                {{ d.1.tags }}
+                                <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
+                            </form>
 
-                </td>
-            </tr>
-        {% endfor %}
+                            <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
 
-        </table>
-    </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        No Domains tagged<br/>
+    {% endif %}
+{% endblock %}
+
+{% block footer_js %}
+    {{ block.super }}
+    <script>
+        $(function(){
+            $(".tablesorter").tablesorter();
+        });
+    </script>
 {% endblock %}
