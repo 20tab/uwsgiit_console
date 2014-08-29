@@ -13,7 +13,7 @@ function clearGraph() {
 }
 
 
-function parseTimestamps(list, metric){
+function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
     var data = [];
 
     if (list.length < 2){
@@ -22,24 +22,32 @@ function parseTimestamps(list, metric){
 
     for (var i = 1; i < list.length; i++){
         var date = new Date(list[i][0] * 1000);
-        var value = list[i][1] - list[i-1][1];
-        if (value < 0){
-            value = list[i][1];
+        var value;
+        if (absoluteValues){
+            value = list[i][1]
         }
-
-        value = value / (1024*1024);
+        else{
+            value = list[i][1] - list[i-1][1];
+            if (value < 0){
+                value = list[i][1];
+            }
+        }
+        if (unitOfMeasure == 'bytes'){
+            value = value / (1024*1024);
+        }
 
         var date_value;
 
-        if (metric == 'hour'){
+        if (timeUnit == 'hour'){
             date_value = date.getHours();
         }
-        else if(metric == 'day'){
+        else if(timeUnit == 'day'){
             date_value = date.getUTCDate();
         }
-        else if(metric == 'month'){
+        else if(timeUnit == 'month'){
             date_value = date.getUTCMonth();
         }
+
         if(data[date_value] != undefined){
             data[date_value] += value;
         }
@@ -51,6 +59,7 @@ function parseTimestamps(list, metric){
     for(var el in data){
         res.push({x: parseInt(el), y: data[el]});
     }
+    console.log(res);
     return res;
 }
 
@@ -58,13 +67,20 @@ function parseTimestamps(list, metric){
 $(document).ready(function() {
     var frm = $('#calendar');
     frm.submit(function () {
+        $('#get-metrics').button('loading');
         $.ajax({
             type: frm.attr('method'),
             url: frm.attr('action'),
             data: frm.serialize(),
             dataType: 'json',
             success: function (data) {
-                data['stats'] = parseTimestamps(data['stats'], data['metric_type']);
+                data['stats'] = parseTimestamps(
+                    data['stats'],
+                    data['absolute_values'],
+                    data['unit_of_measure'],
+                    data['time_unit']
+                );
+
                 var metrics = {
                     color: palette.color(),
                     data: data['stats'],
@@ -118,11 +134,10 @@ $(document).ready(function() {
                 });
 
                 var timeFixture = new Rickshaw.Fixtures.Time();
-                var timeUnit = timeFixture.unit(data['metric_type']);
+                var timeUnit = timeFixture.unit(data['time_unit']);
                 var xAxis = new Rickshaw.Graph.Axis.Time( {
                   graph: graph,
                   timeUnit: timeUnit,
-                  timeFixture: timeFixture
                 });
                 xAxis.render();
 
@@ -130,9 +145,11 @@ $(document).ready(function() {
                     graph: graph
                 });
                 yAxis.render();
+                $('#get-metrics').button('reset');
             },
             error: function(data) {
                 console.log(data);
+                $('#get-metrics').button('reset');
             }
         });
         return false;

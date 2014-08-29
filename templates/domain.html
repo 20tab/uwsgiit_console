@@ -45,7 +45,7 @@
                     {% endfor %}
                         {{ domainform }}
                     </table>
-                    <button id="update-domain" type="submit" class="btn btn-primary submit-domain-form">
+                    <button id="update-domain" type="submit" data-loading-text="Loading..." class="btn btn-primary submit-domain-form"onclick="$('#update-domain').button('loading');">
                         Update
                     </button>
                 </form>
@@ -73,9 +73,9 @@
                     <form action="{% url 'domain_net_rx' domain.id %}" method="post" class="form-horizontal inline" id="calendar">
                         {% csrf_token %}
                         {{ calendar }}
-                        <button type="submit">Go</button>
+                        <button id="get-metrics" type="submit" data-loading-text="Loading..." class="btn btn-primary">Go</button>
                     </form>
-                    <button class="inline" onclick="clearGraph();">Clear Graphs</button>
+                    <button class="inline btn btn-primary" onclick="clearGraph();">Clear Graphs</button>
                     <div id="chart_container" class="clearfix">
                         <div id="chart"></div>
                         <div id="timeline"></div>

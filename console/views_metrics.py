@@ -11,7 +11,7 @@ from console.decorators import login_required
 
 def stats_render(request, client, metric, v_dict={}):
     get_metrics_without_parameters = True
-    metric_type = u'hour'
+    time_unit = u'hour'
     metric_name = u'Invalid date'
     if request.POST and request.is_ajax:
         calendar = CalendarForm(request.POST)
@@ -19,15 +19,16 @@ def stats_render(request, client, metric, v_dict={}):
             params = calendar.get_params()
             metric_name = calendar.metric_name()
             stats = metric.metrics(client, params)
-            metric_type = calendar.metric_type()
+            time_unit = calendar.time_unit()
             get_metrics_without_parameters = False
 
     if get_metrics_without_parameters:
         stats = metric.metrics(client)
 
     v_dict['stats'] = stats
-    v_dict['metric_type'] = metric_type
+    v_dict['time_unit'] = time_unit
     v_dict['metric_name'] = metric_name
+    v_dict['unit_of_measure'] = metric.unit_of_measure
     return HttpResponse(json.dumps(v_dict))
 
 
@@ -38,9 +39,7 @@ def container_metrics(request, container, **kwargs):
         request.session.get('password'),
         settings.CONSOLE_API)
     metric = kwargs['model'](container=container)
-    v_dict = {}
-    if 'absolute_value' in kwargs:
-        v_dict['absolute_value'] = True
+    v_dict = {'absolute_values': kwargs['absolute_values']}
     return stats_render(request, client, metric, v_dict)
 
 
@@ -51,5 +50,6 @@ def domain_metrics(request, domain, **kwargs):
         request.session.get('password'),
         settings.CONSOLE_API)
     metric = kwargs['model'](domain=domain)
-    v_dict = {'domains': client.domains().json()}
+    v_dict = {'absolute_values': kwargs['absolute_values'],
+              'domains': client.domains().json()}
     return stats_render(request, client, metric, v_dict)

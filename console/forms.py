@@ -151,7 +151,7 @@ class CalendarForm(forms.Form):
                     metric_name = str(data[u'day']) + '-' + metric_name
         return metric_name
 
-    def metric_type(self):
+    def time_unit(self):
         if self.has_value(u'day'):
             return u'hour'
         elif self.has_value(u'month'):

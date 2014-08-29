@@ -1,6 +1,7 @@
 jQuery(function($){
 
     $('button.submit-container-form').on('click', function(){
+        $(this).button('loading');
         $('#id_action').val($(this).attr('id'));
         $('#container-form').submit();
     });

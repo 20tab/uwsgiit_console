@@ -37,6 +37,10 @@ class GenericMetric(models.Model):
     class Meta:
         abstract = True
 
+    @property
+    def unit_of_measure(self):
+        return 'bytes'
+
 
 class ContainerMetric(GenericMetric):
 
@@ -168,6 +172,10 @@ class CPUContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'cpu', params).json()
 
+    @property
+    def unit_of_measure(self):
+        return 'ticks'
+
 
 # stores values from the container cgroup
 class MemoryContainerMetric(ContainerMetric):
@@ -196,6 +204,10 @@ class QuotaContainerMetric(ContainerMetric):
 class HitsDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
         return client.domain_metric(self.domain, 'hits', params).json()
+
+    @property
+    def unit_of_measure(self):
+        return 'hits'
 
 
 class NetworkRXDomainMetric(DomainMetric):
