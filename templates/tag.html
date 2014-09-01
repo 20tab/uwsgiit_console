@@ -1,8 +1,13 @@
 {% extends 'index.html' %}
 
+{% block extra_style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{ STATIC_URL }}tablesorter/css/theme.bootstrap.css">
+{% endblock %}
+
 {% block extra_head %}
     {{ block.super }}
-    <script src="{{ STATIC_URL }}js/jquery.tablesorter.min.js"></script>
+    <script src="{{ STATIC_URL }}tablesorter/js/jquery.tablesorter.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -27,7 +32,11 @@
                         <td>{{ c.name }}</td>
                         <td>{{ c.hostname }}</td>
                         <td>{{ c.server }}</td>
-                        <td>{{ c.tags }}</td>
+                        <td>
+                            {% for t in c.tags %}
+                                <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -52,18 +61,13 @@
                 <tbody>
                     {% for d in tagged_domains %}
                     <tr>
-                        <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
-                        <td>{{ d.0.name }}</td>
-                        <td>{{ d.0.uuid }}</td>
+                        <td><a href="{% url 'domain' id=d.id %}">{{ d.id }}</a></td>
+                        <td>{{ d.name }}</td>
+                        <td>{{ d.uuid }}</td>
                         <td>
-                            <form class="inline form-inline" role="form" action="{% url 'tag' tag %}" method="post">{% csrf_token %}
-                                <input name="did" value="{{ d.0.id }}" type="hidden">
-                                {{ d.1.tags }}
-                                <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
-                            </form>
-
-                            <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
-
+                            {% for t in d.tags %}
+                                <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
                         </td>
                     </tr>
                 {% endfor %}
@@ -79,7 +83,10 @@
     {{ block.super }}
     <script>
         $(function(){
-            $(".tablesorter").tablesorter();
+            $(".tablesorter").tablesorter(
+                {
+                    theme : 'bootstrap',
+                });
         });
     </script>
 {% endblock %}

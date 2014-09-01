@@ -83,7 +83,6 @@ def containers(request, id):
     if id:
         container = client.container(id).json()
         container_copy = container.copy()
-
         del container_copy['ssh_keys']
         del container_copy['distro']
         del container_copy['distro_name']
@@ -287,28 +286,8 @@ def tag(request, tag):
         request.session.get('username'),
         request.session.get('password'),
         settings.CONSOLE_API)
-    doms = client.domains(tags=[tag]).json()
-    domains = []
-    tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
 
-    if request.POST:
-        if '{}-did' in request.POST:
-            domain_form = DomainForm(request.POST, choices=tags_list)
-            if domain_form.is_valid():
-                cd = domain_form.cleaned_data
-                did = cd['did']
-                tags_post = []
-                if u'{}-tags'.format(did) in request.POST:
-                    tags_post = request.POST.getlist(u'{}-tags'.format(did))
-                client.update_domain(did, {'tags': tags_post})
-    elif 'del' in request.GET:
-        name = request.GET['del']
-        client.delete_domain(name)
-
-    for d in doms:
-        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], choices=tags_list)
-        domains.append((d, form))
     res['tag'] = tag
-    res['tagged_domains'] = domains
+    res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
     return main_render(request, 'tag.html', res, client)

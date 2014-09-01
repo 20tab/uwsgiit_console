@@ -16,6 +16,10 @@ body { padding-top: 70px; }
     margin-left: 0 !important;
 }
 
+.strip {
+background-color: #f6f6f6;
+}
+
 .inline{
     display: inline-block;
 }
@@ -25,12 +29,9 @@ body { padding-top: 70px; }
 }
 
 .margin-top {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
-#chart > svg{
-    margin-bottom: 10px;
-}
 .inline {
     display: inline;
 }
