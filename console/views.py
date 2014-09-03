@@ -172,7 +172,9 @@ def domains(request):
     new_domain = NewDomainForm()
     calendar = CalendarForm()
 
-    tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
+    all_tags = client.list_tags().json()
+
+    tags_list = [('', '')] + [(x['name'], x['name']) for x in all_tags]
 
     if request.POST:
         if 'name' in request.POST:
@@ -212,6 +214,7 @@ def domains(request):
     res['domains'] = domains_list
     res['new_domain'] = new_domain
     res['calendar'] = calendar
+    res['tags'] = all_tags
 
     return main_render(request, 'domains.html', res, client)
 

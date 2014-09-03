@@ -1,14 +1,4 @@
-{% extends 'index.html' %}
-
-{% block extra_style %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{{ STATIC_URL }}tablesorter/css/theme.bootstrap.css">
-{% endblock %}
-
-{% block extra_head %}
-    {{ block.super }}
-    <script src="{{ STATIC_URL }}tablesorter/js/jquery.tablesorter.min.js"></script>
-{% endblock %}
+{% extends 'sortable_table.html' %}
 
 {% block content %}
     <h3><b>{{ tag }}</b> Tag</h3>
@@ -77,16 +67,4 @@
     {% else %}
         No Domains tagged<br/>
     {% endif %}
-{% endblock %}
-
-{% block footer_js %}
-    {{ block.super }}
-    <script>
-        $(function(){
-            $(".tablesorter").tablesorter(
-                {
-                    theme : 'bootstrap',
-                });
-        });
-    </script>
 {% endblock %}

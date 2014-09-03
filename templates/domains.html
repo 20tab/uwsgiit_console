@@ -1,8 +1,5 @@
-{% extends 'index.html' %}
-{% block extra_head %}
-    {{ block.super }}
-    <script src="{{ STATIC_URL }}tablesorter/js/jquery.tablesorter.min.js"></script>
-{% endblock %}
+{% extends 'sortable_table.html' %}
+
 {% block content %}
 
     <div>
@@ -13,7 +10,11 @@
         </form>
     </div>
     <br>
-
+    <p>
+    {% for tag in tags %}
+        <button class="btn btn-default tag_filter" data-filter="{{ tag.name }}">{{ tag.name }}</button>
+    {% endfor %}
+    </p>
     <div class="table-responsive">
         <table class="table table-hover table-bordered tablesorter" id="domains-table">
             <thead>
@@ -26,7 +27,7 @@
             </thead>
             <tbody>
                 {% for d in domains %}
-                <tr>
+                <tr class="domain_row" data-category="{{ d.0.tags|join:' ' }}">
                     <td><a href="{% url 'domain' id=d.0.id %}">{{ d.0.id }}</a></td>
                     <td>{{ d.0.name }}</td>
                     <td>{{ d.0.uuid }}</td>
@@ -48,9 +49,5 @@
 
 {% block footer_js %}
     {{ block.super }}
-    <script>
-        $(function(){
-            $("#domains-table").tablesorter();
-        });
-    </script>
+    <script src="{{ STATIC_URL }}js/tag_filter.js"></script>
 {% endblock %}

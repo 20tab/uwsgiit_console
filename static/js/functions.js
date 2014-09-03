@@ -13,5 +13,4 @@ jQuery(function($){
         $('#id_action').val($(this).data('action'));
         $('#container-form').submit();
     });
-
 });
