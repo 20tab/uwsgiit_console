@@ -57,7 +57,7 @@ function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
         else if(timeUnit == 'month'){
             date_value = date.getUTCMonth();
         }
-
+        console.log(date.getMinutes(), date.getHours(), date.getUTCDate(), date.getUTCMonth());
         if(data[date_value] != undefined){
             data[date_value] += value;
         }
@@ -82,7 +82,7 @@ function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
         fixed_length = 12;
     }
     while(res.length < fixed_length){
-        res.push({x: res.length, y: undefined});
+        res.push({x: res.length, y: 0});
     }
     return res;
 }
