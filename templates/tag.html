@@ -1,70 +1,213 @@
 {% extends 'sortable_table.html' %}
 
+{% load console_tags %}
+
+{% block extra_style %}
+    {{ block.super }}
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/graph.css">
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/detail.css">
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/legend.css">
+{#  <link type="text/css" rel="stylesheet" href="css/lines.css">#}
+{% endblock %}
+{% block extra_head %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}rickshaw/vendor/d3.v3.js"></script>
+    <script src="{{ STATIC_URL }}rickshaw/rickshaw.js"></script>
+{% endblock %}
+
 {% block content %}
     <h3><b>{{ tag }}</b> Tag</h3>
     {% if tagged_containers %}
         <h4>Containers</h4>
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered tablesorter">
-                <thead>
-                    <tr>
-                        <th>UID</th>
-                        <th>Name</th>
-                        <th>Hostname</th>
-                        <th>Server</th>
-                        <th>Tags</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in tagged_containers %}
-                    <tr>
-                        <td><a href="{% url 'containers' id=c.uid %}">{{ c.uid }}</a></td>
-                        <td>{{ c.name }}</td>
-                        <td>{{ c.hostname }}</td>
-                        <td>{{ c.server }}</td>
-                        <td>
-                            {% for t in c.tags %}
-                                <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+        <ul class="nav nav-tabs">
+          <li class="{% if not active_panel %}active{% endif %}">
+              <a href="#container_list" data-toggle="tab">List</a>
+          </li>
+          <li{% if active_panel == 'metrics' %} class="active"{% endif %}>
+              <a href="#container_metrics" data-toggle="tab">Metrics</a>
+          </li>
+        </ul>
+
+        <!-- Tab panes -->
+    <div class="tab-content">
+
+        <!-- Container List -->
+        <div class="tab-pane{% if not active_panel %} active{% endif %}" id="container_list">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered tablesorter">
+                    <thead>
+                        <tr>
+                            <th>UID</th>
+                            <th>Name</th>
+                            <th>Hostname</th>
+                            <th>Server</th>
+                            <th>Tags</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in tagged_containers %}
+                        <tr>
+                            <td><a href="{% url 'containers' id=c.uid %}">{{ c.uid }}</a></td>
+                            <td>{{ c.name }}</td>
+                            <td>{{ c.hostname }}</td>
+                            <td>{{ c.server }}</td>
+                            <td>
+                                {% for t in c.tags %}
+                                    <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+
+        <!--Container Metrics -->
+        <div class="tab-pane{% if active_panel == 'container_metrics' %} active{% endif %}" id="container_metrics">
+            <div class="row margin-top">
+                <div class="col-sm-3 col-lg-2">
+                    <ul class="nav nav-pills nav-stacked">
+                        <li class="{% if not active_panel %}active{% endif %}">
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_io_read_per_tag' tag %}'); clearGraph();">Container IO read</a>
+                        </li>
+                        <li{% if active_panel == 'container_io_write_per_tag' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_io_write_per_tag' tag %}'); clearGraph();">Container IO write</a>
+                        </li>
+                        <li{% if active_panel == 'container_net_rx_per_tag' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_net_rx_per_tag' tag %}'); clearGraph();">Container NET rx</a>
+                        </li>
+                        <li{% if active_panel == 'container_net_tx_per_tag' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_net_tx_per_tag' tag %}'); clearGraph();">Container NET tx</a>
+                        </li>
+                        <li{% if active_panel == 'container_cpu_per_tag' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_cpu_per_tag' tag %}'); clearGraph();">Container cpu</a>
+                        </li>
+                        <li{% if active_panel == 'container_mem_per_tag' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_mem_per_tag' tag %}'); clearGraph();">Container mem</a>
+                        </li>
+                        <li{% if active_panel == 'container_quota_per_tag' %} class="active"{% endif %}>
+                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'container_quota_per_tag' tag %}'); clearGraph();">Container quota</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-sm-9 col-lg-10">
+                    <form action="{% url 'container_io_read_per_tag' tag %}" method="post" class="form-horizontal inline" id="calendar">
+                        {% csrf_token %}
+                        {{ calendar }}
+                        <button id="get-metrics" type="submit" data-loading-text="Loading..." class="btn btn-primary">Go</button>
+                    </form>
+                    <button class="inline btn btn-primary" onclick="clearGraph();">Clear Graphs</button>
+                    <div id="chart_container" class="clearfix">
+                        <div id="chart"></div>
+                        <div id="timeline"></div>
+                        <div id="legend_container">
+                            <div id="smoother" title="Smoothing"></div>
+                            <div id="legend"></div>
+                        </div>
+                        <div id="slider"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% else %}
         No Containers tagged<br/>
     {% endif %}
 
     {% if tagged_domains %}
         <h4>Domains</h4>
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered tablesorter">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>UUID</th>
-                        <th>Tags</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for d in tagged_domains %}
-                    <tr>
-                        <td><a href="{% url 'domain' id=d.id %}">{{ d.id }}</a></td>
-                        <td>{{ d.name }}</td>
-                        <td>{{ d.uuid }}</td>
-                        <td>
-                            {% for t in d.tags %}
-                                <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <ul class="nav nav-tabs">
+          <li class="{% if not active_panel %}active{% endif %}">
+              <a href="#domain_list" data-toggle="tab">Info</a>
+          </li>
+          <li{% if active_panel == 'domain_metrics' %} class="active"{% endif %}>
+              <a href="#domain_metrics" data-toggle="tab">Metrics</a>
+          </li>
+        </ul>
+
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+
+            <!-- DOMAIN LIST -->
+            <div class="tab-pane{% if not active_panel %} active{% endif %}" id="domain_list">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered tablesorter">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>UUID</th>
+                                <th>Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in tagged_domains %}
+                            <tr>
+                                <td><a href="{% url 'domain' id=d.id %}">{{ d.id }}</a></td>
+                                <td>{{ d.name }}</td>
+                                <td>{{ d.uuid }}</td>
+                                <td>
+                                    {% for t in d.tags %}
+                                        <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DOMAIN METRICS -->
+            <div class="tab-pane{% if active_panel == 'domain_metrics' %} active{% endif %}" id="domain_metrics">
+                <div class="row margin-top">
+                    <div class="col-sm-3 col-lg-2">
+                        <ul class="nav nav-pills nav-stacked">
+                            <li class="{% if not active_panel %}active{% endif %}">
+                                <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'domain_net_rx_per_tag' tag %}'); clearGraph();">Domain Network RX</a>
+                            </li>
+                            <li{% if active_panel == 'domain_net_tx_per_tag' %} class="active"{% endif %}>
+                                <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'domain_net_tx_per_tag' tag %}'); clearGraph();">Domain Network TX</a>
+                            </li>
+                            <li{% if active_panel == 'domain_hits_per_tag' %} class="active"{% endif %}>
+                                <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'domain_hits_per_tag' tag %}'); clearGraph();">Domain Hits</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-sm-9 col-lg-10">
+                        <form action="{% url 'domain_net_rx_per_tag' tag %}" method="post" class="form-horizontal inline" id="calendar">
+                            {% csrf_token %}
+                            {{ calendar }}
+                            <button id="get-metrics" type="submit" data-loading-text="Loading..." class="btn btn-primary">Go</button>
+                        </form>
+                        <button class="inline btn btn-primary" onclick="clearGraph();">Clear Graphs</button>
+                        <div id="chart_container" class="clearfix">
+                            <div id="chart"></div>
+                            <div id="timeline"></div>
+                            <div id="legend_container">
+                                <div id="smoother" title="Smoothing"></div>
+                                <div id="legend"></div>
+                            </div>
+                            <div id="slider"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     {% else %}
         No Domains tagged<br/>
     {% endif %}
 {% endblock %}
+
+
+{% block footer_js %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}js/metrics.js"></script>
+{% endblock %}
+

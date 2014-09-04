@@ -25,9 +25,47 @@ function clearGraph() {
     palette = new Rickshaw.Color.Palette();
 }
 
+function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit){
+
+    var data = {};
+
+    for (i in list){
+        var metric = parseTimestamps(list[i], absoluteValues, unitOfMeasure, timeUnit);
+        for (j in metric){
+            if(data[j] != undefined){
+                data[j] += metric[j];
+            }
+            else{
+                data[j] = metric[j];
+            }
+        }
+    }
+
+    var res = [];
+
+    for(var el in data){
+        res.push({x: parseInt(el), y: data[el]});
+    }
+    var fixed_length;
+
+    if (timeUnit == 'hour'){
+        fixed_length = 24;
+    }
+    else if(timeUnit == 'day'){
+        fixed_length = 31;
+    }
+    else if(timeUnit == 'month'){
+        fixed_length = 12;
+    }
+    while(res.length < fixed_length){
+        res.push({x: res.length, y: 0});
+    }
+    return res;
+}
+
 
 function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
-    var data = [];
+    var data = {};
 
     if (list.length < 2){
         return [];
@@ -68,26 +106,7 @@ function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
             data[date_value] = value;
         }
     }
-    var res = [];
-    for(var el in data){
-        res.push({x: parseInt(el), y: data[el]});
-    }
-
-    var fixed_length;
-
-    if (timeUnit == 'hour'){
-        fixed_length = 24;
-    }
-    else if(timeUnit == 'day'){
-        fixed_length = 31;
-    }
-    else if(timeUnit == 'month'){
-        fixed_length = 12;
-    }
-    while(res.length < fixed_length){
-        res.push({x: res.length, y: 0});
-    }
-    return res;
+    return data;
 }
 
 
@@ -101,6 +120,7 @@ $(document).ready(function() {
             data: frm.serialize(),
             dataType: 'json',
             success: function (data) {
+                console.log(data);
                 if (data['metric_name'] == 'Invalid date'){
                     alert('Invalid date');
                     $('#get-metrics').button('reset');
@@ -111,7 +131,7 @@ $(document).ready(function() {
                 }
                 last_graph_time_unit = data['time_unit'];
 
-                data['stats'] = parseTimestamps(
+                data['stats'] = combineMultipleMetrics(
                     data['stats'],
                     data['absolute_values'],
                     data['unit_of_measure'],

@@ -9,7 +9,12 @@ from console.forms import CalendarForm
 from console.decorators import login_required
 
 
-def stats_render(request, client, metric, v_dict={}):
+def stats_render(request, metrics, **kwargs):
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+
     time_unit = u'hour'
     metric_name = u'Invalid date'
     stats = []
@@ -18,34 +23,50 @@ def stats_render(request, client, metric, v_dict={}):
         if calendar.is_valid():
             params = calendar.get_params()
             metric_name = calendar.metric_name()
-            stats = metric.metrics(client, params)
             time_unit = calendar.time_unit()
+            stats = [metric.metrics(client, params) for metric in metrics]
 
+    v_dict = {}
     v_dict['stats'] = stats
     v_dict['time_unit'] = time_unit
     v_dict['metric_name'] = metric_name
-    v_dict['unit_of_measure'] = metric.unit_of_measure
+    v_dict['unit_of_measure'] = metrics[0].unit_of_measure
+    v_dict['absolute_values'] = kwargs['absolute_values']
     return HttpResponse(json.dumps(v_dict))
 
 
 @login_required
 def container_metrics(request, container, **kwargs):
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
-    metric = kwargs['model'](container=container)
-    v_dict = {'absolute_values': kwargs['absolute_values']}
-    return stats_render(request, client, metric, v_dict)
+    metrics = [kwargs['model'](container=container)]
+    return stats_render(request, metrics, **kwargs)
 
 
 @login_required
 def domain_metrics(request, domain, **kwargs):
+    metrics = [kwargs['model'](domain=domain)]
+    return stats_render(request, metrics, **kwargs)
+
+
+@login_required
+def container_metrics_per_tag(request, tag, **kwargs):
     client = UwsgiItClient(
         request.session.get('username'),
         request.session.get('password'),
         settings.CONSOLE_API)
-    metric = kwargs['model'](domain=domain)
-    v_dict = {'absolute_values': kwargs['absolute_values'],
-              'domains': client.domains().json()}
-    return stats_render(request, client, metric, v_dict)
+
+    containers = client.containers(tags=[tag]).json()
+    metrics = [kwargs['model'](container=c['uid']) for c in containers]
+
+    return stats_render(request, metrics, **kwargs)
+
+
+@login_required
+def domain_metrics_per_tag(request, tag, **kwargs):
+    client = UwsgiItClient(
+        request.session.get('username'),
+        request.session.get('password'),
+        settings.CONSOLE_API)
+    domains = client.domains(tags=[tag]).json()
+    metrics = [kwargs['model'](domain=d['id']) for d in domains]
+
+    return stats_render(request, metrics, **kwargs)

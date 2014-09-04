@@ -294,6 +294,7 @@ def tag(request, tag):
         settings.CONSOLE_API)
 
     res['tag'] = tag
+    res['calendar'] = CalendarForm()
     res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
     return main_render(request, 'tag.html', res, client)
