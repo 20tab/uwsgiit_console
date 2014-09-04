@@ -4,7 +4,7 @@ $(document).on('click', '.tag_filter', function(e) {
     var filter = $(this).attr('data-filter');
     $('.domain_row.hidden').removeClass('hidden');
     if (last_tag == undefined || last_tag != filter){
-        $('.domain_row[data-category!="'+filter+'"]').addClass('hidden');
+        $('.domain_row').not('[data-category*="'+filter+'"]').addClass('hidden');
         $('.tag_filter.active').removeClass('active');
         $('.tag_filter[data-filter="'+filter+'"]').addClass('active');
         last_tag = filter;

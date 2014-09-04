@@ -207,14 +207,17 @@ def domains(request):
     doms = sorted(doms, key=lambda k: k['name'])
     doms = sorted(doms, key=lambda k: k['key_name'])
     domains_list = []
+    used_tags = []
+
     for d in doms:
         form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], choices=tags_list)
         domains_list.append((d, form))
+        used_tags.extend([tag for tag in d['tags'] if tag not in used_tags])
 
     res['domains'] = domains_list
     res['new_domain'] = new_domain
     res['calendar'] = calendar
-    res['tags'] = all_tags
+    res['tags'] = used_tags
 
     return main_render(request, 'domains.html', res, client)
 
