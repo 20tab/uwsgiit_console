@@ -45,7 +45,7 @@ class GenericMetric(models.Model):
 class ContainerMetric(GenericMetric):
 
     def metrics(self, client, params={}):
-        if not params:
+        if not params:  #Gets Today metrics
             return self.api_metrics(client, params)
 
         params, year, month, day = date_from_params(params)
@@ -91,7 +91,7 @@ class DomainMetric(GenericMetric):
     domain = models.PositiveIntegerField()
 
     def metrics(self, client, params={}, container=None):
-        if not params:
+        if not params:  #Gets Today metrics
             results = []
             for elem in self.api_metrics(client, params):
                 if container:

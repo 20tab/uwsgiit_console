@@ -1,5 +1,8 @@
 var palette = new Rickshaw.Color.Palette();
 
+var monthNames = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
+
 var metrics_list = [];
 
 var shared_graph;
@@ -57,7 +60,7 @@ function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
         else if(timeUnit == 'month'){
             date_value = date.getUTCMonth();
         }
-        console.log(date.getMinutes(), date.getHours(), date.getUTCDate(), date.getUTCMonth());
+        // console.log(date.getMinutes(), date.getHours(), date.getUTCDate(), date.getUTCMonth());
         if(data[date_value] != undefined){
             data[date_value] += value;
         }
@@ -98,10 +101,14 @@ $(document).ready(function() {
             data: frm.serialize(),
             dataType: 'json',
             success: function (data) {
+                if (data['metric_name'] == 'Invalid date'){
+                    alert('Invalid date');
+                    $('#get-metrics').button('reset');
+                    return;
+                }
                 if (last_graph_time_unit != undefined && last_graph_time_unit != data['time_unit']){
                     clearGraph();
                 }
-
                 last_graph_time_unit = data['time_unit'];
 
                 data['stats'] = parseTimestamps(
@@ -120,7 +127,34 @@ $(document).ready(function() {
 
                 metrics_list.push(metrics);
 
+                if (data['unit_of_measure'] == 'bytes'){
+                    data['unit_of_measure'] = 'MB';
+                }
+
+                var xFormatter = function(x){
+                    if (data['time_unit'] == 'hour'){
+                        if (x < 12) {
+                            return x + ' AM';
+                        }
+                        else{
+                            return x + ' PM';
+                        }
+                    }
+                    else if (data['time_unit'] == 'year'){
+                        return x + ' ' + monthNames[x];
+                    }
+                    else{
+                        return x;
+                    }
+                };
+
+                var yFormatter = function(y) {
+                    return Math.round(y*10000)/10000 + ' ' + data['unit_of_measure']
+                };
+
+
                 var chart_id;
+                var legend_id;
 
                 if (shared_graph != undefined){
                     $('#chart_container').append(
@@ -149,7 +183,6 @@ $(document).ready(function() {
                     series: [metrics]
                 });
 
-                var legend_id;
 
                 if (shared_graph != undefined){
                     for (i in metrics_list){
@@ -164,11 +197,11 @@ $(document).ready(function() {
                         graph: shared_graph,
                         element: document.getElementById('legend_container')
                     });
-                    var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
+                    var shared_graph_shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
                         graph: shared_graph,
                         legend: shared_graph_legend
                     });
-                    var highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
+                    var shared_graph_highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
                         graph: shared_graph,
                         legend: shared_graph_legend
                     });
@@ -181,9 +214,8 @@ $(document).ready(function() {
 
                 var hoverDetail = new Rickshaw.Graph.HoverDetail( {
                     graph: graph,
-                    xFormatter: function(x) {
-                        return x;
-                    }
+                    xFormatter: xFormatter,
+                    yFormatter: yFormatter
                 });
 
                 var legend = new Rickshaw.Graph.Legend({
@@ -191,16 +223,16 @@ $(document).ready(function() {
                     element: document.querySelector(legend_id)
                 });
 
-                var timeFixture = new Rickshaw.Fixtures.Time();
-                var timeUnit = timeFixture.unit(data['time_unit']);
-                var xAxis = new Rickshaw.Graph.Axis.Time( {
+                var xAxis = new Rickshaw.Graph.Axis.X( {
                   graph: graph,
-                  timeUnit: timeUnit,
+                  orientation: 'top',
+                  tickFormat: xFormatter,
                 });
                 xAxis.render();
 
                 var yAxis = new Rickshaw.Graph.Axis.Y( {
-                    graph: graph
+                    graph: graph,
+                    tickFormat: yFormatter,
                 });
                 yAxis.render();
                 $('#get-metrics').button('reset');

@@ -109,7 +109,7 @@ class NewDomainForm(forms.Form):
 
 
 class CalendarForm(forms.Form):
-    year = forms.IntegerField(required=False)
+    year = forms.IntegerField()
     month = forms.ChoiceField(required=False,
                               widget=SelectAutocomplete(plugin_options={"width": "300px"}),
                               choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
@@ -122,6 +122,7 @@ class CalendarForm(forms.Form):
         self.fields['year'].initial = yesterday.year
         self.fields['month'].initial = yesterday.month
         self.fields['day'].initial = yesterday.day
+        self.fields['day'].widget.attrs['min'] = 1
 
     def has_value(self, field):
         data = self.cleaned_data

@@ -10,9 +10,9 @@ from console.decorators import login_required
 
 
 def stats_render(request, client, metric, v_dict={}):
-    get_metrics_without_parameters = True
     time_unit = u'hour'
     metric_name = u'Invalid date'
+    stats = []
     if request.POST and request.is_ajax:
         calendar = CalendarForm(request.POST)
         if calendar.is_valid():
@@ -20,10 +20,6 @@ def stats_render(request, client, metric, v_dict={}):
             metric_name = calendar.metric_name()
             stats = metric.metrics(client, params)
             time_unit = calendar.time_unit()
-            get_metrics_without_parameters = False
-
-    if get_metrics_without_parameters:
-        stats = metric.metrics(client)
 
     v_dict['stats'] = stats
     v_dict['time_unit'] = time_unit
