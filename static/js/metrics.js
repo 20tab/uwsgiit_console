@@ -25,7 +25,7 @@ function clearGraph() {
     palette = new Rickshaw.Color.Palette();
 }
 
-function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit){
+function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit, calculateAverage){
 
     var data = {};
 
@@ -44,7 +44,13 @@ function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit){
     var res = [];
 
     for(var el in data){
-        res.push({x: parseInt(el), y: data[el]});
+        if (calculateAverage){
+            var value = data[el][0] / data[el][1];
+        }
+        else{
+            var value = data[el][0];
+        }
+        res.push({x: parseInt(el), y: value});
     }
     var fixed_length;
 
@@ -93,17 +99,17 @@ function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
             date_value = date.getHours();
         }
         else if(timeUnit == 'day'){
-            date_value = date.getUTCDate();
+            date_value = date.getDate();
         }
         else if(timeUnit == 'month'){
-            date_value = date.getUTCMonth();
+            date_value = date.getMonth();
         }
-        // console.log(date.getMinutes(), date.getHours(), date.getUTCDate(), date.getUTCMonth());
         if(data[date_value] != undefined){
-            data[date_value] += value;
+            data[date_value][0] += value;
+            data[date_value][1] += 1;
         }
         else{
-            data[date_value] = value;
+            data[date_value] = [value, 1];
         }
     }
     return data;
@@ -120,7 +126,6 @@ $(document).ready(function() {
             data: frm.serialize(),
             dataType: 'json',
             success: function (data) {
-                console.log(data);
                 if (data['metric_name'] == 'Invalid date'){
                     alert('Invalid date');
                     $('#get-metrics').button('reset');
@@ -135,7 +140,8 @@ $(document).ready(function() {
                     data['stats'],
                     data['absolute_values'],
                     data['unit_of_measure'],
-                    data['time_unit']
+                    data['time_unit'],
+                    data['average']
                 );
 
                 var metrics = {

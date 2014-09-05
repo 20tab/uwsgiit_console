@@ -32,6 +32,7 @@ def stats_render(request, metrics, **kwargs):
     v_dict['metric_name'] = metric_name
     v_dict['unit_of_measure'] = metrics[0].unit_of_measure
     v_dict['absolute_values'] = kwargs['absolute_values']
+    v_dict['average'] = kwargs['average']
     return HttpResponse(json.dumps(v_dict))
 
 

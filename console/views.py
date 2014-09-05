@@ -102,8 +102,9 @@ def containers(request, id):
 
         link_to = [(x['uid'], u"{} ({})".format(
             x['name'], x['uid'])) for x in containers_actual_link_to]
-        containerform = ContainerForm(initial={'distro': "{}".format(container['distro'])},
-                                      tags_choices=tag_list, link_to_choices=link_to)
+        containerform = ContainerForm(
+            initial={'distro': "{}".format(container['distro'])},
+            tags_choices=tag_list, link_to_choices=link_to)
         sshform = SSHForm()
         calendar = CalendarForm()
 
