@@ -15,8 +15,7 @@ function clearGraph() {
         '<div id="chart"></div>\
         <div id="timeline"></div>\
         <div id="legend_container">\
-            <div id="smoother" title="Smoothing"></div>\
-            <div id="legend"></div>\
+            <div id="legend" class="legend-class"></div>\
         </div>');
     shared_graph = undefined;
     last_graph_time_unit = undefined;
@@ -180,23 +179,25 @@ $(document).ready(function() {
 
                 var chart_id;
                 var legend_id;
+                var legend_container_id;
 
                 if (shared_graph != undefined){
                     $('#chart_container').append(
                         '<div id="chart-' + data['metric_name'] + '"></div>\
                         <div id="timeline-' + data['metric_name'] + '"></div>\
                         <div id="legend_container-' + data['metric_name'] + '">\
-                            <div id="smoother-' + data['metric_name'] + '" title="Smoothing"></div>\
                             <div id="legend-' + data['metric_name'] + '"></div>\
                         </div>'
                     );
                     chart_id = '#chart-' + data['metric_name'];
                     legend_id = '#legend-' + data['metric_name'];
+                    legend_container_id = '#legend_container-' + data['metric_name'];
 
                 }
                 else{
                     chart_id = '#chart';
                     legend_id = '#legend';
+                    legend_container_id = '#legend_container';
                 }
 
                 var graph = new Rickshaw.Graph({
@@ -216,10 +217,10 @@ $(document).ready(function() {
                         shared_graph.series.pop();
                     }
                     shared_graph.update();
-                    $('#legend_container').empty();
+                    $('#legend').empty();
                     var shared_graph_legend = new Rickshaw.Graph.Legend({
                         graph: shared_graph,
-                        element: $('#legend_container')[0]
+                        element: $('#legend')[0]
                     });
                     var shared_graph_shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
                         graph: shared_graph,
@@ -260,7 +261,7 @@ $(document).ready(function() {
                 });
                 yAxis.render();
 
-                generateModal(data['metric_name'], chart_id, legend_id);
+                generateModal(data['metric_name'], chart_id, legend_id, legend_container_id);
                 $('#get-metrics').button('reset');
             },
             error: function(data) {
@@ -273,7 +274,7 @@ $(document).ready(function() {
 
 });
 
-function generateModal(id, chart_id, legend_id){
+function generateModal(id, chart_id, legend_id, legend_container_id){
     var modal = '<button class="btn btn-primary btn-lg btn-modal" data-toggle="modal" data-target="#modal-' + id + '">Open Graph</button>\
     <div class="modal fade" id="modal-' + id + '" tabindex="-1" role="dialog" aria-labelledby="label-' + id + '" aria-hidden="true">\
         <div class="modal-dialog">\
@@ -293,7 +294,7 @@ function generateModal(id, chart_id, legend_id){
         </div>\
     </div>'
 
-    $('#chart_container').append(modal);
+    $(legend_container_id).append(modal);
     $(chart_id).clone().appendTo('#modal-body-' + id);
     $(legend_id).clone().appendTo('#modal-body-' + id);
 }
