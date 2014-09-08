@@ -20,6 +20,14 @@ def date_from_params(params):
     return params, year, month, day
 
 
+class UwsgiItApi(models.Model):
+    url = models.CharField(max_length=512, unique=True)
+    name = models.CharField(max_length=255, blank=True)
+
+    def __unicode__(self):
+        return self.url
+
+
 class GenericMetric(models.Model):
     container = models.PositiveIntegerField()
 
@@ -31,7 +39,7 @@ class GenericMetric(models.Model):
     json = models.TextField(null=True)
 
     def __unicode__(self):
-        return "{year}-{month}-{day}".format(
+        return '{year}-{month}-{day}'.format(
             year=self.year, month=self.month, day=self.day)
 
     class Meta:

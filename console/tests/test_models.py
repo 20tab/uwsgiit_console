@@ -19,7 +19,7 @@ class MetricTesterMixin():
         cls.client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
     @classmethod
     def createTestMetrics(cls, metric_class):
@@ -89,7 +89,7 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
             client, params={
@@ -109,7 +109,7 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         results = NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
             client, params={
@@ -131,7 +131,7 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
             client, params={
@@ -152,7 +152,7 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         test_metric = NetworkRXContainerMetric(
             container=settings.TEST_CONTAINER,
@@ -209,7 +209,7 @@ class DomainMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         NetworkRXDomainMetric(domain=settings.TEST_DOMAIN).metrics(
             client, params={
@@ -229,7 +229,7 @@ class DomainMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         results = NetworkRXDomainMetric(domain=settings.TEST_DOMAIN).metrics(
             client, params={
@@ -251,7 +251,7 @@ class DomainMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         NetworkRXDomainMetric(domain=settings.TEST_DOMAIN).metrics(
             client, params={
@@ -272,7 +272,7 @@ class DomainMetricTests(MetricTesterMixin, TestCase):
         client = UwsgiItClient(
             settings.TEST_USER,
             settings.TEST_PASSWORD,
-            settings.CONSOLE_API)
+            settings.TEST_API_URL)
 
         test_metric = NetworkRXDomainMetric(
             container=settings.TEST_CONTAINER,

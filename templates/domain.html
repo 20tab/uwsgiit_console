@@ -6,6 +6,8 @@
     <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/graph.css">
     <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/detail.css">
     <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/legend.css">
+    <link href="{{ STATIC_URL }}lightbox/dist/ekko-lightbox.css" rel="stylesheet">
+
 {#  <link type="text/css" rel="stylesheet" href="css/lines.css">#}
 {% endblock %}
 {% block extra_head %}
@@ -83,7 +85,6 @@
                             <div id="smoother" title="Smoothing"></div>
                             <div id="legend"></div>
                         </div>
-                        <div id="slider"></div>
                     </div>
                 </div>
             </div>
@@ -94,4 +95,6 @@
 {% block footer_js %}
     {{ block.super }}
     <script src="{{ STATIC_URL }}js/metrics.js"></script>
+    <script src="{{ STATIC_URL }}lightbox/dist/ekko-lightbox.js"></script>
+
 {% endblock %}

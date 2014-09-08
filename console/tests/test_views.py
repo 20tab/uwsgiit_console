@@ -3,11 +3,13 @@ from django.core.urlresolvers import resolve, reverse
 from django.http import HttpResponseRedirect
 from django.conf import settings
 
+from uwsgiit.api import UwsgiItClient
+
 from console.views import home, me_page, logout, domains, domain,\
     tags, tag, containers
 from console.views_metrics import container_metrics, domain_metrics
 from console.forms import NewDomainForm, TagForm
-from console.models import IOReadContainerMetric, NetworkRXDomainMetric
+from console.models import IOReadContainerMetric, NetworkRXDomainMetric, UwsgiItApi
 #TODO TEST FORMS
 
 
@@ -15,13 +17,19 @@ class HomeViewTests(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.test_api = UwsgiItApi(
+            url=settings.TEST_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
         request_factory = RequestFactory()
         cls.request = request_factory.get('/', follow=True)
         cls.request.session = {}
         cls.request_post = request_factory.post('/', follow=True, data={
             'username': settings.TEST_USER,
             'password': settings.TEST_PASSWORD,
-            'action-login': 1})
+            'api_url': cls.test_api.id,
+            'action_login': 1})
         cls.request_post.session = {}
 
     def test_home_name_resolves_to_home_url(self):
@@ -38,23 +46,29 @@ class HomeViewTests(TestCase):
 
     def test_home_contains_right_html(self):
         response = home(self.request)
-        self.assertContains(response, '<input name="action-login" type="hidden" value="1">')
+        self.assertContains(response, 'id="id_action_login" name="action_login"')
         self.assertNotContains(response, 'href="#">Containers <span class="caret"></span></a>')
 
     def test_home_handles_logged_in_user(self):
         self.request.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD}
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = home(self.request)
         self.request.session = {}
         self.assertContains(response, 'href="#">Containers <span class="caret"></span></a>')
-        self.assertNotContains(response, '<input name="action-login" type="hidden" value="1">')
+        self.assertNotContains(response, 'id="id_action_login" name="action_login"')
 
     def test_home_view_login_redirects_to_me_html(self):
         response = home(self.request_post)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/me/')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
 
 
 class MeViewTests(TestCase):
@@ -88,8 +102,10 @@ class MeViewTests(TestCase):
 
     def test_me_handles_logged_in_user(self):
         self.request_get.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD}
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = me_page(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -127,8 +143,10 @@ class DomainsViewTests(TestCase):
 
     def test_domains_handles_logged_in_user(self):
         self.request_get.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD}
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = domains(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -166,8 +184,10 @@ class TagsViewTests(TestCase):
 
     def test_tags_handles_logged_in_user(self):
         self.request_get.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD}
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = tags(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -206,8 +226,10 @@ class Tag_ViewTests(TestCase):
 
     def test_tag_handles_logged_in_user(self):
         self.request_get.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD}
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = tag(self.request_get, settings.TEST_TAG)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -246,8 +268,10 @@ class Domain_ViewTests(TestCase):
 
     def test_domain_handles_logged_in_user(self):
         self.request_get.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD}
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = domain(self.request_get, settings.TEST_DOMAIN)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -286,12 +310,14 @@ class Containers_ViewTests(TestCase):
 
     def test_containers_handles_logged_in_user(self):
         self.request_get.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD}
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = containers(self.request_get, settings.TEST_CONTAINER)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '<td>{id}</td>'.format(id=settings.TEST_CONTAINER))
+        self.assertContains(response, '({id})</b>'.format(id=settings.TEST_CONTAINER))
 
 
 class ContainerMetricViewTests(TestCase):
@@ -389,27 +415,31 @@ class ContainerMetricViewTests(TestCase):
 
     def test_container_view_doesnt_allows_anonymous(self):
         response = container_metrics(
-            self.request_get, 1, **{'model': IOReadContainerMetric})
+            self.request_get, 1, **{'model': IOReadContainerMetric, 'absolute_values': False, 'average': False})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
         response = container_metrics(
-            self.request_post, 1, **{'model': IOReadContainerMetric})
+            self.request_post, 1, **{'model': IOReadContainerMetric, 'absolute_values': False, 'average': False})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
     def test_container_view_handles_logged_in_user(self):
         self.request_post.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD,
-        }
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = container_metrics(
-            self.request_post, 1, **{'model': IOReadContainerMetric}
-        )
+            self.request_post, 1, **{'model': IOReadContainerMetric, 'absolute_values': False, 'average': False})
         self.request_post.session = {}
         self.assertEqual(response.status_code, 200)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_metric.delete()
 
 
 class DomainMetricViewTests(TestCase):
@@ -485,32 +515,42 @@ class DomainMetricViewTests(TestCase):
 
     def test_domain_view_doesnt_allows_anonymous(self):
         response = domain_metrics(
-            self.request_get, 1, **{'model': NetworkRXDomainMetric})
+            self.request_get, 1, **{'model': NetworkRXDomainMetric, 'absolute_values': False, 'average': False})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
         response = domain_metrics(
-            self.request_post, 1, **{'model': NetworkRXDomainMetric})
+            self.request_post, 1, **{'model': NetworkRXDomainMetric, 'absolute_values': False, 'average': False})
         self.assertEqual(response.status_code, 302)
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/')
 
     def test_domain_view_handles_logged_in_user(self):
         self.request_post.session = {
-            'username': settings.TEST_USER,
-            'password': settings.TEST_PASSWORD,
-        }
+            'client': UwsgiItClient(
+                settings.TEST_USER,
+                settings.TEST_PASSWORD,
+                settings.TEST_API_URL)}
         response = domain_metrics(
-            self.request_post, 1, **{'model': NetworkRXDomainMetric})
+            self.request_post, 1, **{'model': NetworkRXDomainMetric, 'absolute_values': False, 'average': False})
         self.request_post.session = {}
         self.assertEqual(response.status_code, 200)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_metric.delete()
 
 
 class LogoutViewTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.test_api = UwsgiItApi(
+            url=settings.TEST_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
         request_factory = RequestFactory()
         cls.request_get = request_factory.get('/logout/', follow=True)
         cls.request_get.session = {}
@@ -541,7 +581,8 @@ class LogoutViewTest(TestCase):
         self.client.post('/', follow=True, data={
                 'username': settings.TEST_USER,
                 'password': settings.TEST_PASSWORD,
-                'action-login': 1})
+                'api_url': self.test_api.id,
+                'action_login': 1})
         response = self.client.get('/me/')
         self.assertEqual(response.status_code, 200)
 
@@ -554,7 +595,8 @@ class LogoutViewTest(TestCase):
         self.client.post('/', follow=True, data={
                 'username': settings.TEST_USER,
                 'password': settings.TEST_PASSWORD,
-                'action-login': 1})
+                'api_url': self.test_api.id,
+                'action_login': 1})
         response = self.client.get('/me/')
         self.assertEqual(response.status_code, 200)
 
@@ -562,3 +604,7 @@ class LogoutViewTest(TestCase):
         self.assertRedirects(response, '/')
         response = self.client.get('/me/', follow=True)
         self.assertRedirects(response, '/')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()

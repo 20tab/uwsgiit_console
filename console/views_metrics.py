@@ -10,10 +10,7 @@ from console.decorators import login_required
 
 
 def stats_render(request, metrics, **kwargs):
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     time_unit = u'hour'
     metric_name = u'Invalid date'
@@ -50,10 +47,7 @@ def domain_metrics(request, domain, **kwargs):
 
 @login_required
 def container_metrics_per_tag(request, tag, **kwargs):
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     containers = client.containers(tags=[tag]).json()
     metrics = [kwargs['model'](container=c['uid']) for c in containers]
@@ -63,10 +57,8 @@ def container_metrics_per_tag(request, tag, **kwargs):
 
 @login_required
 def domain_metrics_per_tag(request, tag, **kwargs):
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
+
     domains = client.domains(tags=[tag]).json()
     metrics = [kwargs['model'](domain=d['id']) for d in domains]
 

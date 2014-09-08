@@ -14,25 +14,21 @@ def logout(request):
     return HttpResponseRedirect('/')
 
 
-def main_render(request, template, v_dict={}, client=None):
+def main_render(request, template, v_dict={}):
     login_form = LoginForm()
-    if 'action-login' in request.POST:
+    if 'action_login' in request.POST:
         login_form = LoginForm(request.POST)
         if login_form.is_valid():
             cd = login_form.cleaned_data
-            request.session['username'] = cd['username']
-            request.session['password'] = cd['password']
+            request.session['client'] = cd['client']
+
             return HttpResponseRedirect('/me/')
+
     v_dict['login_form'] = login_form
 
-    if (request.session.get('username', False) and
-       request.session.get('password', False)):
-        if client is None:
-            client = UwsgiItClient(
-                request.session.get('username'),
-                request.session.get('password'),
-                settings.CONSOLE_API)
+    client = request.session.get('client', False)
 
+    if client:
         v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
         v_dict['login_form'] = None
 
@@ -45,11 +41,7 @@ def home(request):
 
 @login_required
 def me_page(request):
-
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     me = client.me().json()
     v_dict = {'me': me}
@@ -69,17 +61,13 @@ def me_page(request):
     v_dict['me_form'] = me_form
     v_dict['distros'] = client.distros().json()
 
-    return main_render(request, 'me.html', v_dict, client)
+    return main_render(request, 'me.html', v_dict)
 
 
 @login_required
 def containers(request, id):
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
-
+    client = request.session.get('client')
     if id:
         container = client.container(id).json()
         container_copy = container.copy()
@@ -159,16 +147,13 @@ def containers(request, id):
         res['sshform'] = sshform
         res['calendar'] = calendar
         res['active_panel'] = active_panel
-    return main_render(request, 'containers.html', res, client)
+    return main_render(request, 'containers.html', res)
 
 
 @login_required
 def domains(request):
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     new_domain = NewDomainForm()
     calendar = CalendarForm()
@@ -220,17 +205,14 @@ def domains(request):
     res['calendar'] = calendar
     res['tags'] = used_tags
 
-    return main_render(request, 'domains.html', res, client)
+    return main_render(request, 'domains.html', res)
 
 
 @login_required
 def domain(request, id):
     calendar = CalendarForm()
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
 
@@ -259,17 +241,14 @@ def domain(request, id):
     res['calendar'] = calendar
     res['domain'] = domain
     res['domainform'] = form
-    return main_render(request, 'domain.html', res, client)
+    return main_render(request, 'domain.html', res)
 
 
 @login_required
 def tags(request):
     res = {}
     tagform = TagForm()
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     if request.POST:
         tagform = TagForm(request.POST)
@@ -283,19 +262,16 @@ def tags(request):
 
     res['tags'] = client.list_tags().json()
     res['tagform'] = tagform
-    return main_render(request, 'tags.html', res, client)
+    return main_render(request, 'tags.html', res)
 
 
 @login_required
 def tag(request, tag):
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     res['tag'] = tag
     res['calendar'] = CalendarForm()
     res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
-    return main_render(request, 'tag.html', res, client)
+    return main_render(request, 'tag.html', res)

@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 
 def login_required(function):
     def wrap(request, *args, **kwargs):
-        if request.session.get('username', False) and request.session.get('password', False):
+        if request.session.get('client', False):
             return function(request, *args, **kwargs)
         else:
             return HttpResponseRedirect('/')

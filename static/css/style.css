@@ -17,15 +17,11 @@ body { padding-top: 70px; }
 }
 
 .strip {
-background-color: #f6f6f6;
+    background-color: #f6f6f6;
 }
 
 .inline{
     display: inline-block;
-}
-
-#chart_container{
-    margin-top: 20px;
 }
 
 .margin-top {
@@ -38,4 +34,18 @@ background-color: #f6f6f6;
 
 .hidden {
     display: none;
+}
+
+.modal-dialog{
+    width: 1000px;
+}
+
+.modal-content {
+    width: 1000px;
+    margin-left: -200px;
+}
+
+.btn-modal {
+    margin-top: 0px;
+    background: #404040;
 }

@@ -2,23 +2,32 @@ import re
 from datetime import datetime, timedelta
 
 from django import forms
-from django.conf import settings
 from django.utils.dates import MONTHS
 
 from uwsgiit.api import UwsgiItClient
 from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
 
+from .models import UwsgiItApi
+
 
 class LoginForm(forms.Form):
-    username = forms.CharField(label=u'Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(label=u'Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    action_login = forms.IntegerField(widget=forms.HiddenInput(), initial=1)
+    username = forms.CharField(label=u'', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
+    password = forms.CharField(label=u'', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    api_url = forms.ModelChoiceField(queryset=UwsgiItApi.objects.none())
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        self.fields['api_url'].queryset = UwsgiItApi.objects.all()
+        self.fields['api_url'].initial = 1
 
     def clean(self):
         cd = super(LoginForm, self).clean()
         username = cd['username']
         password = cd['password']
-        client = UwsgiItClient(username, password, settings.CONSOLE_API)
-        me = client.me().json()
+        api_url = cd['api_url']
+        cd['client'] = UwsgiItClient(username, password, api_url.url)
+        me = cd['client'].me().json()
         if 'error' in me:
             raise forms.ValidationError(u'Username o password errate!')
         return cd
