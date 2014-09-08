@@ -1,9 +1,6 @@
 import json
 
-from django.conf import settings
 from django.http import HttpResponse
-
-from uwsgiit.api import UwsgiItClient
 
 from console.forms import CalendarForm
 from console.decorators import login_required

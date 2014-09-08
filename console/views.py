@@ -1,9 +1,9 @@
-from uwsgiit.api import UwsgiItClient
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+
+from console.models import QuotaContainerMetric
 from console.decorators import login_required
 from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
     DomainForm, NewDomainForm, CalendarForm
@@ -77,6 +77,10 @@ def containers(request, id):
         del container_copy['tags']
         #del container_copy['linked_to']
 
+        used_quota = client.container_metric(id, 'quota', None).json()[0][1]
+        used_quota /= 1024 * 1024
+
+        container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
         res['container_copy'] = container_copy
         res['container'] = container
         distros_list = client.distros().json()
