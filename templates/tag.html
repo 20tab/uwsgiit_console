@@ -4,15 +4,12 @@
 
 {% block extra_style %}
     {{ block.super }}
-    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/graph.css">
-    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/detail.css">
-    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/src/css/legend.css">
-{#  <link type="text/css" rel="stylesheet" href="css/lines.css">#}
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/rickshaw.min.css">
 {% endblock %}
 {% block extra_head %}
     {{ block.super }}
     <script src="{{ STATIC_URL }}rickshaw/vendor/d3.v3.js"></script>
-    <script src="{{ STATIC_URL }}rickshaw/rickshaw.js"></script>
+    <script src="{{ STATIC_URL }}rickshaw/rickshaw.min.js"></script>
 {% endblock %}
 
 {% block content %}
