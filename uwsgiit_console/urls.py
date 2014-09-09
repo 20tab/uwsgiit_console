@@ -8,8 +8,8 @@ admin.autodiscover()
 urlpatterns = patterns(
     '',
     url(r'^admin/', include(admin.site.urls)),
-
 )
+
 urlpatterns += patterns(
     'console.views',
     url(r'^$', 'home', name='home'),
