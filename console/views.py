@@ -3,7 +3,6 @@ from django.shortcuts import render_to_response
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 
-from console.models import QuotaContainerMetric
 from console.decorators import login_required
 from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
     DomainForm, NewDomainForm, CalendarForm
@@ -75,8 +74,8 @@ def containers(request, id):
         del container_copy['distro']
         del container_copy['distro_name']
         del container_copy['tags']
-        #del container_copy['linked_to']
 
+        # Get last quota metric
         used_quota = client.container_metric(id, 'quota', None).json()[0][1]
         used_quota /= 1024 * 1024
 
@@ -95,8 +94,9 @@ def containers(request, id):
         link_to = [(x['uid'], u"{} ({})".format(
             x['name'], x['uid'])) for x in containers_actual_link_to]
         containerform = ContainerForm(
-            initial={'distro': "{}".format(container['distro'])},
-            tags_choices=tag_list, link_to_choices=link_to)
+            tags_choices=tag_list, link_to_choices=link_to,
+            initial={'distro': "{}".format(container['distro']),
+                     'note': container['note']})
         sshform = SSHForm()
         calendar = CalendarForm()
 
@@ -108,7 +108,8 @@ def containers(request, id):
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
                     client.update_container(id, {'distro': cd['distro'],
-                                                 'tags': cd['tags']})
+                                                 'tags': cd['tags'],
+                                                 'note': cd['note']})
 
                     list_link_to = [x['uid'] for x in containers_actual_link_to]
 

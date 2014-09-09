@@ -79,14 +79,17 @@ class SSHForm(forms.Form):
 
 class ContainerForm(forms.Form):
     distro = forms.CharField(label=u'Distro', widget=forms.Select(choices=()))
+    note = forms.CharField(
+        widget=forms.Textarea(attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}),
+        required=False)
     tags = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(), required=False
-    )
+        choices=(),
+        required=False)
     link_to = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(), required=False
-    )
+        choices=(),
+        required=False)
 
     def __init__(self, *args, **kwargs):
         tags_choices = kwargs.pop('tags_choices')
