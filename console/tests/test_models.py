@@ -8,8 +8,7 @@ from django.conf import settings
 from uwsgiit.api import UwsgiItClient
 
 from console.utils import daterange
-from console.models import ContainerMetric, DomainMetric,\
-    NetworkRXContainerMetric, NetworkRXDomainMetric
+from console.models import *
 
 
 class MetricTesterMixin():
@@ -50,6 +49,11 @@ class MetricTesterMixin():
             test_metric.save()
             cls.test_metrics.append(test_metric)
 
+    @classmethod
+    def destroyTestMetrics(cls):
+        for metric in cls.test_metrics:
+            metric.delete()
+
 
 class ContainerMetricTests(MetricTesterMixin, TestCase):
 
@@ -59,6 +63,27 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         cls.today = date.today()
         cls.yesterday = cls.today - timedelta(1)
         cls.tomorrow = cls.today + timedelta(1)
+
+    def test_IOReadContainerMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(IOReadContainerMetric().unit_of_measure, 'bytes')
+
+    def test_IOWriteContainerMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(IOWriteContainerMetric().unit_of_measure, 'bytes')
+
+    def test_NetworkRXContainerMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(NetworkRXContainerMetric().unit_of_measure, 'bytes')
+
+    def test_NetworkTXContainerMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(NetworkTXContainerMetric().unit_of_measure, 'bytes')
+
+    def test_CPUContainerMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(CPUContainerMetric().unit_of_measure, 'ticks')
+
+    def test_MemoryContainerMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(MemoryContainerMetric().unit_of_measure, 'bytes')
+
+    def test_QuotaContainerMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(QuotaContainerMetric().unit_of_measure, 'bytes')
 
     def test_generic_metric_to_string_prints_date(self):
         self.assertEqual(str(self.test_metrics[0]), '2010-1-1')
@@ -170,6 +195,12 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         self.assertIn(test_metric.json[0], results)
         self.assertIn(test_metric.json[1], results)
 
+        test_metric.delete()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.destroyTestMetrics()
+
 
 class DomainMetricTests(MetricTesterMixin, TestCase):
 
@@ -179,6 +210,15 @@ class DomainMetricTests(MetricTesterMixin, TestCase):
         cls.today = date.today()
         cls.yesterday = cls.today - timedelta(1)
         cls.tomorrow = cls.today + timedelta(1)
+
+    def test_NetworkRXDomainMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(NetworkRXDomainMetric().unit_of_measure, 'bytes')
+
+    def test_NetworkTXDomainMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(NetworkTXDomainMetric().unit_of_measure, 'bytes')
+
+    def test_HitsDomainMetric_returns_right_unit_of_measure(self):
+        self.assertEqual(HitsDomainMetric().unit_of_measure, 'hits')
 
     def test_generic_metric_to_string_prints_date(self):
         self.assertEqual(str(self.test_metrics[0]), '2010-1-1')
@@ -290,3 +330,9 @@ class DomainMetricTests(MetricTesterMixin, TestCase):
 
         self.assertIn(test_metric.json[0], results)
         self.assertIn(test_metric.json[1], results)
+
+        test_metric.delete()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.destroyTestMetrics()

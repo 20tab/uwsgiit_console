@@ -5,12 +5,13 @@ from django.conf import settings
 
 from uwsgiit.api import UwsgiItClient
 
-from console.views import home, me_page, logout, domains, domain,\
-    tags, tag, containers
-from console.views_metrics import container_metrics, domain_metrics
 from console.forms import NewDomainForm, TagForm
-from console.models import IOReadContainerMetric, NetworkRXDomainMetric, UwsgiItApi
-#TODO TEST FORMS
+from console.views import home, me_page, logout, domains, domain, tags,\
+    tag, containers
+from console.views_metrics import container_metrics, domain_metrics,\
+    container_metrics_per_tag, domain_metrics_per_tag
+from console.models import IOReadContainerMetric, NetworkRXDomainMetric,\
+    UwsgiItApi
 
 
 class HomeViewTests(TestCase):
@@ -325,8 +326,8 @@ class ContainerMetricViewTests(TestCase):
     @classmethod
     def setUpClass(cls):
         request_factory = RequestFactory()
-        cls.request_get = request_factory.get('/metrics/container/io.read/1/', follow=True)
-        cls.request_post = request_factory.post('/metrics/container/io.read/1/', follow=True,
+        cls.request_get = request_factory.get('/metrics/container/io.read/id/1/', follow=True)
+        cls.request_post = request_factory.post('/metrics/container/io.read/id/1/', follow=True,
             data={'year': 2000, 'month': 1, 'day': 1})
         cls.request_get.session = {}
         cls.request_post.session = {}
@@ -367,51 +368,99 @@ class ContainerMetricViewTests(TestCase):
 
     def test_IOReadContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_io_read', args=(1,))
-        self.assertEqual(url, '/metrics/container/io.read/1/')
+        self.assertEqual(url, '/metrics/container/io.read/id/1/')
 
     def test_IOReadContainerMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/container/io.read/1/')
+        resolver = resolve('/metrics/container/io.read/id/1/')
         self.assertEqual(resolver.func, container_metrics)
 
     def test_IOWriteContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_io_write', args=(1,))
-        self.assertEqual(url, '/metrics/container/io.write/1/')
+        self.assertEqual(url, '/metrics/container/io.write/id/1/')
 
     def test_IOWriteContainerMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/container/io.write/1/')
+        resolver = resolve('/metrics/container/io.write/id/1/')
         self.assertEqual(resolver.func, container_metrics)
 
     def test_NetworkRXContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_net_rx', args=(1,))
-        self.assertEqual(url, '/metrics/container/net.rx/1/')
+        self.assertEqual(url, '/metrics/container/net.rx/id/1/')
 
     def test_NetworkRXContainerMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/container/net.rx/1/')
+        resolver = resolve('/metrics/container/net.rx/id/1/')
         self.assertEqual(resolver.func, container_metrics)
 
     def test_NetworkTXContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_net_tx', args=(1,))
-        self.assertEqual(url, '/metrics/container/net.tx/1/')
+        self.assertEqual(url, '/metrics/container/net.tx/id/1/')
 
     def test_NetworkTXContainerMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/container/net.tx/1/')
+        resolver = resolve('/metrics/container/net.tx/id/1/')
         self.assertEqual(resolver.func, container_metrics)
 
     def test_CPUContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_cpu', args=(1,))
-        self.assertEqual(url, '/metrics/container/cpu/1/')
+        self.assertEqual(url, '/metrics/container/cpu/id/1/')
 
     def test_CPUContainerMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/container/cpu/1/')
+        resolver = resolve('/metrics/container/cpu/id/1/')
         self.assertEqual(resolver.func, container_metrics)
 
     def test_MemoryContainerMetric_name_resolves_to_metrics_url(self):
         url = reverse('container_mem', args=(1,))
-        self.assertEqual(url, '/metrics/container/mem/1/')
+        self.assertEqual(url, '/metrics/container/mem/id/1/')
 
     def test_MemoryContainerMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/container/mem/1/')
+        resolver = resolve('/metrics/container/mem/id/1/')
         self.assertEqual(resolver.func, container_metrics)
+
+    def test_IOReadContainerMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('container_io_read_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/container/io.read/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_IOReadContainerMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/container/io.read/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, container_metrics_per_tag)
+
+    def test_IOWriteContainerMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('container_io_write_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/container/io.write/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_IOWriteContainerMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/container/io.write/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, container_metrics_per_tag)
+
+    def test_NetworkRXContainerMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('container_net_rx_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/container/net.rx/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_NetworkRXContainerMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/container/net.rx/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, container_metrics_per_tag)
+
+    def test_NetworkTXContainerMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('container_net_tx_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/container/net.tx/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_NetworkTXContainerMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/container/net.tx/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, container_metrics_per_tag)
+
+    def test_CPUContainerMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('container_cpu_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/container/cpu/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_CPUContainerMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/container/cpu/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, container_metrics_per_tag)
+
+    def test_MemoryContainerMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('container_mem_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/container/mem/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_MemoryContainerMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/container/mem/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, container_metrics_per_tag)
 
     def test_container_view_doesnt_allows_anonymous(self):
         response = container_metrics(
@@ -447,8 +496,8 @@ class DomainMetricViewTests(TestCase):
     @classmethod
     def setUpClass(cls):
         request_factory = RequestFactory()
-        cls.request_get = request_factory.get('/metrics/domain/net.rx/1/1/', follow=True)
-        cls.request_post = request_factory.post('/metrics/domain/net.rx/1/1/', follow=True,
+        cls.request_get = request_factory.get('/metrics/domain/net.rx/id/1/', follow=True)
+        cls.request_post = request_factory.post('/metrics/domain/net.rx/id/1/', follow=True,
             data={'year': 2000, 'month': 1, 'day': 1})
         cls.request_get.session = {}
         cls.request_post.session = {}
@@ -491,27 +540,51 @@ class DomainMetricViewTests(TestCase):
 
     def test_NetworkRXDomainMetric_name_resolves_to_metrics_url(self):
         url = reverse('domain_net_rx', args=(1,))
-        self.assertEqual(url, '/metrics/domain/net.rx/1/')
+        self.assertEqual(url, '/metrics/domain/net.rx/id/1/')
 
     def test_NetworkRXDomainMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/domain/net.rx/1/')
+        resolver = resolve('/metrics/domain/net.rx/id/1/')
         self.assertEqual(resolver.func, domain_metrics)
 
     def test_NetworkTXDomainMetric_name_resolves_to_metrics_url(self):
         url = reverse('domain_net_tx', args=(1,))
-        self.assertEqual(url, '/metrics/domain/net.tx/1/')
+        self.assertEqual(url, '/metrics/domain/net.tx/id/1/')
 
     def test_NetworkTXDomainMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/domain/net.tx/1/')
+        resolver = resolve('/metrics/domain/net.tx/id/1/')
         self.assertEqual(resolver.func, domain_metrics)
 
     def test_HitsDomainMetric_name_resolves_to_metrics_url(self):
         url = reverse('domain_hits', args=(1,))
-        self.assertEqual(url, '/metrics/domain/hits/1/')
+        self.assertEqual(url, '/metrics/domain/hits/id/1/')
 
     def test_HitsDomainMetric_url_resolves_to_metrics_view(self):
-        resolver = resolve('/metrics/domain/hits/1/')
+        resolver = resolve('/metrics/domain/hits/id/1/')
         self.assertEqual(resolver.func, domain_metrics)
+
+    def test_NetworkRXDomainMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('domain_net_rx_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/domain/net.rx/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_NetworkRXDomainMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/domain/net.rx/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, domain_metrics_per_tag)
+
+    def test_NetworkTXDomainMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('domain_net_tx_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/domain/net.tx/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_NetworkTXDomainMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/domain/net.tx/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, domain_metrics_per_tag)
+
+    def test_HitsDomainMetricPerTag_name_resolves_to_metrics_url(self):
+        url = reverse('domain_hits_per_tag', args=(settings.TEST_TAG,))
+        self.assertEqual(url, '/metrics/domain/hits/tag/{}/'.format(settings.TEST_TAG))
+
+    def test_HitsDomainMetricPerTag_url_resolves_to_metrics_view(self):
+        resolver = resolve('/metrics/domain/hits/tag/{}/'.format(settings.TEST_TAG))
+        self.assertEqual(resolver.func, domain_metrics_per_tag)
 
     def test_domain_view_doesnt_allows_anonymous(self):
         response = domain_metrics(
