@@ -12,4 +12,4 @@
 media/
 analysis
 francesco.ini
-uwsgiit_console/base_test.py
+uwsgiit_console/settings/base_test.py
