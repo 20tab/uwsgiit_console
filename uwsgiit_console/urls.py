@@ -48,7 +48,7 @@ urlpatterns += patterns(
     url(r'^metrics/container/net.tx/tag/(\w+)/$', 'container_metrics_per_tag',
         kwargs={'model': NetworkTXContainerMetric, 'absolute_values': False, 'average': False}, name='container_net_tx_per_tag'),
     url(r'^metrics/container/cpu/tag/(\w+)/$', 'container_metrics_per_tag',
-        kwargs={'model': CPUContainerMetric, 'absolute_values': False, 'average': False}, name='container_cpu_per_tag'),
+        kwargs={'model': CPUContainerMetric, 'absolute_values': False, 'average': True}, name='container_cpu_per_tag'),
     url(r'^metrics/container/mem/tag/(\w+)/$', 'container_metrics_per_tag',
         kwargs={'model': MemoryContainerMetric, 'absolute_values': True, 'average': True}, name='container_mem_per_tag'),
     url(r'^metrics/container/quota/tag/(\w+)/$', 'container_metrics_per_tag',
