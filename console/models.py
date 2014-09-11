@@ -20,6 +20,14 @@ def date_from_params(params):
     return params, year, month, day
 
 
+class UwsgiItApi(models.Model):
+    url = models.CharField(max_length=512, unique=True)
+    name = models.CharField(max_length=255, blank=True)
+
+    def __unicode__(self):
+        return self.url
+
+
 class GenericMetric(models.Model):
     container = models.PositiveIntegerField()
 
@@ -31,17 +39,21 @@ class GenericMetric(models.Model):
     json = models.TextField(null=True)
 
     def __unicode__(self):
-        return "{year}-{month}-{day}".format(
+        return '{year}-{month}-{day}'.format(
             year=self.year, month=self.month, day=self.day)
 
     class Meta:
         abstract = True
 
+    @property
+    def unit_of_measure(self):
+        return 'bytes'
+
 
 class ContainerMetric(GenericMetric):
 
     def metrics(self, client, params={}):
-        if not params:
+        if not params:  #Gets Today metrics
             return self.api_metrics(client, params)
 
         params, year, month, day = date_from_params(params)
@@ -87,7 +99,7 @@ class DomainMetric(GenericMetric):
     domain = models.PositiveIntegerField()
 
     def metrics(self, client, params={}, container=None):
-        if not params:
+        if not params:  #Gets Today metrics
             results = []
             for elem in self.api_metrics(client, params):
                 if container:
@@ -156,11 +168,19 @@ class NetworkRXContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'net.rx', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'Network RX'
+
 
 # stores values from the tuntap router
 class NetworkTXContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'net.tx', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Network TX'
 
 
 # stores values from the container cgroup
@@ -168,11 +188,23 @@ class CPUContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'cpu', params).json()
 
+    @property
+    def unit_of_measure(self):
+        return 'ticks'
+
+    @property
+    def verbose_name(self):
+        return 'CPU Ticks'
+
 
 # stores values from the container cgroup
 class MemoryContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'mem', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Memory'
 
 
 # stores values from the container cgroup
@@ -180,11 +212,19 @@ class IOReadContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'io.read', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'IO Read'
+
 
 # stores values from the container cgroup
 class IOWriteContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'io.write', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'IO Write'
 
 
 # uses perl Quota package
@@ -192,17 +232,37 @@ class QuotaContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'quota', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'Used Disk Space'
+
 
 class HitsDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
         return client.domain_metric(self.domain, 'hits', params).json()
+
+    @property
+    def unit_of_measure(self):
+        return 'hits'
+
+    @property
+    def verbose_name(self):
+        return 'Hits'
 
 
 class NetworkRXDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
         return client.domain_metric(self.domain, 'net.rx', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'Network RX'
+
 
 class NetworkTXDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
         return client.domain_metric(self.domain, 'net.tx', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Network TX'

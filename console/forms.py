@@ -2,23 +2,32 @@ import re
 from datetime import datetime, timedelta
 
 from django import forms
-from django.conf import settings
 from django.utils.dates import MONTHS
 
 from uwsgiit.api import UwsgiItClient
 from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
 
+from .models import UwsgiItApi
+
 
 class LoginForm(forms.Form):
-    username = forms.CharField(label=u'Username', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(label=u'Password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    action_login = forms.IntegerField(widget=forms.HiddenInput(), initial=1)
+    username = forms.CharField(label=u'', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
+    password = forms.CharField(label=u'', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    api_url = forms.ModelChoiceField(queryset=UwsgiItApi.objects.none())
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        self.fields['api_url'].queryset = UwsgiItApi.objects.all()
+        self.fields['api_url'].initial = 1
 
     def clean(self):
         cd = super(LoginForm, self).clean()
         username = cd['username']
         password = cd['password']
-        client = UwsgiItClient(username, password, settings.CONSOLE_API)
-        me = client.me().json()
+        api_url = cd['api_url']
+        cd['client'] = UwsgiItClient(username, password, api_url.url)
+        me = cd['client'].me().json()
         if 'error' in me:
             raise forms.ValidationError(u'Username o password errate!')
         return cd
@@ -32,7 +41,7 @@ class MeForm(forms.Form):
                                                           attrs={'class': 'form-control'}))
     re_password = forms.CharField(label=u'Retype password',
                                   widget=forms.PasswordInput(render_value=True,
-                                                          attrs={'class': 'form-control'}))
+                                                             attrs={'class': 'form-control'}))
     vat = forms.CharField(label=u'Vat', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}), required=False)
 
@@ -70,14 +79,17 @@ class SSHForm(forms.Form):
 
 class ContainerForm(forms.Form):
     distro = forms.CharField(label=u'Distro', widget=forms.Select(choices=()))
+    note = forms.CharField(
+        widget=forms.Textarea(attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}),
+        required=False)
     tags = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(), required=False
-    )
+        choices=(),
+        required=False)
     link_to = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(), required=False
-    )
+        choices=(),
+        required=False)
 
     def __init__(self, *args, **kwargs):
         tags_choices = kwargs.pop('tags_choices')
@@ -92,13 +104,16 @@ class TagForm(forms.Form):
 
 
 class DomainForm(forms.Form):
+
     did = forms.IntegerField(widget=forms.HiddenInput, required=False)
-    tags = forms.MultipleChoiceField(
-        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(), required=False
-    )
     note = forms.CharField(required=False, widget=forms.Textarea(
-        attrs={'cols': 50, 'rows': 2, 'class': 'form-control'}))
+        attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}))
+
+    def __init__(self, choices=(), *args, **kwargs):
+        super(DomainForm, self).__init__(*args, **kwargs)
+        self.fields['tags'] = forms.MultipleChoiceField(
+            widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
+            choices=choices, required=False)
 
 
 class NewDomainForm(forms.Form):
@@ -106,7 +121,7 @@ class NewDomainForm(forms.Form):
 
 
 class CalendarForm(forms.Form):
-    year = forms.IntegerField(required=False)
+    year = forms.IntegerField()
     month = forms.ChoiceField(required=False,
                               widget=SelectAutocomplete(plugin_options={"width": "300px"}),
                               choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
@@ -119,6 +134,7 @@ class CalendarForm(forms.Form):
         self.fields['year'].initial = yesterday.year
         self.fields['month'].initial = yesterday.month
         self.fields['day'].initial = yesterday.day
+        self.fields['day'].widget.attrs['min'] = 1
 
     def has_value(self, field):
         data = self.cleaned_data
@@ -148,7 +164,7 @@ class CalendarForm(forms.Form):
                     metric_name = str(data[u'day']) + '-' + metric_name
         return metric_name
 
-    def metric_type(self):
+    def time_unit(self):
         if self.has_value(u'day'):
             return u'hour'
         elif self.has_value(u'month'):

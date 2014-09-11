@@ -1,9 +1,8 @@
-from uwsgiit.api import UwsgiItClient
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+
 from console.decorators import login_required
 from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
     DomainForm, NewDomainForm, CalendarForm
@@ -14,25 +13,21 @@ def logout(request):
     return HttpResponseRedirect('/')
 
 
-def main_render(request, template, v_dict={}, client=None):
+def main_render(request, template, v_dict={}):
     login_form = LoginForm()
-    if 'action-login' in request.POST:
+    if 'action_login' in request.POST:
         login_form = LoginForm(request.POST)
         if login_form.is_valid():
             cd = login_form.cleaned_data
-            request.session['username'] = cd['username']
-            request.session['password'] = cd['password']
+            request.session['client'] = cd['client']
+
             return HttpResponseRedirect('/me/')
+
     v_dict['login_form'] = login_form
 
-    if (request.session.get('username', False) and
-       request.session.get('password', False)):
-        if client is None:
-            client = UwsgiItClient(
-                request.session.get('username'),
-                request.session.get('password'),
-                settings.CONSOLE_API)
+    client = request.session.get('client', False)
 
+    if client:
         v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
         v_dict['login_form'] = None
 
@@ -45,11 +40,7 @@ def home(request):
 
 @login_required
 def me_page(request):
-
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     me = client.me().json()
     v_dict = {'me': me}
@@ -69,27 +60,26 @@ def me_page(request):
     v_dict['me_form'] = me_form
     v_dict['distros'] = client.distros().json()
 
-    return main_render(request, 'me.html', v_dict, client)
+    return main_render(request, 'me.html', v_dict)
 
 
 @login_required
 def containers(request, id):
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
-
+    client = request.session.get('client')
     if id:
         container = client.container(id).json()
         container_copy = container.copy()
-
         del container_copy['ssh_keys']
         del container_copy['distro']
         del container_copy['distro_name']
         del container_copy['tags']
-        #del container_copy['linked_to']
 
+        # Get last quota metric
+        used_quota = client.container_metric(id, 'quota', None).json()[0][1]
+        used_quota /= 1024 * 1024
+
+        container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
         res['container_copy'] = container_copy
         res['container'] = container
         distros_list = client.distros().json()
@@ -103,8 +93,10 @@ def containers(request, id):
 
         link_to = [(x['uid'], u"{} ({})".format(
             x['name'], x['uid'])) for x in containers_actual_link_to]
-        containerform = ContainerForm(initial={'distro': "{}".format(container['distro'])},
-                                      tags_choices=tag_list, link_to_choices=link_to)
+        containerform = ContainerForm(
+            tags_choices=tag_list, link_to_choices=link_to,
+            initial={'distro': "{}".format(container['distro']),
+                     'note': container['note']})
         sshform = SSHForm()
         calendar = CalendarForm()
 
@@ -116,7 +108,8 @@ def containers(request, id):
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
                     client.update_container(id, {'distro': cd['distro'],
-                                                 'tags': cd['tags']})
+                                                 'tags': cd['tags'],
+                                                 'note': cd['note']})
 
                     list_link_to = [x['uid'] for x in containers_actual_link_to]
 
@@ -159,19 +152,20 @@ def containers(request, id):
         res['sshform'] = sshform
         res['calendar'] = calendar
         res['active_panel'] = active_panel
-    return main_render(request, 'containers.html', res, client)
+    return main_render(request, 'containers.html', res)
 
 
 @login_required
 def domains(request):
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     new_domain = NewDomainForm()
     calendar = CalendarForm()
+
+    all_tags = client.list_tags().json()
+
+    tags_list = [('', '')] + [(x['name'], x['name']) for x in all_tags]
 
     if request.POST:
         if 'name' in request.POST:
@@ -181,7 +175,7 @@ def domains(request):
                 client.add_domain(name)
                 new_domain = NewDomainForm()
         else:
-            domain_form = DomainForm(request.POST)
+            domain_form = DomainForm(data=request.POST, choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 did = cd['did']
@@ -203,52 +197,48 @@ def domains(request):
 
     doms = sorted(doms, key=lambda k: k['name'])
     doms = sorted(doms, key=lambda k: k['key_name'])
-    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
     domains_list = []
+    used_tags = []
+
     for d in doms:
-        form = DomainForm(initial={'did': d['id']}, prefix=d['id'])
-        form.fields['tags'].widget.choices = tags_list
-        form.fields['tags'].initial = d['tags']
+        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], choices=tags_list)
         domains_list.append((d, form))
+        used_tags.extend([tag for tag in d['tags'] if tag not in used_tags])
 
     res['domains'] = domains_list
     res['new_domain'] = new_domain
     res['calendar'] = calendar
+    res['tags'] = used_tags
 
-    return main_render(request, 'domains.html', res, client)
+    return main_render(request, 'domains.html', res)
 
 
 @login_required
 def domain(request, id):
     calendar = CalendarForm()
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
+
+    tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
 
     if request.POST:
-        if 'did' in request.POST:
-            domain_form = DomainForm(request.POST)
+        if u'did' in request.POST:
+            domain_form = DomainForm(data=request.POST, choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
-                did = cd['did']
                 params = {}
-                if u'tags'.format(did) in request.POST:
-                    params['tags'] = request.POST.getlist(u'{}-tags'.format(did))
-                if u'note' in request.POST:
-                    params['note'] = cd['note']
-                client.update_domain(did, params)
-    elif 'del' in request.GET:
+                if u'tags' in cd:
+                    params[u'tags'] = cd[u'tags']
+                if u'note' in cd:
+                    params[u'note'] = cd[u'note']
+                client.update_domain(id, params)
+    elif u'del' in request.GET:
         name = request.GET['del']
         client.delete_domain(name)
 
     domain = client.domain(id).json()
-    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
-    form = DomainForm(initial={'did': id}, prefix=id)
-    form.fields['tags'].widget.choices = tags_list
-    form.fields['tags'].initial = domain['tags']
-    form.fields['note'].initial = domain['note']
+    form = DomainForm(choices=tags_list, initial={
+        'did': id, 'tags': domain['tags'], 'note': domain['note']})
 
     del domain['tags']
     del domain['note']
@@ -256,17 +246,14 @@ def domain(request, id):
     res['calendar'] = calendar
     res['domain'] = domain
     res['domainform'] = form
-    return main_render(request, 'domain.html', res, client)
+    return main_render(request, 'domain.html', res)
 
 
 @login_required
 def tags(request):
     res = {}
     tagform = TagForm()
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
+    client = request.session.get('client')
 
     if request.POST:
         tagform = TagForm(request.POST)
@@ -280,39 +267,16 @@ def tags(request):
 
     res['tags'] = client.list_tags().json()
     res['tagform'] = tagform
-    return main_render(request, 'tags.html', res, client)
+    return main_render(request, 'tags.html', res)
 
 
 @login_required
 def tag(request, tag):
     res = {}
-    client = UwsgiItClient(
-        request.session.get('username'),
-        request.session.get('password'),
-        settings.CONSOLE_API)
-    doms = client.domains(tags=[tag]).json()
-    domains = []
-    if request.POST:
-        if 'did' in request.POST:
-            domain_form = DomainForm(request.POST)
-            if domain_form.is_valid():
-                cd = domain_form.cleaned_data
-                did = cd['did']
-                tags_post = []
-                if u'{}-tags'.format(did) in request.POST:
-                    tags_post = request.POST.getlist(u'{}-tags'.format(did))
-                client.update_domain(did, {'tags': tags_post})
-    elif 'del' in request.GET:
-        name = request.GET['del']
-        client.delete_domain(name)
+    client = request.session.get('client')
 
-    tags_list = [(x['name'], x['name']) for x in client.list_tags().json()]
-    for d in doms:
-        form = DomainForm(initial={'did': d['id']}, prefix=d['id'])
-        form.fields['tags'].widget.choices = tags_list
-        form.fields['tags'].initial = d['tags']
-        domains.append((d, form))
     res['tag'] = tag
-    res['tagged_domains'] = domains
+    res['calendar'] = CalendarForm()
+    res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
-    return main_render(request, 'tag.html', res, client)
+    return main_render(request, 'tag.html', res)
