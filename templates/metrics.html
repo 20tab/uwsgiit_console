@@ -1,0 +1,31 @@
+<div class="row margin-top">
+    <div class="col-sm-3 col-lg-2">
+        <ul class="nav nav-pills nav-stacked">
+        {% for metric in metrics %}
+            <li class="
+                {% if forloop.first %}
+                    {% if not active_panel %}active{% endif %}
+                {% else %}
+                    {% if active_panel == '{{ metric.0 }}' %}active{% endif %}
+                {% endif %}">
+                <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url metric.0 arg %}'); clearGraph();">{{ metric.1 }}</a>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div class="col-sm-9 col-lg-10">
+        <form action="{% url metrics.0.0 arg %}" method="post" class="form-horizontal inline" id="calendar">
+            {% csrf_token %}
+            {{ calendar }}
+            <button id="get-metrics" type="submit" data-loading-text="Loading..." class="btn btn-primary">Go</button>
+        </form>
+        <button class="inline btn btn-primary" onclick="clearGraph();">Clear Graphs</button>
+        <div id="chart_container" class="clearfix">
+            <div id="chart"></div>
+            <div id="timeline"></div>
+            <div id="legend_container">
+                <div id="legend"></div>
+            </div>
+        </div>
+    </div>
+</div>

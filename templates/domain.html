@@ -52,37 +52,8 @@
 
 
        <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
-            <div class="row margin-top">
-                <div class="col-sm-3 col-lg-2">
-                    <ul class="nav nav-pills nav-stacked">
-                        <li class="{% if not active_panel %}active{% endif %}">
-                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'domain_net_rx' domain.id %}'); clearGraph();">Domain Network RX</a>
-                        </li>
-                        <li{% if active_panel == 'domain_net_tx' %} class="active"{% endif %}>
-                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'domain_net_tx' domain.id %}'); clearGraph();">Domain Network TX</a>
-                        </li>
-                        <li{% if active_panel == 'domain_hits' %} class="active"{% endif %}>
-                            <a href="#" data-toggle="tab" onclick="$('#calendar').attr('action', '{% url 'domain_hits' domain.id %}'); clearGraph();">Domain Hits</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-sm-9 col-lg-10">
-                    <form action="{% url 'domain_net_rx' domain.id %}" method="post" class="form-horizontal inline" id="calendar">
-                        {% csrf_token %}
-                        {{ calendar }}
-                        <button id="get-metrics" type="submit" data-loading-text="Loading..." class="btn btn-primary">Go</button>
-                    </form>
-                    <button class="inline btn btn-primary" onclick="clearGraph();">Clear Graphs</button>
-                    <div id="chart_container" class="clearfix">
-                        <div id="chart"></div>
-                        <div id="timeline"></div>
-                        <div id="legend_container">
-                            <div id="smoother" title="Smoothing"></div>
-                            <div id="legend"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% get_metrics_list domain as metrics %}
+            {% include "metrics.html" with arg=domain.id %}
         </div>
     </div>
 {% endblock %}

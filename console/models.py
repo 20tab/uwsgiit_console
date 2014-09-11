@@ -168,11 +168,19 @@ class NetworkRXContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'net.rx', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'Network RX'
+
 
 # stores values from the tuntap router
 class NetworkTXContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'net.tx', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Network TX'
 
 
 # stores values from the container cgroup
@@ -184,11 +192,19 @@ class CPUContainerMetric(ContainerMetric):
     def unit_of_measure(self):
         return 'ticks'
 
+    @property
+    def verbose_name(self):
+        return 'CPU Ticks'
+
 
 # stores values from the container cgroup
 class MemoryContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'mem', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Memory'
 
 
 # stores values from the container cgroup
@@ -196,17 +212,29 @@ class IOReadContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'io.read', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'IO Read'
+
 
 # stores values from the container cgroup
 class IOWriteContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'io.write', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'IO Write'
+
 
 # uses perl Quota package
 class QuotaContainerMetric(ContainerMetric):
     def api_metrics(self, client, params):
         return client.container_metric(self.container, 'quota', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Used Disk Space'
 
 
 class HitsDomainMetric(DomainMetric):
@@ -217,12 +245,24 @@ class HitsDomainMetric(DomainMetric):
     def unit_of_measure(self):
         return 'hits'
 
+    @property
+    def verbose_name(self):
+        return 'Hits'
+
 
 class NetworkRXDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
         return client.domain_metric(self.domain, 'net.rx', params).json()
 
+    @property
+    def verbose_name(self):
+        return 'Network RX'
+
 
 class NetworkTXDomainMetric(DomainMetric):
     def api_metrics(self, client, params):
         return client.domain_metric(self.domain, 'net.tx', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Network TX'
