@@ -13,36 +13,41 @@ from .models import UwsgiItApi
 
 class LoginForm(forms.Form):
     action_login = forms.IntegerField(widget=forms.HiddenInput(), initial=1)
-    username = forms.CharField(label=u'', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
-    password = forms.CharField(label=u'', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    username = forms.CharField(label=u'', widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Username'}))
+    password = forms.CharField(label=u'', widget=forms.PasswordInput(
+        attrs={'class': 'form-control', 'placeholder': 'Password'}))
     api_url = forms.ModelChoiceField(queryset=UwsgiItApi.objects.none())
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
         self.fields['api_url'].queryset = UwsgiItApi.objects.all()
-        self.fields['api_url'].initial = UwsgiItApi.objects.get(url=settings.DEFAULT_API_URL)
+        self.fields['api_url'].initial = UwsgiItApi.objects.get(
+            url=settings.DEFAULT_API_URL)
 
     def clean(self):
         cd = super(LoginForm, self).clean()
         username = cd['username']
         password = cd['password']
         api_url = cd['api_url']
+        if not api_url:
+            raise forms.ValidationError(u'Please select an API')
         cd['client'] = UwsgiItClient(username, password, api_url.url)
         me = cd['client'].me().json()
         if 'error' in me:
-            raise forms.ValidationError(u'Username o password errate!')
+            raise forms.ValidationError(u'Wrong username or password')
         return cd
 
 
 class MeForm(forms.Form):
     company = forms.CharField(label=u'Company', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}))
-    password = forms.CharField(label=u'Password',
-                               widget=forms.PasswordInput(render_value=True,
-                                                          attrs={'class': 'form-control'}))
-    re_password = forms.CharField(label=u'Retype password',
-                                  widget=forms.PasswordInput(render_value=True,
-                                                             attrs={'class': 'form-control'}))
+    password = forms.CharField(label=u'Password', widget=forms.PasswordInput(
+        attrs={'class': 'form-control'}, render_value=True))
+    re_password = forms.CharField(
+        label=u'Retype password',
+        widget=forms.PasswordInput(
+            render_value=True, attrs={'class': 'form-control'}))
     vat = forms.CharField(label=u'Vat', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}), required=False)
 
@@ -51,7 +56,8 @@ class MeForm(forms.Form):
         p1 = cd['password']
         p2 = cd['re_password']
         if p1 != p2:
-            self._errors[u're_password'] = self.error_class([u'Le password inserite non coincidono'])
+            self._errors[u're_password'] = self.error_class(
+                [u'Passwords do not match'])
         return cd
 
 
@@ -89,7 +95,8 @@ class ContainerForm(forms.Form):
         choices=(),
         required=False)
     note = forms.CharField(
-        widget=forms.Textarea(attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}),
+        widget=forms.Textarea(
+            attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}),
         required=False)
 
     def __init__(self, *args, **kwargs):
@@ -113,19 +120,22 @@ class DomainForm(forms.Form):
     def __init__(self, choices=(), *args, **kwargs):
         super(DomainForm, self).__init__(*args, **kwargs)
         self.fields['tags'] = forms.MultipleChoiceField(
-            widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
+            widget=SelectMultipleAutocomplete(
+                plugin_options={"width": "300px"}),
             choices=choices, required=False)
 
 
 class NewDomainForm(forms.Form):
-    name = forms.CharField(label=u'Name', widget=forms.TextInput(attrs={'size': 70}))
+    name = forms.CharField(
+        label=u'Name', widget=forms.TextInput(attrs={'size': 70}))
 
 
 class CalendarForm(forms.Form):
     year = forms.IntegerField()
-    month = forms.ChoiceField(required=False,
-                              widget=SelectAutocomplete(plugin_options={"width": "300px"}),
-                              choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
+    month = forms.ChoiceField(
+        required=False,
+        widget=SelectAutocomplete(plugin_options={"width": "300px"}),
+        choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
     day = forms.IntegerField(required=False)
 
     def __init__(self, *args, **kwargs):
@@ -177,10 +187,12 @@ class CalendarForm(forms.Form):
         today = datetime.today()
         if 'year' in data and data['year'] > today.year:
             return True
-        if 'year' in data and data['year'] == today.year and 'month' in data and data['month'] > today.month:
+        if ('year' in data and data['year'] == today.year and
+           'month' in data and data['month'] > today.month):
             return True
-        if 'year' in data and data['year'] == today.year and 'month' in data and data['month'] == today.month and \
-                'day' in data and data['day'] > today.day:
+        if ('year' in data and data['year'] == today.year and
+           'month' in data and data['month'] == today.month and
+           'day' in data and data['day'] > today.day):
             return True
         return False
 
@@ -191,5 +203,5 @@ class CalendarForm(forms.Form):
         if self.has_value(u'month') and not self.has_value(u'year'):
             self._errors[u'year'] = self.error_class([u'Year is required'])
         if self.is_in_the_future():
-            raise forms.ValidationError(u'Set a date in the past not in future.')
+            raise forms.ValidationError(u'Set a date in the past.')
         return data
