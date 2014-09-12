@@ -74,6 +74,7 @@ def containers(request, id):
         del container_copy['distro']
         del container_copy['distro_name']
         del container_copy['tags']
+        del container_copy['note']
 
         # Get last quota metric
         used_quota = client.container_metric(id, 'quota', None).json()[0][1]
@@ -148,6 +149,8 @@ def containers(request, id):
         containerform.fields['distro'].widget.choices = distro_choices
         containerform.fields['tags'].initial = container['tags']
         containerform.fields['link_to'].initial = container['linked_to']
+        containerform.fields['note'].initial = container['note']
+
         res['containerform'] = containerform
         res['sshform'] = sshform
         res['calendar'] = calendar
