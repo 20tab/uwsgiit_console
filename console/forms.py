@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from django import forms
 from django.utils.dates import MONTHS
+from django. conf import settings
 
 from uwsgiit.api import UwsgiItClient
 from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
@@ -19,7 +20,7 @@ class LoginForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
         self.fields['api_url'].queryset = UwsgiItApi.objects.all()
-        self.fields['api_url'].initial = 1
+        self.fields['api_url'].initial = UwsgiItApi.objects.get(url=settings.DEFAULT_API_URL)
 
     def clean(self):
         cd = super(LoginForm, self).clean()

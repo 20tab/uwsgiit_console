@@ -7,15 +7,15 @@ TEST
 To launch test you need to add a few variable into [uwsgiit_console/settings/testing.py](https://github.com/20tab/uwsgiit_console/blob/master/uwsgiit_console/settings/testing.py):
 
 ```py
-    TEST_USER = 'ExampleUser'
-    TEST_PASSWORD = 'ExamplePassword'
+    TEST_USER = 'USER_EXAMPLE'
+    TEST_PASSWORD = 'PASSWORD_EXAMPLE'
     TEST_CONTAINER = '12345'
     TEST_DOMAIN = '123'
-    TEST_TAG = 'ExampleTag'
-    TEST_API_URL = 'https://api.uwsgi.it/api'
+    TEST_TAG = 'TAG_EXAMPLE'
+    DEFAULT_API_URL = 'https://api.uwsgi.it/api/'
 ```
 
-Obviously you can change TEST_API_URL with every uwsgi.it API you want to test it with
+Obviously you can change DEFAULT_API_URL with every uwsgi.it API you want to test it with
 
 Now you can launch the tests with::
 
