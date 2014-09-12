@@ -1,10 +1,15 @@
+from datetime import datetime
+
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
-from console.decorators import login_required
-from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
+from uwsgiit.api import UwsgiItClient
+
+from .decorators import login_required
+from .forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
     DomainForm, NewDomainForm, CalendarForm
 
 
@@ -14,28 +19,35 @@ def logout(request):
 
 
 def main_render(request, template, v_dict={}):
-    login_form = LoginForm()
-    if 'action_login' in request.POST:
-        login_form = LoginForm(request.POST)
-        if login_form.is_valid():
-            cd = login_form.cleaned_data
-            request.session['client'] = cd['client']
-
-            return HttpResponseRedirect('/me/')
-
-    v_dict['login_form'] = login_form
-
     client = request.session.get('client', False)
-
     if client:
         v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
-        v_dict['login_form'] = None
 
     return render_to_response(template, v_dict, context_instance=RequestContext(request))
 
 
 def home(request):
-    return main_render(request, 'index.html', {})
+    v_dict = {}
+    if 'action_login' in request.POST:
+        login_form = LoginForm(request.POST)
+        if login_form.is_valid():
+            cd = login_form.cleaned_data
+            request.session['client'] = cd['client']
+            return HttpResponseRedirect('/me/')
+
+    client = request.session.get(
+        'client', UwsgiItClient(None, None, settings.DEFAULT_API_URL))
+
+    news = client.news().json()
+    for n in news:
+        n['date'] = datetime.fromtimestamp(n['date']/1000)
+
+    v_dict['news'] = news
+
+    if client.username is None:
+        v_dict['login_form'] = LoginForm()
+
+    return main_render(request, 'index.html', v_dict)
 
 
 @login_required
