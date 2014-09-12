@@ -40,7 +40,7 @@ def home(request):
 
     news = client.news().json()
     for n in news:
-        n['date'] = datetime.fromtimestamp(n['date']/1000)
+        n['date'] = datetime.fromtimestamp(n['date'])
 
     v_dict['news'] = news
 
