@@ -34,6 +34,8 @@ def home(request):
             cd = login_form.cleaned_data
             request.session['client'] = cd['client']
             return HttpResponseRedirect('/me/')
+    else:
+        login_form = LoginForm()
 
     client = request.session.get(
         'client', UwsgiItClient(None, None, settings.DEFAULT_API_URL))
@@ -45,7 +47,7 @@ def home(request):
     v_dict['news'] = news
 
     if client.username is None:
-        v_dict['login_form'] = LoginForm()
+        v_dict['login_form'] = login_form
 
     return main_render(request, 'index.html', v_dict)
 
@@ -95,10 +97,9 @@ def containers(request, id):
         container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
         res['container_copy'] = container_copy
         res['container'] = container
-        distros_list = client.distros().json()
-        distros_list = sorted(distros_list, key=lambda distro: distro['id'], reverse=True)
-        res['distros'] = distros_list
-        distro_choices = [(x['id'], x['name']) for x in distros_list]
+
+        distros_list = sorted(client.distros().json(), key=lambda distro: distro['id'], reverse=True)
+        distros_list = [(x['id'], x['name']) for x in distros_list]
 
         tag_list = [(x['name'], x['name']) for x in client.list_tags().json()]
 
@@ -107,7 +108,7 @@ def containers(request, id):
         link_to = [(x['uid'], u"{} ({})".format(
             x['name'], x['uid'])) for x in containers_actual_link_to]
         containerform = ContainerForm(
-            tags_choices=tag_list, link_to_choices=link_to,
+            tag_choices=tag_list, link_to_choices=link_to, distro_choices=distros_list,
             initial={'distro': "{}".format(container['distro']),
                      'note': container['note']})
         sshform = SSHForm()
@@ -117,7 +118,7 @@ def containers(request, id):
         if request.POST and 'action' in request.POST:
             action = request.POST['action']
             if action == 'update-container':
-                containerform = ContainerForm(request.POST, tags_choices=tag_list, link_to_choices=link_to)
+                containerform = ContainerForm(request.POST, tag_choices=tag_list, link_to_choices=link_to, distro_choices=distros_list)
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
                     client.update_container(id, {'distro': cd['distro'],
@@ -158,7 +159,6 @@ def containers(request, id):
                         container['ssh_keys'].remove(cd['key'])
                         client.container_set_keys(id, container['ssh_keys'])
 
-        containerform.fields['distro'].widget.choices = distro_choices
         containerform.fields['tags'].initial = container['tags']
         containerform.fields['link_to'].initial = container['linked_to']
         containerform.fields['note'].initial = container['note']
@@ -190,7 +190,7 @@ def domains(request):
                 client.add_domain(name)
                 new_domain = NewDomainForm()
         else:
-            domain_form = DomainForm(data=request.POST, choices=tags_list)
+            domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 did = cd['did']
@@ -216,7 +216,7 @@ def domains(request):
     used_tags = []
 
     for d in doms:
-        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], choices=tags_list)
+        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], tag_choices=tags_list)
         domains_list.append((d, form))
         used_tags.extend([tag for tag in d['tags'] if tag not in used_tags])
 
@@ -238,7 +238,8 @@ def domain(request, id):
 
     if request.POST:
         if u'did' in request.POST:
-            domain_form = DomainForm(data=request.POST, choices=tags_list)
+            domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
+            print request.POST
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 params = {}
@@ -252,7 +253,7 @@ def domain(request, id):
         client.delete_domain(name)
 
     domain = client.domain(id).json()
-    form = DomainForm(choices=tags_list, initial={
+    form = DomainForm(tag_choices=tags_list, initial={
         'did': id, 'tags': domain['tags'], 'note': domain['note']})
 
     del domain['tags']

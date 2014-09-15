@@ -12,12 +12,14 @@ from .models import UwsgiItApi
 
 
 class LoginForm(forms.Form):
-    action_login = forms.IntegerField(widget=forms.HiddenInput(), initial=1)
+    action_login = forms.IntegerField(
+        label=u'', widget=forms.HiddenInput(), initial=1)
     username = forms.CharField(label=u'', widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Username'}))
     password = forms.CharField(label=u'', widget=forms.PasswordInput(
         attrs={'class': 'form-control', 'placeholder': 'Password'}))
-    api_url = forms.ModelChoiceField(queryset=UwsgiItApi.objects.none())
+    api_url = forms.ModelChoiceField(
+        label=u'Api url :', queryset=UwsgiItApi.objects.none())
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
@@ -27,15 +29,15 @@ class LoginForm(forms.Form):
 
     def clean(self):
         cd = super(LoginForm, self).clean()
-        username = cd['username']
-        password = cd['password']
-        api_url = cd['api_url']
-        if not api_url:
-            raise forms.ValidationError(u'Please select an API')
-        cd['client'] = UwsgiItClient(username, password, api_url.url)
-        me = cd['client'].me().json()
-        if 'error' in me:
-            raise forms.ValidationError(u'Wrong username or password')
+        if 'username' in cd and 'password' in cd and 'api_url' in cd:
+            cd['client'] = UwsgiItClient(
+                cd['username'],
+                cd['password'],
+                cd['api_url'].url)
+
+            me = cd['client'].me().json()
+            if 'error' in me:
+                raise forms.ValidationError(u'Wrong username or password')
         return cd
 
 
@@ -53,11 +55,12 @@ class MeForm(forms.Form):
 
     def clean(self):
         cd = super(MeForm, self).clean()
-        p1 = cd['password']
-        p2 = cd['re_password']
-        if p1 != p2:
-            self._errors[u're_password'] = self.error_class(
-                [u'Passwords do not match'])
+        if 'password' in cd and 're_password' in cd:
+            p1 = cd['password']
+            p2 = cd['re_password']
+            if p1 != p2:
+                self._errors[u're_password'] = self.error_class(
+                    [u'Passwords do not match'])
         return cd
 
 
@@ -71,16 +74,17 @@ class SSHForm(forms.Form):
            match an ssh-rsa regex
         """
         data = super(SSHForm, self).clean()
-        key = data['key'].strip()
-        if len(key) <= 4096:
-            result = re.search(
-                r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@*$', key)
-            if result is None:
-                msg = u'Insered value is not a ssh-rsa key'
+        if 'key' in data:
+            key = data['key'].strip()
+            if len(key) <= 4096:
+                result = re.search(
+                    r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@*$', key)
+                if result is None:
+                    msg = u'Insered value is not a ssh-rsa key'
+                    raise forms.ValidationError(msg)
+            else:
+                msg = u'Key too long'
                 raise forms.ValidationError(msg)
-        else:
-            msg = u'Key too long'
-            raise forms.ValidationError(msg)
         return data
 
 
@@ -100,10 +104,12 @@ class ContainerForm(forms.Form):
         required=False)
 
     def __init__(self, *args, **kwargs):
-        tags_choices = kwargs.pop('tags_choices')
+        distro_choices = kwargs.pop('distro_choices')
+        tag_choices = kwargs.pop('tag_choices')
         link_to_choices = kwargs.pop('link_to_choices')
         super(ContainerForm, self).__init__(*args, **kwargs)
-        self.fields['tags'].choices = tags_choices
+        self.fields['distro'].widget.choices = distro_choices
+        self.fields['tags'].choices = tag_choices
         self.fields['link_to'].choices = link_to_choices
 
 
@@ -116,13 +122,15 @@ class DomainForm(forms.Form):
     did = forms.IntegerField(widget=forms.HiddenInput, required=False)
     note = forms.CharField(required=False, widget=forms.Textarea(
         attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}))
+    tags = forms.MultipleChoiceField(
+        choices=(), required=False,
+        widget=SelectMultipleAutocomplete(
+            plugin_options={"width": "300px"}))
 
-    def __init__(self, choices=(), *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        tag_choices = kwargs.pop('tag_choices')
         super(DomainForm, self).__init__(*args, **kwargs)
-        self.fields['tags'] = forms.MultipleChoiceField(
-            widget=SelectMultipleAutocomplete(
-                plugin_options={"width": "300px"}),
-            choices=choices, required=False)
+        self.fields['tags'].choices = tag_choices
 
 
 class NewDomainForm(forms.Form):
