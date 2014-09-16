@@ -31,14 +31,14 @@ function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit, c
         var metric = parseTimestamps(list[i], absoluteValues, unitOfMeasure, timeUnit);
         for (j in metric){
             if(data[j] != undefined){
-                data[j] += metric[j];
+                data[j][0] += metric[j][0];
+                data[j][1] += metric[j][1];
             }
             else{
                 data[j] = metric[j];
             }
         }
     }
-
     var res = [];
 
     for(var el in data){
@@ -265,7 +265,7 @@ $(document).ready(function() {
                 $('#get-metrics').button('reset');
             },
             error: function(data) {
-                console.log(data);
+                // console.log(data);
                 $('#get-metrics').button('reset');
             }
         });
