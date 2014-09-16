@@ -207,9 +207,7 @@ class CalendarForm(forms.Form):
     def clean(self):
         data = super(CalendarForm, self).clean()
         if self.has_value(u'day') and not self.has_value(u'month'):
-            self._errors[u'month'] = self.error_class([u'Month is required'])
-        if self.has_value(u'month') and not self.has_value(u'year'):
-            self._errors[u'year'] = self.error_class([u'Year is required'])
+            self._errors[u'month'] = self.error_class([u'Month is required.'])
         if self.is_in_the_future():
             raise forms.ValidationError(u'Set a date in the past.')
         return data

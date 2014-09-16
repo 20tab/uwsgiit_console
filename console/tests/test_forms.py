@@ -1,5 +1,5 @@
 from pprint import pformat
-from datetime import date
+from datetime import date, timedelta
 
 from django.test import TestCase
 from django.conf import settings
@@ -167,41 +167,66 @@ class DomainFormTests(TestCase):
         self.assertIsNotNone(form.clean())
 
 
-# class CalendarFormTests(FormTesterMixin, TestCase):
+class CalendarFormTests(FormTesterMixin, TestCase):
 
-#     @classmethod
-#     def setUpClass(cls):
-#         cls.today = date.today()
+    @classmethod
+    def setUpClass(cls):
+        cls.today = date.today()
 
-#     def test_CalendarForm_data_validation_for_invalid_data(self):
-#         invalid_data_list = [
-#             {u'data': {u'month': 1, u'day': 12},
-#                 u'error': (u'year', [u'This field is required.'])}
-#         ]
+    def test_CalendarForm_data_validation_for_invalid_data(self):
+        invalid_data_list = [
+            {u'data': {u'year': 2014, u'day': 12},
+                u'error': (u'month', [u'Month is required.'])},
+            {u'data': {u'month': 1},
+                u'error': (u'year', [u'This field is required.'])},
+            {u'data': {u'month': 1, u'day': 12},
+                u'error': (u'year', [u'This field is required.'])},
+            {u'data': {u'day': 12},
+                u'error': (u'year', [u'This field is required.'])},
+        ]
 
-#         for invalid_data in invalid_data_list:
-#             self.assertFormError(
-#                 CalendarForm,
-#                 invalid_data[u'error'][0],
-#                 invalid_data[u'error'][1],
-#                 invalid_data[u'data'])
+        for invalid_data in invalid_data_list:
+            self.assertFormError(
+                CalendarForm,
+                invalid_data[u'error'][0],
+                invalid_data[u'error'][1],
+                invalid_data[u'data'])
 
-#     def test_CalendarForm_data_validation_for_valid_data(self):
-#         form = CalendarForm({u'year': self.today.year, u'month': self.today.month, u'day': self.today.day})
-#         self.assertTrue(form.is_valid())
-#         #this will throw an error if it doesn't clean correctly
-#         self.assertIsNotNone(form.clean())
+    def test_CalendarForm_data_validation_for_valid_data(self):
+        valid_data_list = [
+            {u'year': self.today.year},
+            {u'year': self.today.year, u'month': self.today.month},
+            {u'year': self.today.year, u'month': self.today.month, u'day': self.today.day},
+        ]
+        for valid_data in valid_data_list:
+            form = CalendarForm(valid_data)
+            self.assertTrue(form.is_valid())
+            #this will throw an error if it doesn't clean correctly
+            self.assertIsNotNone(form.clean())
 
-#     def test_CalendarForm_time_unit_returns_right_value(self):
-#         form = CalendarForm({u'year': self.today.year, u'month': self.today.month, u'day': self.today.day})
-#         form.clean()
-#         self.assertEqual(form.time_unit(), u'hour')
+    def test_CalendarForm_time_unit_returns_right_value(self):
+        valid_data_list = [
+            {u'data': {u'year': self.today.year}, u'time_unit': u'month'},
+            {u'data': {u'year': self.today.year, u'month': self.today.month}, u'time_unit': u'day'},
+            {u'data': {u'year': self.today.year, u'month': self.today.month, u'day': self.today.day}, u'time_unit': 'hour'},
+        ]
+        for valid_data in valid_data_list:
+            form = CalendarForm(valid_data[u'data'])
+            self.assertEqual(form.is_valid(), True)
+            self.assertEqual(form.time_unit(), valid_data[u'time_unit'])
 
-#         form = CalendarForm({u'year': self.today.year, u'month': self.today.month})
-#         form.clean()
-#         self.assertEqual(form.time_unit(), u'day')
+    def test_CalendarForm_is_in_future_fails_with_date_in_the_future(self):
+        one_year_in_future = self.today + timedelta(365)
+        tomorrow = self.today + timedelta(365)
+        invalid_data_list = [
+            {u'year': one_year_in_future.year},
+            {u'year': one_year_in_future.year, u'month': one_year_in_future.month},
+            {u'year': one_year_in_future.year, u'month': one_year_in_future.month, u'day': one_year_in_future.day},
+            {u'year': tomorrow.year, u'month': tomorrow.month, u'day': tomorrow.day},
+        ]
 
-#         form = CalendarForm({u'year': self.today.year})
-#         form.clean()
-#         self.assertEqual(form.time_unit(), u'month')
+        for invalid_data in invalid_data_list:
+            form = CalendarForm(invalid_data)
+            self.assertFalse(form.is_valid())
+            self.assertRaisesMessage(forms.ValidationError, u'Set a date in the past.', form.clean)
 

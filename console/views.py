@@ -239,7 +239,6 @@ def domain(request, id):
     if request.POST:
         if u'did' in request.POST:
             domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
-            print request.POST
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 params = {}
