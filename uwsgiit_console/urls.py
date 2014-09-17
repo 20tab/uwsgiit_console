@@ -24,6 +24,7 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'console.views_metrics',
+    url(r'^metric/$', 'metric_detail', name='metric_detail'),
     url(r'^metrics/container/io.read/id/(\d+)/$', 'container_metrics',
         kwargs={'model': IOReadContainerMetric, 'absolute_values': False, 'average': False}, name='container_io_read'),
     url(r'^metrics/container/io.write/id/(\d+)/$', 'container_metrics',

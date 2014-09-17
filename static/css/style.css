@@ -61,3 +61,7 @@ body { padding-top: 70px; }
     margin-top: 20px;
     margin-bottom: 5px;
 }
+
+.top-border{border-top:1px solid #999999;}
+.top-padding{padding-top:1em;}
+

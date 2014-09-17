@@ -1,27 +1,19 @@
-var palette = new Rickshaw.Color.Palette();
-
 var monthNames = [ "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December" ];
 
-var metrics_list = [];
+var metrics = {};
 
-var shared_graph;
-
-var last_graph_time_unit;
-
-function clearGraph() {
-    $('#legend').empty();
-    $('#chart_container').html(
-        '<div id="chart"></div>\
-        <div id="timeline"></div>\
-        <div id="legend_container">\
-            <div id="legend" class="legend-class"></div>\
+function clearGraph(id) {
+    $('#legend-' + id).empty();
+    $('#chart_container-' + id).html(
+        '<div id="chart-' + id + '"></div>\
+        <div id="timeline-' + id + '"></div>\
+        <div id="legend_container-' + id + '">\
+            <div id="legend-' + id + '" class="legend-class"></div>\
         </div>');
-    shared_graph = undefined;
-    last_graph_time_unit = undefined;
-    metrics_list = [];
-    palette = new Rickshaw.Color.Palette();
+    metrics[id] = undefined;
 }
+
 
 function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit, calculateAverage){
 
@@ -31,14 +23,14 @@ function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit, c
         var metric = parseTimestamps(list[i], absoluteValues, unitOfMeasure, timeUnit);
         for (j in metric){
             if(data[j] != undefined){
-                data[j] += metric[j];
+                data[j][0] += metric[j][0];
+                data[j][1] += metric[j][1];
             }
             else{
                 data[j] = metric[j];
             }
         }
     }
-
     var res = [];
 
     for(var el in data){
@@ -113,170 +105,59 @@ function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
     return data;
 }
 
+function generateGraphDetails(graph, time_unit, unit_of_measure, legend_id){
 
-$(document).ready(function() {
-    var frm = $('#calendar');
-    frm.submit(function () {
-        $('#get-metrics').button('loading');
-        $.ajax({
-            type: frm.attr('method'),
-            url: frm.attr('action'),
-            data: frm.serialize(),
-            dataType: 'json',
-            success: function (data) {
-                if (data['metric_name'] == 'Invalid date'){
-                    alert('Invalid date');
-                    $('#get-metrics').button('reset');
-                    return;
-                }
-                if (last_graph_time_unit != undefined && last_graph_time_unit != data['time_unit']){
-                    clearGraph();
-                }
-                last_graph_time_unit = data['time_unit'];
-
-                data['stats'] = combineMultipleMetrics(
-                    data['stats'],
-                    data['absolute_values'],
-                    data['unit_of_measure'],
-                    data['time_unit'],
-                    data['average']
-                );
-
-                var metrics = {
-                    color: palette.color(),
-                    stroke: 'rgba(0,0,0,0.15)',
-                    data: data['stats'],
-                    name: data['metric_name']
-                };
-
-                metrics_list.push(metrics);
-
-                if (data['unit_of_measure'] == 'bytes'){
-                    data['unit_of_measure'] = 'MB';
-                }
-
-                var xFormatter = function(x){
-                    if (data['time_unit'] == 'hour'){
-                        if (x < 12) {
-                            return x + ' AM';
-                        }
-                        else{
-                            return x + ' PM';
-                        }
-                    }
-                    else if (data['time_unit'] == 'year'){
-                        return x + ' ' + monthNames[x];
-                    }
-                    else{
-                        return x;
-                    }
-                };
-
-                var yFormatter = function(y) {
-                    return Math.round(y*10000)/10000 + ' ' + data['unit_of_measure']
-                };
-
-
-                var chart_id;
-                var legend_id;
-                var legend_container_id;
-
-                if (shared_graph != undefined){
-                    $('#chart_container').append(
-                        '<div id="chart-' + data['metric_name'] + '"></div>\
-                        <div id="timeline-' + data['metric_name'] + '"></div>\
-                        <div id="legend_container-' + data['metric_name'] + '">\
-                            <div id="legend-' + data['metric_name'] + '"></div>\
-                        </div>'
-                    );
-                    chart_id = '#chart-' + data['metric_name'];
-                    legend_id = '#legend-' + data['metric_name'];
-                    legend_container_id = '#legend_container-' + data['metric_name'];
-
-                }
-                else{
-                    chart_id = '#chart';
-                    legend_id = '#legend';
-                    legend_container_id = '#legend_container';
-                }
-
-                var graph = new Rickshaw.Graph({
-                    element: $(chart_id)[0],
-                    renderer: 'area',
-                    stroke: true,
-                    height: 300,
-                    series: [metrics]
-                });
-
-
-                if (shared_graph != undefined){
-                    for (i in metrics_list){
-                        shared_graph.series[i] = metrics_list[i];
-                    }
-                    while (shared_graph.series.length > metrics_list){
-                        shared_graph.series.pop();
-                    }
-                    shared_graph.update();
-                    $('#legend').empty();
-                    var shared_graph_legend = new Rickshaw.Graph.Legend({
-                        graph: shared_graph,
-                        element: $('#legend')[0]
-                    });
-                    var shared_graph_shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
-                        graph: shared_graph,
-                        legend: shared_graph_legend
-                    });
-                    var shared_graph_highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
-                        graph: shared_graph,
-                        legend: shared_graph_legend
-                    });
-                }
-                else{
-                    shared_graph = graph;
-                }
-
-                graph.render();
-
-                var hoverDetail = new Rickshaw.Graph.HoverDetail( {
-                    graph: graph,
-                    xFormatter: xFormatter,
-                    yFormatter: yFormatter
-                });
-
-                var legend = new Rickshaw.Graph.Legend({
-                    graph: graph,
-                    element: document.querySelector(legend_id)
-                });
-
-                var xAxis = new Rickshaw.Graph.Axis.X( {
-                  graph: graph,
-                  orientation: 'top',
-                  tickFormat: xFormatter,
-                });
-                xAxis.render();
-
-                var yAxis = new Rickshaw.Graph.Axis.Y( {
-                    graph: graph,
-                    tickFormat: yFormatter,
-                });
-                yAxis.render();
-
-                generateModal(data['metric_name'], chart_id, legend_id, legend_container_id);
-                $('#get-metrics').button('reset');
-            },
-            error: function(data) {
-                console.log(data);
-                $('#get-metrics').button('reset');
+    var xFormatter = function(x){
+        if (time_unit == 'hour'){
+            if (x < 12) {
+                return x + ' AM';
             }
-        });
-        return false;
+            else{
+                return x + ' PM';
+            }
+        }
+        else if (time_unit == 'year'){
+            return x + ' ' + monthNames[x];
+        }
+        else{
+            return x;
+        }
+    };
+
+    var yFormatter = function(y) {
+        return Math.round(y*10000)/10000 + ' ' + unit_of_measure;
+    };
+
+    var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+        graph: graph,
+        xFormatter: xFormatter,
+        yFormatter: yFormatter
     });
 
-});
+    var legend = new Rickshaw.Graph.Legend({
+        graph: graph,
+        element: document.querySelector(legend_id)
+    });
 
-function generateModal(id, chart_id, legend_id, legend_container_id){
-    var modal = '<button class="btn btn-primary btn-lg btn-modal" data-toggle="modal" data-target="#modal-' + id + '">Open Graph</button>\
-    <div class="modal fade" id="modal-' + id + '" tabindex="-1" role="dialog" aria-labelledby="label-' + id + '" aria-hidden="true">\
+    var xAxis = new Rickshaw.Graph.Axis.X( {
+      graph: graph,
+      orientation: 'top',
+      tickFormat: xFormatter,
+    });
+    xAxis.render();
+
+    var yAxis = new Rickshaw.Graph.Axis.Y( {
+        graph: graph,
+        tickFormat: yFormatter,
+    });
+    yAxis.render();
+}
+
+
+function generateModal(id, modal_id, chart_id, legend_id, legend_container_id){
+    var identifier = id + '-' + modal_id;
+    var modal = '<button class="btn btn-primary btn-lg btn-modal" data-toggle="modal" data-target="#modal-' + identifier + '">Open Graph</button>\
+    <div class="modal fade" id="modal-' + identifier + '" tabindex="-1" role="dialog" aria-labelledby="label-' + identifier + '" aria-hidden="true">\
         <div class="modal-dialog">\
             <div class="modal-content">\
                 <div class="modal-header">\
@@ -284,9 +165,9 @@ function generateModal(id, chart_id, legend_id, legend_container_id){
                         <span aria-hidden="true">&times;</span>\
                         <span class="sr-only">Close</span>\
                     </button>\
-                    <h4 class="modal-title" id="label-' + id + '">' + id + '</h4>\
+                    <h4 class="modal-title" id="label-' + identifier + '">' + modal_id + '</h4>\
                 </div>\
-                <div class="modal-body" id="modal-body-' + id + '"></div>\
+                <div class="modal-body" id="modal-body-' + identifier + '"></div>\
                 <div class="modal-footer">\
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
                 </div>\
@@ -295,6 +176,21 @@ function generateModal(id, chart_id, legend_id, legend_container_id){
     </div>'
 
     $(legend_container_id).append(modal);
-    $(chart_id).clone().appendTo('#modal-body-' + id);
-    $(legend_id).clone().appendTo('#modal-body-' + id);
+    $(chart_id).clone().appendTo('#modal-body-' + identifier);
+    $(legend_id).clone().appendTo('#modal-body-' + identifier);
+}
+
+function generateOpenInNewPageButton(id, form_id, metric_url, date, legend_container_id){
+    var identifier = 'form-' + id + '-' + form_id;
+    var form = $('<form/>', {action: metric_detail_url, method: 'GET', target: '_blank', id: identifier, class: 'inline'}).appendTo(legend_container_id);
+    $('<input/>', {type: "hidden", name: "metric_url", value: metric_url}).appendTo(form);
+    $('<input/>', {type: "hidden", name: "metric_type", value: $('#' + id + '-metric-list').find('.active').find('a').html()}).appendTo(form);
+    $('<input/>', {type: "hidden", name: "subject", value: subject}).appendTo(form);
+
+    addDateAsHiddenInputToForm('#' + form.attr('id') , date);
+    form.append('<button class="btn btn-primary btn-lg" type="submit">Open In a New Page</button>');
+}
+
+function addDateAsHiddenInputToForm(form_id, date){
+    var input = $('<input/>', {type: 'hidden', name: 'date_list[]', 'value': date}).appendTo(form_id);
 }

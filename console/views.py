@@ -1,10 +1,15 @@
+from datetime import datetime
+
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
-from console.decorators import login_required
-from console.forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
+from uwsgiit.api import UwsgiItClient
+
+from .decorators import login_required
+from .forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
     DomainForm, NewDomainForm, CalendarForm
 
 
@@ -14,28 +19,37 @@ def logout(request):
 
 
 def main_render(request, template, v_dict={}):
-    login_form = LoginForm()
-    if 'action_login' in request.POST:
-        login_form = LoginForm(request.POST)
-        if login_form.is_valid():
-            cd = login_form.cleaned_data
-            request.session['client'] = cd['client']
-
-            return HttpResponseRedirect('/me/')
-
-    v_dict['login_form'] = login_form
-
     client = request.session.get('client', False)
-
     if client:
         v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
-        v_dict['login_form'] = None
 
     return render_to_response(template, v_dict, context_instance=RequestContext(request))
 
 
 def home(request):
-    return main_render(request, 'index.html', {})
+    v_dict = {}
+    if 'action_login' in request.POST:
+        login_form = LoginForm(request.POST)
+        if login_form.is_valid():
+            cd = login_form.cleaned_data
+            request.session['client'] = cd['client']
+            return HttpResponseRedirect('/me/')
+    else:
+        login_form = LoginForm()
+
+    client = request.session.get(
+        'client', UwsgiItClient(None, None, settings.DEFAULT_API_URL))
+
+    news = client.news().json()
+    for n in news:
+        n['date'] = datetime.fromtimestamp(n['date'])
+
+    v_dict['news'] = news
+
+    if client.username is None:
+        v_dict['login_form'] = login_form
+
+    return main_render(request, 'index.html', v_dict)
 
 
 @login_required
@@ -74,6 +88,7 @@ def containers(request, id):
         del container_copy['distro']
         del container_copy['distro_name']
         del container_copy['tags']
+        del container_copy['note']
 
         # Get last quota metric
         used_quota = client.container_metric(id, 'quota', None).json()[0][1]
@@ -82,10 +97,9 @@ def containers(request, id):
         container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
         res['container_copy'] = container_copy
         res['container'] = container
-        distros_list = client.distros().json()
-        distros_list = sorted(distros_list, key=lambda distro: distro['id'], reverse=True)
-        res['distros'] = distros_list
-        distro_choices = [(x['id'], x['name']) for x in distros_list]
+
+        distros_list = sorted(client.distros().json(), key=lambda distro: distro['id'], reverse=True)
+        distros_list = [(x['id'], x['name']) for x in distros_list]
 
         tag_list = [(x['name'], x['name']) for x in client.list_tags().json()]
 
@@ -94,17 +108,16 @@ def containers(request, id):
         link_to = [(x['uid'], u"{} ({})".format(
             x['name'], x['uid'])) for x in containers_actual_link_to]
         containerform = ContainerForm(
-            tags_choices=tag_list, link_to_choices=link_to,
+            tag_choices=tag_list, link_to_choices=link_to, distro_choices=distros_list,
             initial={'distro': "{}".format(container['distro']),
                      'note': container['note']})
         sshform = SSHForm()
         calendar = CalendarForm()
 
         active_panel = None
-        if request.POST and 'action' in request.POST:
-            action = request.POST['action']
-            if action == 'update-container':
-                containerform = ContainerForm(request.POST, tags_choices=tag_list, link_to_choices=link_to)
+        if request.POST:
+            if 'distro' in request.POST:
+                containerform = ContainerForm(request.POST, tag_choices=tag_list, link_to_choices=link_to, distro_choices=distros_list)
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
                     client.update_container(id, {'distro': cd['distro'],
@@ -119,35 +132,38 @@ def containers(request, id):
                     for link in list_link_to:
                         if unicode(link) not in cd['link_to']:
                             client.update_container(id, {'unlink': link})
-            elif action == 'add-key':
+            elif 'action' in request.POST:
+                action = request.POST.get('action')
                 active_panel = 'ssh'
                 sshform = SSHForm(request.POST)
                 if sshform.is_valid():
                     cd = sshform.cleaned_data
-                    if cd['key'] not in container['ssh_keys']:
-                        container['ssh_keys'].append(cd['key'].strip())
-                        response = client.container_set_keys(id, container['ssh_keys'])
-                        if response.status_code == 200:
-                            messages.success(request, 'New key successfully added')
+                    if action == 'add-key':
+                        if cd['key'] not in container['ssh_keys']:
+                            container['ssh_keys'].append(cd['key'].strip())
+                            response = client.container_set_keys(id, container['ssh_keys'])
+                            if response.status_code == 200:
+                                messages.success(request, 'New key successfully added')
+                            else:
+                                messages.error(request, 'An error occurred, please try again')
+                            sshform = SSHForm()
                         else:
-                            messages.error(request, 'An error occurred, please try again')
-                        sshform = SSHForm()
-                    else:
-                        msg = 'Key {key} was already added to container {id}'.format(key=cd['key'], id=id)
-                        messages.warning(request, msg)
-            elif action == 'del-key':
-                active_panel = 'ssh'
-                sshform = SSHForm(request.POST)
-                if sshform.is_valid():
-                    cd = sshform.cleaned_data
-                    cd['key'] = cd['key'].strip()
-                    if cd['key'] in container['ssh_keys']:
-                        container['ssh_keys'].remove(cd['key'])
-                        client.container_set_keys(id, container['ssh_keys'])
+                            msg = 'Key {key} was already added to container {id}'.format(key=cd['key'], id=id)
+                            messages.warning(request, msg)
+                    elif action == 'del-key':
+                        cd['key'] = cd['key'].strip()
+                        if cd['key'] in container['ssh_keys']:
+                            container['ssh_keys'].remove(cd['key'])
+                            response = client.container_set_keys(id, container['ssh_keys'])
+                            if response.status_code == 200:
+                                messages.success(request, 'Key successfully removed')
+                            else:
+                                messages.error(request, 'An error occurred, please try again')
 
-        containerform.fields['distro'].widget.choices = distro_choices
         containerform.fields['tags'].initial = container['tags']
         containerform.fields['link_to'].initial = container['linked_to']
+        containerform.fields['note'].initial = container['note']
+
         res['containerform'] = containerform
         res['sshform'] = sshform
         res['calendar'] = calendar
@@ -175,7 +191,7 @@ def domains(request):
                 client.add_domain(name)
                 new_domain = NewDomainForm()
         else:
-            domain_form = DomainForm(data=request.POST, choices=tags_list)
+            domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 did = cd['did']
@@ -201,7 +217,7 @@ def domains(request):
     used_tags = []
 
     for d in doms:
-        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], choices=tags_list)
+        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], tag_choices=tags_list)
         domains_list.append((d, form))
         used_tags.extend([tag for tag in d['tags'] if tag not in used_tags])
 
@@ -223,7 +239,7 @@ def domain(request, id):
 
     if request.POST:
         if u'did' in request.POST:
-            domain_form = DomainForm(data=request.POST, choices=tags_list)
+            domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 params = {}
@@ -237,7 +253,7 @@ def domain(request, id):
         client.delete_domain(name)
 
     domain = client.domain(id).json()
-    form = DomainForm(choices=tags_list, initial={
+    form = DomainForm(tag_choices=tags_list, initial={
         'did': id, 'tags': domain['tags'], 'note': domain['note']})
 
     del domain['tags']
@@ -276,7 +292,8 @@ def tag(request, tag):
     client = request.session.get('client')
 
     res['tag'] = tag
-    res['calendar'] = CalendarForm()
+    res['calendar_domains'] = CalendarForm(auto_id='calendar-domains-%s')
+    res['calendar_containers'] = CalendarForm(auto_id='calendar-containers-%s')
     res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
     return main_render(request, 'tag.html', res)

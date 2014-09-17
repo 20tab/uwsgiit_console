@@ -55,18 +55,36 @@
                     <li><a href="/logout/">Logout</a></li>
                 </ul>
             {% else %}
-
                 <form class="navbar-form navbar-right" role="form" action="." method="post">{% csrf_token %}
-                    {{ login_form }}
+                    {% for field in login_form %}
+                        <div class="form-group{% if field.errors %} has-error{% endif %}">
+                            <label for="{{ field.id_for_label }}" class="control-label">{{ field.label }}</label>{{ field }}
+                        </div>
+                    {% endfor %}
                     <button type="submit" class="btn btn-primary">Login</button>
                 </form>
-            </div>
             {% endif %}
         </div><!-- /.container-fluid -->
     </nav>
     <h1>{{ CONSOLE_TITLE }} <small>{{ CONSOLE_SUBTITLE }}</small></h1>
 
-    {% block content %}{% endblock %}
+    {% block content %}
+    <h3>Latest News</h3>
+    {% for n in news %}
+        <div class="row well">
+            <div class="col-xs-7 col-sm-9 col-md-10 col-lg-10">{{ n.content }}</div>
+            <div class="col-xs-5 col-sm-3 col-md-2 col-lg-2">{{ n.date }}</div>
+        </div>
+    {% endfor %}
+    {% endblock %}
+    <footer aria-role="banner" role="banner" id="footer" class="top-border top-padding margin-top">
+        <p class="col-xs-4">Uwsgi.it</p>
+        <div class="col-xs-8">
+            <ul class="pull-right list-unstyled flat">
+                <li><a href="{% url 'home' %}">Home</a></li>
+            </ul>
+        </div>
+    </footer>
 </div>
 
 

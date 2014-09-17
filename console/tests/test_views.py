@@ -19,7 +19,7 @@ class HomeViewTests(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_api = UwsgiItApi(
-            url=settings.TEST_API_URL,
+            url=settings.DEFAULT_API_URL,
             name='TEST API')
         cls.test_api.save()
 
@@ -55,7 +55,7 @@ class HomeViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = home(self.request)
         self.request.session = {}
         self.assertContains(response, 'href="#">Containers <span class="caret"></span></a>')
@@ -106,7 +106,7 @@ class MeViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = me_page(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -147,7 +147,7 @@ class DomainsViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = domains(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -188,7 +188,7 @@ class TagsViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = tags(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -230,7 +230,7 @@ class Tag_ViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = tag(self.request_get, settings.TEST_TAG)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -272,7 +272,7 @@ class Domain_ViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = domain(self.request_get, settings.TEST_DOMAIN)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -314,7 +314,7 @@ class Containers_ViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = containers(self.request_get, settings.TEST_CONTAINER)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -480,7 +480,7 @@ class ContainerMetricViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = container_metrics(
             self.request_post, 1, **{'model': IOReadContainerMetric, 'absolute_values': False, 'average': False})
         self.request_post.session = {}
@@ -604,7 +604,7 @@ class DomainMetricViewTests(TestCase):
             'client': UwsgiItClient(
                 settings.TEST_USER,
                 settings.TEST_PASSWORD,
-                settings.TEST_API_URL)}
+                settings.DEFAULT_API_URL)}
         response = domain_metrics(
             self.request_post, 1, **{'model': NetworkRXDomainMetric, 'absolute_values': False, 'average': False})
         self.request_post.session = {}
@@ -620,7 +620,7 @@ class LogoutViewTest(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_api = UwsgiItApi(
-            url=settings.TEST_API_URL,
+            url=settings.DEFAULT_API_URL,
             name='TEST API')
         cls.test_api.save()
 

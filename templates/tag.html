@@ -1,15 +1,5 @@
-{% extends 'sortable_table.html' %}
+{% extends 'metrics_base.html' %}
 {% load console_tags %}
-
-{% block extra_style %}
-    {{ block.super }}
-    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/rickshaw.min.css">
-{% endblock %}
-{% block extra_head %}
-    {{ block.super }}
-    <script src="{{ STATIC_URL }}rickshaw/vendor/d3.v3.js"></script>
-    <script src="{{ STATIC_URL }}rickshaw/rickshaw.min.js"></script>
-{% endblock %}
 
 {% block content %}
 
@@ -65,7 +55,7 @@
         <!--Container Metrics -->
         <div class="tab-pane{% if active_panel == 'container_metrics' %} active{% endif %}" id="container_metrics">
             {% get_metrics_list container_per_tag as metrics %}
-            {% include "metrics.html" with arg=tag %}
+            {% include "metrics.html" with arg=tag id='containers' calendar=calendar_containers %}
         </div>
     </div>
 
@@ -121,7 +111,7 @@
             <!-- DOMAIN METRICS -->
             <div class="tab-pane{% if active_panel == 'domain_metrics' %} active{% endif %}" id="domain_metrics">
                 {% get_metrics_list domain_per_tag as metrics %}
-            {% include "metrics.html" with arg=tag %}
+            {% include "metrics.html" with arg=tag id='domains' calendar=calendar_domains %}
             </div>
         </div>
     {% else %}
@@ -129,9 +119,12 @@
     {% endif %}
 {% endblock %}
 
-
 {% block footer_js %}
     {{ block.super }}
-    <script src="{{ STATIC_URL }}js/metrics.js"></script>
+    <script>
+        var subject = '{{ tag }}';
+    </script>
+    <script src="{{ STATIC_URL }}js/multiple_metrics.js"></script>
+
 {% endblock %}
 

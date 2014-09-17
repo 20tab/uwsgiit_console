@@ -6,7 +6,7 @@ TEST_PASSWORD = 'PASSWORD_EXAMPLE'
 TEST_CONTAINER = '12345'
 TEST_DOMAIN = '123'
 TEST_TAG = 'TAG_EXAMPLE'
-TEST_API_URL = 'https://api.uwsgi.it/api'
+DEFAULT_API_URL = 'https://api.uwsgi.it/api/'
 
 
 DATABASES = {

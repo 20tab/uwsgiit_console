@@ -1,16 +1,8 @@
-{% extends 'index.html' %}
+{% extends 'metrics_base.html' %}
 {% load cycle from future %}
 {% load console_tags %}
 
-{% block extra_style %}
-    {{ block.super }}
-    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/rickshaw.min.css">
-{% endblock %}
-{% block extra_head %}
-    {{ block.super }}
-    <script src="{{ STATIC_URL }}rickshaw/vendor/d3.v3.js"></script>
-    <script src="{{ STATIC_URL }}rickshaw/rickshaw.min.js"></script>
-{% endblock %}
+
 
 {% block content %}
 
@@ -37,7 +29,6 @@
         <div class="tab-pane{% if not active_panel %} active{% endif %}" id="infos">
             <form id="container-form" class="form-inline" role="form" action="{% url 'containers' container.uid %}" method="post">
                 {% csrf_token %}
-                <input type="hidden" name="action" id="id_action"/>
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered">
                     {% for k, v in container_copy.items %}
@@ -52,12 +43,10 @@
                             </td>
                         </tr>
                     {% endfor %}
-                        {{ containerform }}
+                    {{ containerform }}
 
                     </table>
-                    <button id="update-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">
-                        Update
-                    </button>
+                    <button id="update-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">Update</button>
                 </div>
             </form>
         </div>
@@ -72,8 +61,12 @@
                 {% endfor %}
             {% endif %}
             <div class="div-as-tablerow row div-hover">
-                {{ sshform }}
-                <button id="add-key" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form margin-top">Add</button>
+                <form id="ssh-form" class="form-inline" role="form" action="{% url 'containers' container.uid %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" id="id_action"/>
+                    {{ sshform }}
+                    <button id="add-key" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form margin-top">Add</button>
+                </form>
             </div>
 
             {% for k in container.ssh_keys %}
@@ -91,7 +84,7 @@
         <!-- Metrics -->
         <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
             {% get_metrics_list container as metrics %}
-            {% include "metrics.html" with arg=container.uid %}
+            {% include "metrics.html" with arg=container.uid id='container' %}
         </div>
     </div>
 
@@ -99,5 +92,10 @@
 
 {% block footer_js %}
     {{ block.super }}
-    <script src="{{ STATIC_URL }}js/metrics.js"></script>
+    <script>
+        var subject = '{{ container.name }}' + ' ' + '{{ container.uid }}';
+    </script>
+    <script src="{{ STATIC_URL }}js/multiple_metrics.js"></script>
+
 {% endblock %}
+

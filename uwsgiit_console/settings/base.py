@@ -16,8 +16,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Console configuration
 
-CONSOLE_TITLE = "uWSGI.it Console"
-CONSOLE_SUBTITLE = "20tab srl"
+CONSOLE_TITLE = 'uWSGI.it Console'
+CONSOLE_SUBTITLE = '20tab srl'
+DEFAULT_API_URL = 'https://api.uwsgi.it/api/'
 
 ######################
 
