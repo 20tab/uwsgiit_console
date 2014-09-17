@@ -1,6 +1,6 @@
 $(document).ready(function() {
     $('.get-metrics-btn').click(function () {
-        var id = $(this).attr('data-id')
+        var id = $(this).attr('data-id');
         $(this).button('loading');
         var frm = $('#calendar-' + id);
         var frm_data = frm.serialize();
@@ -32,7 +32,6 @@ $(document).ready(function() {
                 if (metrics[id] == undefined || metrics[id].last_time_unit != data['time_unit']){
                     clearGraph(id);
                     metrics[id] = {
-                        date_list: [],
                         last_time_unit: data['time_unit'],
                         shared_graph: undefined,
                         metric_list: [],
@@ -57,7 +56,6 @@ $(document).ready(function() {
                     legend_container_id = '#legend_container-' + id + '-' + data['metric_name'];
                 }
                 var attribute_value = frm_data.substring(frm_data.indexOf("&") + 1);
-                metrics[id].date_list.push(attribute_value);
 
                 var returned_metrics = {
                     color: metrics[id].palette.color(),
