@@ -53,7 +53,7 @@
 
        <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
             {% get_metrics_list domain as metrics %}
-            {% include "metrics.html" with arg=domain.id %}
+            {% include "metrics.html" with arg=domain.id id='domain' %}
         </div>
     </div>
 {% endblock %}

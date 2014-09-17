@@ -3,23 +3,23 @@ var palette = new Rickshaw.Color.Palette();
 var monthNames = [ "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December" ];
 
-var metrics_list = [];
+var metrics_list = {};
 
-var shared_graph;
+var shared_graphs = {};
 
-var last_graph_time_unit;
+var last_graphs_time_unit = {};
 
-function clearGraph() {
-    $('#legend').empty();
-    $('#chart_container').html(
-        '<div id="chart"></div>\
-        <div id="timeline"></div>\
-        <div id="legend_container">\
-            <div id="legend" class="legend-class"></div>\
+function clearGraph(id) {
+    $('#legend-' + id).empty();
+    $('#chart_container-' + id).html(
+        '<div id="chart-' + id + '"></div>\
+        <div id="timeline-' + id + '"></div>\
+        <div id="legend_container-' + id + '">\
+            <div id="legend-' + id + '" class="legend-class"></div>\
         </div>');
-    shared_graph = undefined;
-    last_graph_time_unit = undefined;
-    metrics_list = [];
+    shared_graphs[id] = undefined;
+    last_graphs_time_unit[id] = undefined;
+    metrics_list[id] = undefined;
     palette = new Rickshaw.Color.Palette();
 }
 
@@ -113,11 +113,11 @@ function parseTimestamps(list, absoluteValues, unitOfMeasure, timeUnit){
     return data;
 }
 
-
 $(document).ready(function() {
-    var frm = $('#calendar');
-    frm.submit(function () {
-        $('#get-metrics').button('loading');
+    $('.get-metrics-btn').click(function () {
+        var id = $(this).attr('data-id')
+        $(this).button('loading');
+        var frm = $('#calendar-' + id);
         $.ajax({
             type: frm.attr('method'),
             url: frm.attr('action'),
@@ -126,13 +126,13 @@ $(document).ready(function() {
             success: function (data) {
                 if (data['metric_name'] == 'Invalid date'){
                     alert('Invalid date');
-                    $('#get-metrics').button('reset');
+                    $('#get-metrics-' + id).button('reset');
                     return;
                 }
-                if (last_graph_time_unit != undefined && last_graph_time_unit != data['time_unit']){
-                    clearGraph();
+                if (last_graphs_time_unit[id] != undefined && last_graphs_time_unit[id] != data['time_unit']){
+                    clearGraph(id);
                 }
-                last_graph_time_unit = data['time_unit'];
+                last_graphs_time_unit[id] = data['time_unit'];
 
                 data['stats'] = combineMultipleMetrics(
                     data['stats'],
@@ -148,8 +148,10 @@ $(document).ready(function() {
                     data: data['stats'],
                     name: data['metric_name']
                 };
-
-                metrics_list.push(metrics);
+                if (metrics_list[id] == undefined){
+                    metrics_list[id] = [];
+                }
+                metrics_list[id].push(metrics);
 
                 if (data['unit_of_measure'] == 'bytes'){
                     data['unit_of_measure'] = 'MB';
@@ -181,23 +183,23 @@ $(document).ready(function() {
                 var legend_id;
                 var legend_container_id;
 
-                if (shared_graph != undefined){
-                    $('#chart_container').append(
-                        '<div id="chart-' + data['metric_name'] + '"></div>\
-                        <div id="timeline-' + data['metric_name'] + '"></div>\
-                        <div id="legend_container-' + data['metric_name'] + '">\
-                            <div id="legend-' + data['metric_name'] + '"></div>\
+                if (shared_graphs[id] != undefined){
+                    $('#chart_container-' + id).append(
+                        '<div id="chart-' + id + '-' + data['metric_name'] + '"></div>\
+                        <div id="timeline-' + id + '-' + data['metric_name'] + '"></div>\
+                        <div id="legend_container-' + id + '-' + data['metric_name'] + '">\
+                            <div id="legend-' + id + '-' + data['metric_name'] + '"></div>\
                         </div>'
                     );
-                    chart_id = '#chart-' + data['metric_name'];
-                    legend_id = '#legend-' + data['metric_name'];
-                    legend_container_id = '#legend_container-' + data['metric_name'];
+                    chart_id = '#chart-' + id + '-' + data['metric_name'];
+                    legend_id = '#legend-' + id + '-' + data['metric_name'];
+                    legend_container_id = '#legend_container-' + id + '-' + data['metric_name'];
 
                 }
                 else{
-                    chart_id = '#chart';
-                    legend_id = '#legend';
-                    legend_container_id = '#legend_container';
+                    chart_id = '#chart-' + id;
+                    legend_id = '#legend-' + id;
+                    legend_container_id = '#legend_container-' + id;
                 }
 
                 var graph = new Rickshaw.Graph({
@@ -209,30 +211,30 @@ $(document).ready(function() {
                 });
 
 
-                if (shared_graph != undefined){
-                    for (i in metrics_list){
-                        shared_graph.series[i] = metrics_list[i];
+                if (shared_graphs[id] != undefined){
+                    for (i in metrics_list[id]){
+                        shared_graphs[id].series[i] = metrics_list[id][i];
                     }
-                    while (shared_graph.series.length > metrics_list){
-                        shared_graph.series.pop();
+                    while (shared_graphs[id].series.length > metrics_list[id]){
+                        shared_graphs[id].series.pop();
                     }
-                    shared_graph.update();
-                    $('#legend').empty();
-                    var shared_graph_legend = new Rickshaw.Graph.Legend({
-                        graph: shared_graph,
-                        element: $('#legend')[0]
+                    shared_graphs[id].update();
+                    $('#legend-' + id).empty();
+                    var shared_graphs_legend = new Rickshaw.Graph.Legend({
+                        graph: shared_graphs[id],
+                        element: $('#legend-' + id)[0]
                     });
-                    var shared_graph_shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
-                        graph: shared_graph,
-                        legend: shared_graph_legend
+                    var shared_graphs_shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
+                        graph: shared_graphs[id],
+                        legend: shared_graphs_legend
                     });
-                    var shared_graph_highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
-                        graph: shared_graph,
-                        legend: shared_graph_legend
+                    var shared_graphs_highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
+                        graph: shared_graphs[id],
+                        legend: shared_graphs_legend
                     });
                 }
                 else{
-                    shared_graph = graph;
+                    shared_graphs[id] = graph;
                 }
 
                 graph.render();
@@ -261,22 +263,23 @@ $(document).ready(function() {
                 });
                 yAxis.render();
 
-                generateModal(data['metric_name'], chart_id, legend_id, legend_container_id);
-                $('#get-metrics').button('reset');
+                generateModal(id, data['metric_name'], chart_id, legend_id, legend_container_id);
+                $('#get-metrics-' + id).button('reset');
             },
             error: function(data) {
-                // console.log(data);
-                $('#get-metrics').button('reset');
+                console.log('cane');
+                console.log(data);
+                $('#get-metrics-' + id).button('reset');
             }
         });
         return false;
     });
-
 });
 
-function generateModal(id, chart_id, legend_id, legend_container_id){
-    var modal = '<button class="btn btn-primary btn-lg btn-modal" data-toggle="modal" data-target="#modal-' + id + '">Open Graph</button>\
-    <div class="modal fade" id="modal-' + id + '" tabindex="-1" role="dialog" aria-labelledby="label-' + id + '" aria-hidden="true">\
+
+function generateModal(id, modal_id, chart_id, legend_id, legend_container_id){
+    var modal = '<button class="btn btn-primary btn-lg btn-modal" data-toggle="modal" data-target="#modal-' + id + '-' + modal_id + '">Open Graph</button>\
+    <div class="modal fade" id="modal-' + id + '-' + modal_id + '" tabindex="-1" role="dialog" aria-labelledby="label-' + modal_id + '" aria-hidden="true">\
         <div class="modal-dialog">\
             <div class="modal-content">\
                 <div class="modal-header">\
@@ -284,9 +287,9 @@ function generateModal(id, chart_id, legend_id, legend_container_id){
                         <span aria-hidden="true">&times;</span>\
                         <span class="sr-only">Close</span>\
                     </button>\
-                    <h4 class="modal-title" id="label-' + id + '">' + id + '</h4>\
+                    <h4 class="modal-title" id="label-' + id + '-' + modal_id + '">' + modal_id + '</h4>\
                 </div>\
-                <div class="modal-body" id="modal-body-' + id + '"></div>\
+                <div class="modal-body" id="modal-' + id + '-body-' + modal_id + '"></div>\
                 <div class="modal-footer">\
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
                 </div>\
@@ -295,6 +298,6 @@ function generateModal(id, chart_id, legend_id, legend_container_id){
     </div>'
 
     $(legend_container_id).append(modal);
-    $(chart_id).clone().appendTo('#modal-body-' + id);
-    $(legend_id).clone().appendTo('#modal-body-' + id);
+    $(chart_id).clone().appendTo('#modal-' + id + '-body-' + modal_id);
+    $(legend_id).clone().appendTo('#modal-' + id + '-body-' + modal_id);
 }

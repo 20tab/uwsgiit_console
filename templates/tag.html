@@ -65,7 +65,7 @@
         <!--Container Metrics -->
         <div class="tab-pane{% if active_panel == 'container_metrics' %} active{% endif %}" id="container_metrics">
             {% get_metrics_list container_per_tag as metrics %}
-            {% include "metrics.html" with arg=tag %}
+            {% include "metrics.html" with arg=tag id='containers' calendar=calendar_containers %}
         </div>
     </div>
 
@@ -121,7 +121,7 @@
             <!-- DOMAIN METRICS -->
             <div class="tab-pane{% if active_panel == 'domain_metrics' %} active{% endif %}" id="domain_metrics">
                 {% get_metrics_list domain_per_tag as metrics %}
-            {% include "metrics.html" with arg=tag %}
+            {% include "metrics.html" with arg=tag id='domains' calendar=calendar_domains %}
             </div>
         </div>
     {% else %}
