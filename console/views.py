@@ -115,9 +115,8 @@ def containers(request, id):
         calendar = CalendarForm()
 
         active_panel = None
-        if request.POST and 'action' in request.POST:
-            action = request.POST['action']
-            if action == 'update-container':
+        if request.POST:
+            if 'distro' in request.POST:
                 containerform = ContainerForm(request.POST, tag_choices=tag_list, link_to_choices=link_to, distro_choices=distros_list)
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
@@ -133,32 +132,33 @@ def containers(request, id):
                     for link in list_link_to:
                         if unicode(link) not in cd['link_to']:
                             client.update_container(id, {'unlink': link})
-            elif action == 'add-key':
-                print request.POST
+            elif 'action' in request.POST:
+                action = request.POST.get('action')
                 active_panel = 'ssh'
                 sshform = SSHForm(request.POST)
                 if sshform.is_valid():
                     cd = sshform.cleaned_data
-                    if cd['key'] not in container['ssh_keys']:
-                        container['ssh_keys'].append(cd['key'].strip())
-                        response = client.container_set_keys(id, container['ssh_keys'])
-                        if response.status_code == 200:
-                            messages.success(request, 'New key successfully added')
+                    if action == 'add-key':
+                        if cd['key'] not in container['ssh_keys']:
+                            container['ssh_keys'].append(cd['key'].strip())
+                            response = client.container_set_keys(id, container['ssh_keys'])
+                            if response.status_code == 200:
+                                messages.success(request, 'New key successfully added')
+                            else:
+                                messages.error(request, 'An error occurred, please try again')
+                            sshform = SSHForm()
                         else:
-                            messages.error(request, 'An error occurred, please try again')
-                        sshform = SSHForm()
-                    else:
-                        msg = 'Key {key} was already added to container {id}'.format(key=cd['key'], id=id)
-                        messages.warning(request, msg)
-            elif action == 'del-key':
-                active_panel = 'ssh'
-                sshform = SSHForm(request.POST)
-                if sshform.is_valid():
-                    cd = sshform.cleaned_data
-                    cd['key'] = cd['key'].strip()
-                    if cd['key'] in container['ssh_keys']:
-                        container['ssh_keys'].remove(cd['key'])
-                        client.container_set_keys(id, container['ssh_keys'])
+                            msg = 'Key {key} was already added to container {id}'.format(key=cd['key'], id=id)
+                            messages.warning(request, msg)
+                    elif action == 'del-key':
+                        cd['key'] = cd['key'].strip()
+                        if cd['key'] in container['ssh_keys']:
+                            container['ssh_keys'].remove(cd['key'])
+                            response = client.container_set_keys(id, container['ssh_keys'])
+                            if response.status_code == 200:
+                                messages.success(request, 'Key successfully removed')
+                            else:
+                                messages.error(request, 'An error occurred, please try again')
 
         containerform.fields['tags'].initial = container['tags']
         containerform.fields['link_to'].initial = container['linked_to']
