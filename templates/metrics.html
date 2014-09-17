@@ -1,6 +1,6 @@
 <div class="row margin-top">
     <div class="col-sm-3 col-lg-2">
-        <ul class="nav nav-pills nav-stacked">
+        <ul class="nav nav-pills nav-stacked" id="{{ id }}-metric-list">
         {% for metric in metrics %}
             <li class="
                 {% if forloop.first %}
@@ -20,12 +20,6 @@
             <button id="get-metrics-{{ id }}" data-loading-text="Loading..." class="btn btn-primary get-metrics-btn" data-id="{{ id }}">Go</button>
         </form>
         <button class="inline btn btn-primary" onclick="clearGraph('{{ id }}');">Clear Graphs</button>
-        <div id="chart_container-{{ id }}" class="clearfix">
-            <div id="chart-{{ id }}"></div>
-            <div id="timeline-{{ id }}"></div>
-            <div id="legend_container-{{ id }}">
-                <div id="legend-{{ id }}"></div>
-            </div>
-        </div>
+        {% include "metrics_container.html" %}
     </div>
 </div>

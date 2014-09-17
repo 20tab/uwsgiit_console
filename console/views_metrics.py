@@ -1,9 +1,11 @@
 import json
 
 from django.http import HttpResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-from console.forms import CalendarForm
-from console.decorators import login_required
+from .forms import CalendarForm
+from .decorators import login_required
+from .views import main_render
 
 
 def stats_render(request, metrics, **kwargs):
@@ -60,3 +62,16 @@ def domain_metrics_per_tag(request, tag, **kwargs):
     metrics = [kwargs['model'](domain=d['id']) for d in domains]
 
     return stats_render(request, metrics, **kwargs)
+
+
+@login_required
+@ensure_csrf_cookie
+def metric_detail(request):
+    v_dict = {}
+    # client = request.session.get('client')
+    if request.GET:
+        v_dict['dates'] = json.dumps(request.GET.getlist('date_list[]', None))
+        v_dict['url'] = request.GET.get('metric_url', None)
+        v_dict['metric_type'] = request.GET.get('metric_type', None)
+        v_dict['subject'] = request.GET.get('subject', None)
+    return main_render(request, 'metric_detail.html', v_dict)

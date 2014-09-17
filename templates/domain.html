@@ -1,15 +1,5 @@
-{% extends 'index.html' %}
+{% extends 'metrics_base.html' %}
 {% load console_tags %}
-
-{% block extra_style %}
-    {{ block.super }}
-    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}rickshaw/rickshaw.min.css">
-{% endblock %}
-{% block extra_head %}
-    {{ block.super }}
-    <script src="{{ STATIC_URL }}rickshaw/vendor/d3.v3.js"></script>
-    <script src="{{ STATIC_URL }}rickshaw/rickshaw.min.js"></script>
-{% endblock %}
 
 {% block content %}
 
@@ -59,6 +49,11 @@
 {% endblock %}
 
 {% block footer_js %}
+    <script>
+        var subject = '{{ domain.name }}';
+    </script>
     {{ block.super }}
-    <script src="{{ STATIC_URL }}js/metrics.js"></script>
+    <script src="{{ STATIC_URL }}js/multiple_metrics.js"></script>
+
 {% endblock %}
+

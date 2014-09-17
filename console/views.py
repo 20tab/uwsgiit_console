@@ -134,6 +134,7 @@ def containers(request, id):
                         if unicode(link) not in cd['link_to']:
                             client.update_container(id, {'unlink': link})
             elif action == 'add-key':
+                print request.POST
                 active_panel = 'ssh'
                 sshform = SSHForm(request.POST)
                 if sshform.is_valid():
@@ -291,7 +292,8 @@ def tag(request, tag):
     client = request.session.get('client')
 
     res['tag'] = tag
-    res['calendar'] = CalendarForm()
+    res['calendar_domains'] = CalendarForm(auto_id='calendar-domains-%s')
+    res['calendar_containers'] = CalendarForm(auto_id='calendar-containers-%s')
     res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
     return main_render(request, 'tag.html', res)
