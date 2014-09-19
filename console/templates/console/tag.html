@@ -1,4 +1,4 @@
-{% extends 'metrics_base.html' %}
+{% extends 'console/metrics_base.html' %}
 {% load console_tags %}
 
 {% block content %}
@@ -35,13 +35,13 @@
                     <tbody>
                         {% for c in tagged_containers %}
                         <tr>
-                            <td><a href="{% url 'containers' id=c.uid %}">{{ c.uid }}</a></td>
+                            <td><a href="{% url 'console_containers' id=c.uid %}">{{ c.uid }}</a></td>
                             <td>{{ c.name }}</td>
                             <td>{{ c.hostname }}</td>
                             <td>{{ c.server }}</td>
                             <td>
                                 {% for t in c.tags %}
-                                    <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
+                                    <a href="{% url 'console_tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                             </td>
                         </tr>
@@ -55,7 +55,7 @@
         <!--Container Metrics -->
         <div class="tab-pane{% if active_panel == 'container_metrics' %} active{% endif %}" id="container_metrics">
             {% get_metrics_list container_per_tag as metrics %}
-            {% include "metrics.html" with arg=tag id='containers' calendar=calendar_containers %}
+            {% include "console/metrics.html" with arg=tag id='containers' calendar=calendar_containers %}
         </div>
     </div>
 
@@ -93,12 +93,12 @@
                         <tbody>
                             {% for d in tagged_domains %}
                             <tr>
-                                <td><a href="{% url 'domain' id=d.id %}">{{ d.id }}</a></td>
+                                <td><a href="{% url 'console_domain' id=d.id %}">{{ d.id }}</a></td>
                                 <td>{{ d.name }}</td>
                                 <td>{{ d.uuid }}</td>
                                 <td>
                                     {% for t in d.tags %}
-                                        <a href="{% url 'tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
+                                        <a href="{% url 'console_tag' t %}">{{ t }}</a>{% if not forloop.last %}, {% endif %}
                                     {% endfor %}
                                 </td>
                             </tr>
@@ -111,7 +111,7 @@
             <!-- DOMAIN METRICS -->
             <div class="tab-pane{% if active_panel == 'domain_metrics' %} active{% endif %}" id="domain_metrics">
                 {% get_metrics_list domain_per_tag as metrics %}
-            {% include "metrics.html" with arg=tag id='domains' calendar=calendar_domains %}
+            {% include "console/metrics.html" with arg=tag id='domains' calendar=calendar_domains %}
             </div>
         </div>
     {% else %}
@@ -124,7 +124,7 @@
     <script>
         var subject = '{{ tag }}';
     </script>
-    <script src="{{ STATIC_URL }}js/multiple_metrics.js"></script>
+    <script src="{{ STATIC_URL }}console/js/multiple_metrics.js"></script>
 
 {% endblock %}
 

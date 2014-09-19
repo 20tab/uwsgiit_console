@@ -26,6 +26,7 @@
             data: dates[i],
             dataType: 'json',
             success: function (data) {
+                console.log(data);
                 unit_of_measure = data['unit_of_measure'];
                 time_unit = data['time_unit'];
                 data['stats'] = combineMultipleMetrics(
@@ -51,7 +52,7 @@
     }
 
     var graph = new Rickshaw.Graph({
-        element: $('#chart-' + id)[0],
+        element: $('#chart-')[0],
         renderer: 'area',
         stroke: true,
         height: 300,
@@ -64,4 +65,4 @@
         unit_of_measure = 'MB';
     }
 
-    generateGraphDetails(graph, time_unit, unit_of_measure, '#legend-' + id);
+    generateGraphDetails(graph, time_unit, unit_of_measure, '#legend-');

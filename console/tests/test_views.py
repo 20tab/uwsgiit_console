@@ -3,8 +3,6 @@ from django.core.urlresolvers import resolve, reverse
 from django.http import HttpResponseRedirect
 from django.conf import settings
 
-from uwsgiit.api import UwsgiItClient
-
 from console.forms import NewDomainForm, TagForm
 from console.views import home, me_page, logout, domains, domain, tags,\
     tag, containers
@@ -33,8 +31,12 @@ class HomeViewTests(TestCase):
             'action_login': 1})
         cls.request_post.session = {}
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
+
     def test_home_name_resolves_to_home_url(self):
-        url = reverse('home')
+        url = reverse('console_home')
         self.assertEqual(url, '/')
 
     def test_home_url_resolves_to_home_view(self):
@@ -52,10 +54,9 @@ class HomeViewTests(TestCase):
 
     def test_home_handles_logged_in_user(self):
         self.request.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
         response = home(self.request)
         self.request.session = {}
         self.assertContains(response, 'href="#">Containers <span class="caret"></span></a>')
@@ -67,10 +68,6 @@ class HomeViewTests(TestCase):
         self.assertTrue(isinstance(response, HttpResponseRedirect))
         self.assertEqual(response.url, '/me/')
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.test_api.delete()
-
 
 class MeViewTests(TestCase):
 
@@ -81,9 +78,17 @@ class MeViewTests(TestCase):
         cls.request_post = request_factory.post('/me/', follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
 
     def test_me_name_resolves_to_me_url(self):
-        url = reverse('me')
+        url = reverse('console_me')
         self.assertEqual(url, '/me/')
 
     def test_me_url_resolves_to_me_view(self):
@@ -103,10 +108,9 @@ class MeViewTests(TestCase):
 
     def test_me_handles_logged_in_user(self):
         self.request_get.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
         response = me_page(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -122,9 +126,17 @@ class DomainsViewTests(TestCase):
         cls.request_post = request_factory.post('/domains/', follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
 
     def test_me_name_resolves_to_me_url(self):
-        url = reverse('domains')
+        url = reverse('console_domains')
         self.assertEqual(url, '/domains/')
 
     def test_domains_url_resolves_to_domains_view(self):
@@ -144,10 +156,9 @@ class DomainsViewTests(TestCase):
 
     def test_domains_handles_logged_in_user(self):
         self.request_get.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
         response = domains(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -163,9 +174,17 @@ class TagsViewTests(TestCase):
         cls.request_post = request_factory.post('/tags/', follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
 
     def test_me_name_resolves_to_me_url(self):
-        url = reverse('tags')
+        url = reverse('console_tags')
         self.assertEqual(url, '/tags/')
 
     def test_tags_url_resolves_to_tags_view(self):
@@ -185,10 +204,9 @@ class TagsViewTests(TestCase):
 
     def test_tags_handles_logged_in_user(self):
         self.request_get.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
         response = tags(self.request_get)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -205,9 +223,17 @@ class Tag_ViewTests(TestCase):
         cls.request_post = request_factory.post(cls.url, follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
 
     def test_tag_name_resolves_to_metrics_url(self):
-        url = reverse('tag', args=(settings.TEST_TAG,))
+        url = reverse('console_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, self.url)
 
     def test_tag_url_resolves_to_metrics_view(self):
@@ -227,10 +253,9 @@ class Tag_ViewTests(TestCase):
 
     def test_tag_handles_logged_in_user(self):
         self.request_get.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
         response = tag(self.request_get, settings.TEST_TAG)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -247,9 +272,17 @@ class Domain_ViewTests(TestCase):
         cls.request_post = request_factory.post(cls.url, follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
 
     def test_domain_name_resolves_to_metrics_url(self):
-        url = reverse('domain', args=(settings.TEST_DOMAIN,))
+        url = reverse('console_domain', args=(settings.TEST_DOMAIN,))
         self.assertEqual(url, self.url)
 
     def test_domain_url_resolves_to_metrics_view(self):
@@ -269,10 +302,9 @@ class Domain_ViewTests(TestCase):
 
     def test_domain_handles_logged_in_user(self):
         self.request_get.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
         response = domain(self.request_get, settings.TEST_DOMAIN)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -289,9 +321,17 @@ class Containers_ViewTests(TestCase):
         cls.request_post = request_factory.post(cls.url, follow=True)
         cls.request_get.session = {}
         cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
 
     def test_containers_name_resolves_to_containers_url(self):
-        url = reverse('containers', args=(settings.TEST_CONTAINER,))
+        url = reverse('console_containers', args=(settings.TEST_CONTAINER,))
         self.assertEqual(url, self.url)
 
     def test_containers_url_resolves_to_containers_view(self):
@@ -311,10 +351,9 @@ class Containers_ViewTests(TestCase):
 
     def test_containers_handles_logged_in_user(self):
         self.request_get.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
         response = containers(self.request_get, settings.TEST_CONTAINER)
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
@@ -327,7 +366,8 @@ class ContainerMetricViewTests(TestCase):
     def setUpClass(cls):
         request_factory = RequestFactory()
         cls.request_get = request_factory.get('/metrics/container/io.read/id/1/', follow=True)
-        cls.request_post = request_factory.post('/metrics/container/io.read/id/1/', follow=True,
+        cls.request_post = request_factory.post(
+            '/metrics/container/io.read/id/1/', follow=True,
             data={'year': 2000, 'month': 1, 'day': 1})
         cls.request_get.session = {}
         cls.request_post.session = {}
@@ -365,9 +405,18 @@ class ContainerMetricViewTests(TestCase):
         )
 
         cls.test_metric.save()
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
+        cls.test_metric.delete()
 
     def test_IOReadContainerMetric_name_resolves_to_metrics_url(self):
-        url = reverse('container_io_read', args=(1,))
+        url = reverse('console_container_io_read', args=(1,))
         self.assertEqual(url, '/metrics/container/io.read/id/1/')
 
     def test_IOReadContainerMetric_url_resolves_to_metrics_view(self):
@@ -375,7 +424,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics)
 
     def test_IOWriteContainerMetric_name_resolves_to_metrics_url(self):
-        url = reverse('container_io_write', args=(1,))
+        url = reverse('console_container_io_write', args=(1,))
         self.assertEqual(url, '/metrics/container/io.write/id/1/')
 
     def test_IOWriteContainerMetric_url_resolves_to_metrics_view(self):
@@ -383,7 +432,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics)
 
     def test_NetworkRXContainerMetric_name_resolves_to_metrics_url(self):
-        url = reverse('container_net_rx', args=(1,))
+        url = reverse('console_container_net_rx', args=(1,))
         self.assertEqual(url, '/metrics/container/net.rx/id/1/')
 
     def test_NetworkRXContainerMetric_url_resolves_to_metrics_view(self):
@@ -391,7 +440,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics)
 
     def test_NetworkTXContainerMetric_name_resolves_to_metrics_url(self):
-        url = reverse('container_net_tx', args=(1,))
+        url = reverse('console_container_net_tx', args=(1,))
         self.assertEqual(url, '/metrics/container/net.tx/id/1/')
 
     def test_NetworkTXContainerMetric_url_resolves_to_metrics_view(self):
@@ -399,7 +448,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics)
 
     def test_CPUContainerMetric_name_resolves_to_metrics_url(self):
-        url = reverse('container_cpu', args=(1,))
+        url = reverse('console_container_cpu', args=(1,))
         self.assertEqual(url, '/metrics/container/cpu/id/1/')
 
     def test_CPUContainerMetric_url_resolves_to_metrics_view(self):
@@ -407,7 +456,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics)
 
     def test_MemoryContainerMetric_name_resolves_to_metrics_url(self):
-        url = reverse('container_mem', args=(1,))
+        url = reverse('console_container_mem', args=(1,))
         self.assertEqual(url, '/metrics/container/mem/id/1/')
 
     def test_MemoryContainerMetric_url_resolves_to_metrics_view(self):
@@ -415,7 +464,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics)
 
     def test_IOReadContainerMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('container_io_read_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_container_io_read_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/container/io.read/tag/{}/'.format(settings.TEST_TAG))
 
     def test_IOReadContainerMetricPerTag_url_resolves_to_metrics_view(self):
@@ -423,7 +472,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics_per_tag)
 
     def test_IOWriteContainerMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('container_io_write_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_container_io_write_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/container/io.write/tag/{}/'.format(settings.TEST_TAG))
 
     def test_IOWriteContainerMetricPerTag_url_resolves_to_metrics_view(self):
@@ -431,7 +480,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics_per_tag)
 
     def test_NetworkRXContainerMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('container_net_rx_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_container_net_rx_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/container/net.rx/tag/{}/'.format(settings.TEST_TAG))
 
     def test_NetworkRXContainerMetricPerTag_url_resolves_to_metrics_view(self):
@@ -439,7 +488,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics_per_tag)
 
     def test_NetworkTXContainerMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('container_net_tx_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_container_net_tx_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/container/net.tx/tag/{}/'.format(settings.TEST_TAG))
 
     def test_NetworkTXContainerMetricPerTag_url_resolves_to_metrics_view(self):
@@ -447,7 +496,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics_per_tag)
 
     def test_CPUContainerMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('container_cpu_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_container_cpu_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/container/cpu/tag/{}/'.format(settings.TEST_TAG))
 
     def test_CPUContainerMetricPerTag_url_resolves_to_metrics_view(self):
@@ -455,7 +504,7 @@ class ContainerMetricViewTests(TestCase):
         self.assertEqual(resolver.func, container_metrics_per_tag)
 
     def test_MemoryContainerMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('container_mem_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_container_mem_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/container/mem/tag/{}/'.format(settings.TEST_TAG))
 
     def test_MemoryContainerMetricPerTag_url_resolves_to_metrics_view(self):
@@ -477,18 +526,13 @@ class ContainerMetricViewTests(TestCase):
 
     def test_container_view_handles_logged_in_user(self):
         self.request_post.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': self.test_api.id}
         response = container_metrics(
             self.request_post, 1, **{'model': IOReadContainerMetric, 'absolute_values': False, 'average': False})
         self.request_post.session = {}
         self.assertEqual(response.status_code, 200)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.test_metric.delete()
 
 
 class DomainMetricViewTests(TestCase):
@@ -497,7 +541,8 @@ class DomainMetricViewTests(TestCase):
     def setUpClass(cls):
         request_factory = RequestFactory()
         cls.request_get = request_factory.get('/metrics/domain/net.rx/id/1/', follow=True)
-        cls.request_post = request_factory.post('/metrics/domain/net.rx/id/1/', follow=True,
+        cls.request_post = request_factory.post(
+            '/metrics/domain/net.rx/id/1/', follow=True,
             data={'year': 2000, 'month': 1, 'day': 1})
         cls.request_get.session = {}
         cls.request_post.session = {}
@@ -537,9 +582,18 @@ class DomainMetricViewTests(TestCase):
         )
 
         cls.test_metric.save()
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
+        cls.test_metric.delete()
 
     def test_NetworkRXDomainMetric_name_resolves_to_metrics_url(self):
-        url = reverse('domain_net_rx', args=(1,))
+        url = reverse('console_domain_net_rx', args=(1,))
         self.assertEqual(url, '/metrics/domain/net.rx/id/1/')
 
     def test_NetworkRXDomainMetric_url_resolves_to_metrics_view(self):
@@ -547,7 +601,7 @@ class DomainMetricViewTests(TestCase):
         self.assertEqual(resolver.func, domain_metrics)
 
     def test_NetworkTXDomainMetric_name_resolves_to_metrics_url(self):
-        url = reverse('domain_net_tx', args=(1,))
+        url = reverse('console_domain_net_tx', args=(1,))
         self.assertEqual(url, '/metrics/domain/net.tx/id/1/')
 
     def test_NetworkTXDomainMetric_url_resolves_to_metrics_view(self):
@@ -555,7 +609,7 @@ class DomainMetricViewTests(TestCase):
         self.assertEqual(resolver.func, domain_metrics)
 
     def test_HitsDomainMetric_name_resolves_to_metrics_url(self):
-        url = reverse('domain_hits', args=(1,))
+        url = reverse('console_domain_hits', args=(1,))
         self.assertEqual(url, '/metrics/domain/hits/id/1/')
 
     def test_HitsDomainMetric_url_resolves_to_metrics_view(self):
@@ -563,7 +617,7 @@ class DomainMetricViewTests(TestCase):
         self.assertEqual(resolver.func, domain_metrics)
 
     def test_NetworkRXDomainMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('domain_net_rx_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_domain_net_rx_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/domain/net.rx/tag/{}/'.format(settings.TEST_TAG))
 
     def test_NetworkRXDomainMetricPerTag_url_resolves_to_metrics_view(self):
@@ -571,7 +625,7 @@ class DomainMetricViewTests(TestCase):
         self.assertEqual(resolver.func, domain_metrics_per_tag)
 
     def test_NetworkTXDomainMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('domain_net_tx_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_domain_net_tx_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/domain/net.tx/tag/{}/'.format(settings.TEST_TAG))
 
     def test_NetworkTXDomainMetricPerTag_url_resolves_to_metrics_view(self):
@@ -579,7 +633,7 @@ class DomainMetricViewTests(TestCase):
         self.assertEqual(resolver.func, domain_metrics_per_tag)
 
     def test_HitsDomainMetricPerTag_name_resolves_to_metrics_url(self):
-        url = reverse('domain_hits_per_tag', args=(settings.TEST_TAG,))
+        url = reverse('console_domain_hits_per_tag', args=(settings.TEST_TAG,))
         self.assertEqual(url, '/metrics/domain/hits/tag/{}/'.format(settings.TEST_TAG))
 
     def test_HitsDomainMetricPerTag_url_resolves_to_metrics_view(self):
@@ -601,18 +655,13 @@ class DomainMetricViewTests(TestCase):
 
     def test_domain_view_handles_logged_in_user(self):
         self.request_post.session = {
-            'client': UwsgiItClient(
-                settings.TEST_USER,
-                settings.TEST_PASSWORD,
-                settings.DEFAULT_API_URL)}
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': self.test_api.id}
         response = domain_metrics(
             self.request_post, 1, **{'model': NetworkRXDomainMetric, 'absolute_values': False, 'average': False})
         self.request_post.session = {}
         self.assertEqual(response.status_code, 200)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.test_metric.delete()
 
 
 class LogoutViewTest(TestCase):
@@ -630,8 +679,12 @@ class LogoutViewTest(TestCase):
         cls.request_post = request_factory.post('/logout/', follow=True)
         cls.request_post.session = {}
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
+
     def test_logout_name_resolves_to_logout_url(self):
-        url = reverse('logout')
+        url = reverse('console_logout')
         self.assertEqual(url, '/logout/')
 
     def test_logout_url_resolves_to_logout_view(self):
@@ -652,10 +705,10 @@ class LogoutViewTest(TestCase):
     def test_logout_logs_out_logged_in_user(self):
         #login
         self.client.post('/', follow=True, data={
-                'username': settings.TEST_USER,
-                'password': settings.TEST_PASSWORD,
-                'api_url': self.test_api.id,
-                'action_login': 1})
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': self.test_api.id,
+            'action_login': 1})
         response = self.client.get('/me/')
         self.assertEqual(response.status_code, 200)
 
@@ -666,10 +719,10 @@ class LogoutViewTest(TestCase):
 
         #login
         self.client.post('/', follow=True, data={
-                'username': settings.TEST_USER,
-                'password': settings.TEST_PASSWORD,
-                'api_url': self.test_api.id,
-                'action_login': 1})
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': self.test_api.id,
+            'action_login': 1})
         response = self.client.get('/me/')
         self.assertEqual(response.status_code, 200)
 
@@ -677,7 +730,3 @@ class LogoutViewTest(TestCase):
         self.assertRedirects(response, '/')
         response = self.client.get('/me/', follow=True)
         self.assertRedirects(response, '/')
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.test_api.delete()

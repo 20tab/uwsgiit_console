@@ -1,12 +1,12 @@
-"""
-Django settings for uwsgiit_console project.
+'''
+Django settings for uwsgiit_console example project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
-"""
+'''
 import os
 
 
@@ -45,7 +45,7 @@ TEMPLATE_DIRS = (
     'templates',
 )
 
-MANAGERS = (("errors", "errors@email.com"),)
+MANAGERS = (('errors', 'errors@email.com'),)
 
 DATABASES = {
     'default': {
@@ -72,20 +72,18 @@ MIDDLEWARE_CLASSES = [
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.core.context_processors.tz",
-    "django.contrib.messages.context_processors.messages",
-    "console.template_context.context_processors.console_context",
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz',
+    'django.contrib.messages.context_processors.messages',
+    'console.template_context.context_processors.console_context',
 )
 
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
-
-ROOT_URLCONF = 'uwsgiit_console.urls'
+ROOT_URLCONF = 'demo.urls'
 
 WSGI_APPLICATION = 'uwsgiit_console.wsgi.application'
 

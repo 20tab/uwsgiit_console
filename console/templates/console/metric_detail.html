@@ -1,23 +1,22 @@
-{% extends 'metrics_base.html' %}
+{% extends 'console/metrics_base.html' %}
 
 {% block extra_head %}
     {{ block.super }}
-    <script src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
+    <script src="{{ STATIC_URL }}console/js/jquery.cookie.js"></script>
 {% endblock %}
 
 {% block content %}
 
     <h3>{{ subject }} {{ metric_type }} Metrics</b></h3>
-    {% include "metrics_container.html" with id=subject %}
+    {% include "console/metrics_container.html" %}
 {% endblock %}
 
 
 {% block footer_js %}
+    {{ block.super }}
     <script>
-        var id = '{{ subject }}';
         var url = '{{ url }}';
         var dates = {{dates|safe}};
     </script>
-    {{ block.super }}
-    <script src="{{ STATIC_URL }}js/metric_detail.js"></script>
+    <script src="{{ STATIC_URL }}console/js/metric_detail.js"></script>
 {% endblock %}

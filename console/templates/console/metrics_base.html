@@ -1,0 +1,20 @@
+{% extends 'console/sortable_table.html' %}
+{% load console_tags %}
+
+{% block extra_style %}
+    {{ block.super }}
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}console/rickshaw/rickshaw.min.css">
+{% endblock %}
+{% block extra_head %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}console/rickshaw/vendor/d3.v3.js"></script>
+    <script src="{{ STATIC_URL }}console/rickshaw/rickshaw.min.js"></script>
+{% endblock %}
+
+{% block footer_js %}
+    {{ block.super }}
+    <script language="javascript">
+        var metric_detail_url = "{% url 'console_metric_detail' %}";
+    </script>
+    <script src="{{ STATIC_URL }}console/js/metrics.js"></script>
+{% endblock %}
