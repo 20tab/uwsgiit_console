@@ -1,6 +1,6 @@
-VERSION = (0, 2)
+VERSION = (0, 2, 1)
 
-__version__ = '.'.join((str(each) for each in VERSION[:3]))
+__version__ = '.'.join((str(each) for each in VERSION[:4]))
 
 
 def get_version():
@@ -8,4 +8,4 @@ def get_version():
     Returns string with digit parts only as version.
 
     """
-    return '.'.join((str(each) for each in VERSION[:2]))
+    return '.'.join((str(each) for each in VERSION[:3]))
