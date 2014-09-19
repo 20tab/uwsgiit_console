@@ -1,0 +1,17 @@
+{% extends 'console/index.html' %}
+
+{% block extra_style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{ STATIC_URL }}console/tablesorter/css/theme.bootstrap.css">
+{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}console/tablesorter/js/jquery.tablesorter.min.js"></script>
+    <script src="{{ STATIC_URL }}console/tablesorter/js/jquery.tablesorter.widgets.min.js"></script>
+{% endblock %}
+
+{% block footer_js %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}console/js/table.js"></script>
+{% endblock %}

@@ -1,12 +1,12 @@
-"""
-Django settings for uwsgiit_console project.
+'''
+Django settings for uwsgiit_console example project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
-"""
+'''
 import os
 
 
@@ -20,7 +20,15 @@ CONSOLE_TITLE = 'uWSGI.it Console'
 CONSOLE_SUBTITLE = '20tab srl'
 DEFAULT_API_URL = 'https://api.uwsgi.it/api/'
 
+TEST_USER = '20tab'
+TEST_PASSWORD = 'alopata'
+TEST_CONTAINER = '30003'
+TEST_DOMAIN = '267'
+TEST_TAG = '20tab'
+
 ######################
+
+DEBUG = TEMPLATE_DEBUG = True
 
 DJANGO_APPS = (
     'django.contrib.admin',
@@ -32,7 +40,6 @@ DJANGO_APPS = (
 )
 
 THIRD_PARTY_APPS = (
-    'select2',
 )
 
 LOCAL_APPS = (
@@ -42,19 +49,15 @@ LOCAL_APPS = (
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 TEMPLATE_DIRS = (
-    'templates',
+    os.path.join(os.path.abspath(BASE_DIR), 'templates'),
 )
 
-MANAGERS = (("errors", "errors@email.com"),)
+MANAGERS = (('errors', 'errors@email.com'),)
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Or path to database file if using sqlite3.
-        'NAME': 'uwsgiit_console.db',
-        'USER': '',  # Not used with sqlite3.
-        'PASSWORD': '',  # Not used with sqlite3.
-        'HOST': '',  # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',  # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
     }
 }
 
@@ -72,22 +75,20 @@ MIDDLEWARE_CLASSES = [
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.core.context_processors.tz",
-    "django.contrib.messages.context_processors.messages",
-    "console.template_context.context_processors.console_context",
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz',
+    'django.contrib.messages.context_processors.messages',
+    'console.template_context.context_processors.console_context',
 )
 
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+ROOT_URLCONF = 'console.urls'
 
-ROOT_URLCONF = 'uwsgiit_console.urls'
-
-WSGI_APPLICATION = 'uwsgiit_console.wsgi.application'
+WSGI_APPLICATION = 'uwsgiit_console.wsgi.demo.application'
 
 
 # Internationalization
@@ -113,5 +114,3 @@ STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'static'))
 MEDIA_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'media'))
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-
-DEBUG = TEMPLATE_DEBUG = True

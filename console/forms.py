@@ -2,8 +2,9 @@ import re
 from datetime import datetime, timedelta
 
 from django import forms
+from django.conf import settings
 from django.utils.dates import MONTHS
-from django. conf import settings
+from django.core.urlresolvers import resolve, Resolver404
 
 from uwsgiit.api import UwsgiItClient
 from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
@@ -30,12 +31,12 @@ class LoginForm(forms.Form):
     def clean(self):
         cd = super(LoginForm, self).clean()
         if 'username' in cd and 'password' in cd and 'api_url' in cd:
-            cd['client'] = UwsgiItClient(
+            client = UwsgiItClient(
                 cd['username'],
                 cd['password'],
                 cd['api_url'].url)
 
-            me = cd['client'].me().json()
+            me = client.me().json()
             if 'error' in me:
                 raise forms.ValidationError(u'Wrong username or password')
         return cd
@@ -211,3 +212,18 @@ class CalendarForm(forms.Form):
         if self.is_in_the_future():
             raise forms.ValidationError(u'Set a date in the past.')
         return data
+
+
+class MetricDetailForm(forms.Form):
+    metric_url = forms.CharField()
+    metric_type = forms.CharField()
+    subject = forms.CharField()
+
+    def clean(self):
+        cd = super(MetricDetailForm, self).clean()
+        if 'metric_url' in cd:
+            try:
+                resolve(cd['metric_url'])
+            except Resolver404:
+                raise forms.ValidationError(u'Invalid url')
+        return cd

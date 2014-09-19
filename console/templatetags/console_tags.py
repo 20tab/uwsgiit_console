@@ -20,35 +20,35 @@ def get_metrics_list(parser, token):
         raise template.TemplateSyntaxError("{} expected format is 'metric_type as varname'".format(bits[0]))
     if metric_type == u'domain_per_tag':
         metric_list = (
-            (u'domain_net_rx_per_tag', u'Network RX'),
-            (u'domain_net_tx_per_tag', u'Network TX'),
-            (u'domain_hits_per_tag', u'Hits')
+            (u'console_domain_net_rx_per_tag', u'Network RX'),
+            (u'console_domain_net_tx_per_tag', u'Network TX'),
+            (u'console_domain_hits_per_tag', u'Hits')
         )
     elif metric_type == u'container_per_tag':
         metric_list = (
-            (u'container_io_read_per_tag', u'IO Read'),
-            (u'container_io_write_per_tag', u'IO Write'),
-            (u'container_net_rx_per_tag', u'Network RX'),
-            (u'container_net_tx_per_tag', u'Network TX'),
-            (u'container_cpu_per_tag', u'CPU Ticks'),
-            (u'container_mem_per_tag', u'Memory'),
-            (u'container_quota_per_tag', u'Quota')
+            (u'console_container_io_read_per_tag', u'IO Read'),
+            (u'console_container_io_write_per_tag', u'IO Write'),
+            (u'console_container_net_rx_per_tag', u'Network RX'),
+            (u'console_container_net_tx_per_tag', u'Network TX'),
+            (u'console_container_cpu_per_tag', u'CPU Ticks'),
+            (u'console_container_mem_per_tag', u'Memory'),
+            (u'console_container_quota_per_tag', u'Quota')
         )
     elif metric_type == u'domain':
         metric_list = (
-            (u'domain_net_rx', u'Network RX'),
-            (u'domain_net_tx', u'Network TX'),
-            (u'domain_hits', u'Hits')
+            (u'console_domain_net_rx', u'Network RX'),
+            (u'console_domain_net_tx', u'Network TX'),
+            (u'console_domain_hits', u'Hits')
         )
     elif metric_type == u'container':
         metric_list = (
-            (u'container_io_read', u'IO Read'),
-            (u'container_io_write', u'IO Write'),
-            (u'container_net_rx', u'Network RX'),
-            (u'container_net_tx', u'Network TX'),
-            (u'container_cpu', u'CPU Ticks'),
-            (u'container_mem', u'Memory'),
-            (u'container_quota', u'Quota')
+            (u'console_container_io_read', u'IO Read'),
+            (u'console_container_io_write', u'IO Write'),
+            (u'console_container_net_rx', u'Network RX'),
+            (u'console_container_net_tx', u'Network TX'),
+            (u'console_container_cpu', u'CPU Ticks'),
+            (u'console_container_mem', u'Memory'),
+            (u'console_container_quota', u'Quota')
         )
     else:
         raise template.TemplateSyntaxError(

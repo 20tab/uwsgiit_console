@@ -1,4 +1,4 @@
-{% extends 'metrics_base.html' %}
+{% extends 'console/metrics_base.html' %}
 {% load console_tags %}
 
 {% block content %}
@@ -21,7 +21,7 @@
         <!-- INFO -->
         <div class="tab-pane{% if not active_panel %} active{% endif %}" id="infos">
             <div class="table-responsive">
-                <form id="domain-form" class="form-inline" role="form" action="{% url 'domain' domain.id %}" method="post">
+                <form id="domain-form" class="form-inline" role="form" action="{% url 'console_domain' domain.id %}" method="post">
                     {% csrf_token %}
                     <table class="table table-hover table-bordered">
                     {% for k, v in domain.items %}
@@ -43,7 +43,7 @@
 
        <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
             {% get_metrics_list domain as metrics %}
-            {% include "metrics.html" with arg=domain.id id='domain' %}
+            {% include "console/metrics.html" with arg=domain.id id='domain' %}
         </div>
     </div>
 {% endblock %}
@@ -53,7 +53,7 @@
         var subject = '{{ domain.name }}';
     </script>
     {{ block.super }}
-    <script src="{{ STATIC_URL }}js/multiple_metrics.js"></script>
+    <script src="{{ STATIC_URL }}console/js/multiple_metrics.js"></script>
 
 {% endblock %}
 

@@ -1,0 +1,2 @@
+django
+uwsgiit_demo

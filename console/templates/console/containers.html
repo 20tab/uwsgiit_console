@@ -1,4 +1,4 @@
-{% extends 'metrics_base.html' %}
+{% extends 'console/metrics_base.html' %}
 {% load cycle from future %}
 {% load console_tags %}
 
@@ -27,7 +27,7 @@
 
         <!-- INFO -->
         <div class="tab-pane{% if not active_panel %} active{% endif %}" id="infos">
-            <form id="container-form" class="form-inline" role="form" action="{% url 'containers' container.uid %}" method="post">
+            <form id="container-form" class="form-inline" role="form" action="{% url 'console_containers' container.uid %}" method="post">
                 {% csrf_token %}
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered">
@@ -61,7 +61,7 @@
                 {% endfor %}
             {% endif %}
             <div class="div-as-tablerow row div-hover">
-                <form id="ssh-form" class="form-inline" role="form" action="{% url 'containers' container.uid %}" method="post">
+                <form id="ssh-form" class="form-inline" role="form" action="{% url 'console_containers' container.uid %}" method="post">
                     {% csrf_token %}
                     <input type="hidden" name="action" id="id_action"/>
                     {{ sshform }}
@@ -84,7 +84,7 @@
         <!-- Metrics -->
         <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
             {% get_metrics_list container as metrics %}
-            {% include "metrics.html" with arg=container.uid id='container' %}
+            {% include "console/metrics.html" with arg=container.uid id='container' %}
         </div>
     </div>
 
@@ -95,7 +95,7 @@
     <script>
         var subject = '{{ container.name }}' + ' ' + '{{ container.uid }}';
     </script>
-    <script src="{{ STATIC_URL }}js/multiple_metrics.js"></script>
+    <script src="{{ STATIC_URL }}console/js/multiple_metrics.js"></script>
 
 {% endblock %}
 

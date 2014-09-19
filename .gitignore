@@ -8,9 +8,8 @@
 .idea
 .DS_Store
 .swp
+.tox
 .coverage
 media/
 analysis
 francesco.ini
-uwsgiit_console/settings/base_test.py
-uwsgiit
