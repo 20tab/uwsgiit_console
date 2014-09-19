@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.conf import settings
 
-from uwsgiit.api import UwsgiItClient
+from uwsgiit.api import UwsgiItClient as UC
 
 from .decorators import login_required
 from .forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
@@ -19,11 +19,18 @@ def logout(request):
 
 
 def main_render(request, template, v_dict={}):
-    client = request.session.get('client', False)
-    if client:
-        v_dict['containers'] = sorted(client.containers().json(), key=lambda k: k['name'])
+    username = request.session.get('username', False)
+    password = request.session.get('password', False)
+    api_url = request.session.get('api_url', False)
 
-    return render_to_response(template, v_dict, context_instance=RequestContext(request))
+    if username and password and api_url:
+        client = UC(username, password, api_url)
+
+        v_dict['containers'] = sorted(
+            client.containers().json(), key=lambda k: k['name'])
+
+    return render_to_response(
+        template, v_dict, context_instance=RequestContext(request))
 
 
 def home(request):
@@ -32,13 +39,18 @@ def home(request):
         login_form = LoginForm(request.POST)
         if login_form.is_valid():
             cd = login_form.cleaned_data
-            request.session['client'] = cd['client']
+            request.session['username'] = cd['username']
+            request.session['password'] = cd['password']
+            request.session['api_url'] = cd['api_url'].url
             return HttpResponseRedirect('/me/')
     else:
         login_form = LoginForm()
 
-    client = request.session.get(
-        'client', UwsgiItClient(None, None, settings.DEFAULT_API_URL))
+    username = request.session.get('username', None)
+    password = request.session.get('password', None)
+    api_url = request.session.get('api_url', settings.DEFAULT_API_URL)
+
+    client = UC(username, password, api_url)
 
     news = client.news().json()
     for n in news:
@@ -49,12 +61,14 @@ def home(request):
     if client.username is None:
         v_dict['login_form'] = login_form
 
-    return main_render(request, 'index.html', v_dict)
+    return main_render(request, 'console/index.html', v_dict)
 
 
 @login_required
 def me_page(request):
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     me = client.me().json()
     v_dict = {'me': me}
@@ -74,13 +88,15 @@ def me_page(request):
     v_dict['me_form'] = me_form
     v_dict['distros'] = client.distros().json()
 
-    return main_render(request, 'me.html', v_dict)
+    return main_render(request, 'console/me.html', v_dict)
 
 
 @login_required
 def containers(request, id):
     res = {}
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
     if id:
         container = client.container(id).json()
         container_copy = container.copy()
@@ -95,6 +111,8 @@ def containers(request, id):
         used_quota /= 1024 * 1024
 
         container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
+        container_copy['memory'] = str(container_copy['memory']) + 'MB'
+        container_copy['quota_threshold'] = str(container_copy['quota_threshold']) + '%'
         res['container_copy'] = container_copy
         res['container'] = container
 
@@ -168,13 +186,15 @@ def containers(request, id):
         res['sshform'] = sshform
         res['calendar'] = calendar
         res['active_panel'] = active_panel
-    return main_render(request, 'containers.html', res)
+    return main_render(request, 'console/containers.html', res)
 
 
 @login_required
 def domains(request):
     res = {}
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     new_domain = NewDomainForm()
     calendar = CalendarForm()
@@ -226,14 +246,16 @@ def domains(request):
     res['calendar'] = calendar
     res['tags'] = used_tags
 
-    return main_render(request, 'domains.html', res)
+    return main_render(request, 'console/domains.html', res)
 
 
 @login_required
 def domain(request, id):
     calendar = CalendarForm()
     res = {}
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
 
@@ -262,14 +284,16 @@ def domain(request, id):
     res['calendar'] = calendar
     res['domain'] = domain
     res['domainform'] = form
-    return main_render(request, 'domain.html', res)
+    return main_render(request, 'console/domain.html', res)
 
 
 @login_required
 def tags(request):
     res = {}
     tagform = TagForm()
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     if request.POST:
         tagform = TagForm(request.POST)
@@ -283,17 +307,19 @@ def tags(request):
 
     res['tags'] = client.list_tags().json()
     res['tagform'] = tagform
-    return main_render(request, 'tags.html', res)
+    return main_render(request, 'console/tags.html', res)
 
 
 @login_required
 def tag(request, tag):
     res = {}
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     res['tag'] = tag
     res['calendar_domains'] = CalendarForm(auto_id='calendar-domains-%s')
     res['calendar_containers'] = CalendarForm(auto_id='calendar-containers-%s')
     res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
-    return main_render(request, 'tag.html', res)
+    return main_render(request, 'console/tag.html', res)

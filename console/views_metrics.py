@@ -1,15 +1,21 @@
 import json
+import re
 
 from django.http import HttpResponse
+from django.forms import ValidationError
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from .forms import CalendarForm
+from uwsgiit.api import UwsgiItClient as UC
+
+from .forms import CalendarForm, MetricDetailForm
 from .decorators import login_required
 from .views import main_render
 
 
 def stats_render(request, metrics, **kwargs):
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     time_unit = u'hour'
     metric_name = u'Invalid date'
@@ -46,7 +52,9 @@ def domain_metrics(request, domain, **kwargs):
 
 @login_required
 def container_metrics_per_tag(request, tag, **kwargs):
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     containers = client.containers(tags=[tag]).json()
     metrics = [kwargs['model'](container=c['uid']) for c in containers]
@@ -56,7 +64,9 @@ def container_metrics_per_tag(request, tag, **kwargs):
 
 @login_required
 def domain_metrics_per_tag(request, tag, **kwargs):
-    client = request.session.get('client')
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
 
     domains = client.domains(tags=[tag]).json()
     metrics = [kwargs['model'](domain=d['id']) for d in domains]
@@ -68,10 +78,20 @@ def domain_metrics_per_tag(request, tag, **kwargs):
 @ensure_csrf_cookie
 def metric_detail(request):
     v_dict = {}
-    # client = request.session.get('client')
-    if request.GET:
-        v_dict['dates'] = json.dumps(request.GET.getlist('date_list[]', None))
-        v_dict['url'] = request.GET.get('metric_url', None)
-        v_dict['metric_type'] = request.GET.get('metric_type', None)
-        v_dict['subject'] = request.GET.get('subject', None)
-    return main_render(request, 'metric_detail.html', v_dict)
+    if request.GET and 'date_list[]' in request.GET:
+        dates = request.GET.getlist('date_list[]')
+        for date in dates:
+            result = re.search(
+                r'^year=\d{4}&month=\d{0,2}&day=\d{0,2}$', date)
+            if result is None:
+                msg = u'Invalid Date'
+                raise ValidationError(msg)
+
+        form = MetricDetailForm(request.GET)
+        if form.is_valid():
+            cd = form.cleaned_data
+            v_dict['dates'] = json.dumps(dates)
+            v_dict['url'] = cd['metric_url']
+            v_dict['metric_type'] = cd['metric_type']
+            v_dict['subject'] = cd['subject']
+    return main_render(request, 'console/metric_detail.html', v_dict)
