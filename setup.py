@@ -9,7 +9,7 @@ setup(
     long_description=open(
         os.path.join(os.path.dirname(__file__), 'README.md')).read(),
     classifiers=[
-        "Development Status :: Beta",
+        "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
         "Framework :: Django",
         "Operating System :: OS Independent",
