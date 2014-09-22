@@ -9,7 +9,7 @@ setup(
     long_description=open(
         os.path.join(os.path.dirname(__file__), 'README.md')).read(),
     classifiers=[
-        "Development Status :: Beta",
+        "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
         "Framework :: Django",
         "Operating System :: OS Independent",
@@ -26,9 +26,9 @@ setup(
     license='MIT License',
     platforms=['OS Independent'],
     install_requires=[
-        'Django',
-        'twentytab-select2',
-        'uwsgiit-py>=0.8.1'
+        'Django{}'.format(console.DJANGO_VERSION),
+        'twentytab-select2{}'.format(console.SELECT2_VERSION),
+        'uwsgiit-py{}'.format(console.UWSGIIT_VERSION)
     ],
     packages=find_packages(exclude=['demo', 'demo.*']),
     include_package_data=True,
