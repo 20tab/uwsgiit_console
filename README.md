@@ -34,7 +34,7 @@ In the end you can set a few variables:
 
 ```py
 CONSOLE_TITLE = 'Whatever You Want'  #Default 'uWSGI.it Console'
-CONSOLE_SUBTITLE = 'Whatever You Want'  #Default '20tab srl'
+CONSOLE_SUBTITLE = 'Whatever You Want'  #Default ''
 DEFAULT_API_URL = 'https://whatever.you.want/'  #Default 'https://api.uwsgi.it/api/'
 ```
 
@@ -70,10 +70,7 @@ To launch test you should install tox (pip install tox) and you need to add a fe
     TEST_CONTAINER = '12345'
     TEST_DOMAIN = '123'
     TEST_TAG = 'TAG_EXAMPLE'
-    DEFAULT_API_URL = 'https://api.uwsgi.it/api/'
 ```
-
-Obviously you can change DEFAULT_API_URL with every uwsgi.it API you want to test it with
 
 Now you can launch the tests with::
 
@@ -81,4 +78,4 @@ Now you can launch the tests with::
     ./run_tests
 ```
 
-Now, since this project relies on third party APIs... you have to be patience, normally it takes around 1 minute.
+Now, since this project relies on third party API... you have to be patience, normally it takes around 1 minute.
