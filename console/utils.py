@@ -1,5 +1,8 @@
+from __future__ import unicode_literals, absolute_import
 from datetime import date, timedelta
 from calendar import monthrange
+
+from django.utils.six.moves import xrange
 
 
 def diff(a, b):

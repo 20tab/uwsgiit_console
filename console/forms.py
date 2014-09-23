@@ -1,5 +1,6 @@
-import re
+from __future__ import unicode_literals, absolute_import
 from datetime import datetime, timedelta
+import re
 
 from django import forms
 from django.conf import settings
@@ -14,13 +15,13 @@ from .models import UwsgiItApi
 
 class LoginForm(forms.Form):
     action_login = forms.IntegerField(
-        label=u'', widget=forms.HiddenInput(), initial=1)
-    username = forms.CharField(label=u'', widget=forms.TextInput(
+        label='', widget=forms.HiddenInput(), initial=1)
+    username = forms.CharField(label='', widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Username'}))
-    password = forms.CharField(label=u'', widget=forms.PasswordInput(
+    password = forms.CharField(label='', widget=forms.PasswordInput(
         attrs={'class': 'form-control', 'placeholder': 'Password'}))
     api_url = forms.ModelChoiceField(
-        label=u'Api url :', queryset=UwsgiItApi.objects.none())
+        label='Api url :', queryset=UwsgiItApi.objects.none())
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
@@ -38,20 +39,20 @@ class LoginForm(forms.Form):
 
             me = client.me().json()
             if 'error' in me:
-                raise forms.ValidationError(u'Wrong username or password')
+                raise forms.ValidationError('Wrong username or password')
         return cd
 
 
 class MeForm(forms.Form):
-    company = forms.CharField(label=u'Company', widget=forms.TextInput(
+    company = forms.CharField(label='Company', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}))
-    password = forms.CharField(label=u'Password', widget=forms.PasswordInput(
+    password = forms.CharField(label='Password', widget=forms.PasswordInput(
         attrs={'class': 'form-control'}, render_value=True))
     re_password = forms.CharField(
-        label=u'Retype password',
+        label='Retype password',
         widget=forms.PasswordInput(
             render_value=True, attrs={'class': 'form-control'}))
-    vat = forms.CharField(label=u'Vat', widget=forms.TextInput(
+    vat = forms.CharField(label='Vat', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}), required=False)
 
     def clean(self):
@@ -60,13 +61,13 @@ class MeForm(forms.Form):
             p1 = cd['password']
             p2 = cd['re_password']
             if p1 != p2:
-                self._errors[u're_password'] = self.error_class(
-                    [u'Passwords do not match'])
+                self._errors['re_password'] = self.error_class(
+                    ['Passwords do not match'])
         return cd
 
 
 class SSHForm(forms.Form):
-    key = forms.CharField(label=u'ssh key', widget=forms.Textarea(
+    key = forms.CharField(label='ssh key', widget=forms.Textarea(
         attrs={'cols': 100, 'rows': 3, 'class': 'form-control'}))
 
     def clean(self):
@@ -81,16 +82,16 @@ class SSHForm(forms.Form):
                 result = re.search(
                     r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@*$', key)
                 if result is None:
-                    msg = u'Insered value is not a ssh-rsa key'
+                    msg = 'Insered value is not a ssh-rsa key'
                     raise forms.ValidationError(msg)
             else:
-                msg = u'Key too long'
+                msg = 'Key too long'
                 raise forms.ValidationError(msg)
         return data
 
 
 class ContainerForm(forms.Form):
-    distro = forms.CharField(label=u'Distro', widget=forms.Select(choices=()))
+    distro = forms.CharField(label='Distro', widget=forms.Select(choices=()))
     tags = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
@@ -115,7 +116,7 @@ class ContainerForm(forms.Form):
 
 
 class TagForm(forms.Form):
-    name = forms.CharField(label=u'Name')
+    name = forms.CharField(label='Name')
 
 
 class DomainForm(forms.Form):
@@ -136,7 +137,7 @@ class DomainForm(forms.Form):
 
 class NewDomainForm(forms.Form):
     name = forms.CharField(
-        label=u'Name', widget=forms.TextInput(attrs={'size': 70}))
+        label='Name', widget=forms.TextInput(attrs={'size': 70}))
 
 
 class CalendarForm(forms.Form):
@@ -165,31 +166,31 @@ class CalendarForm(forms.Form):
     def get_params(self):
         res = {}
         data = self.cleaned_data
-        if self.has_value(u'year'):
-            res[u'year'] = data[u'year']
-        if self.has_value(u'month'):
-            res[u'month'] = int(data[u'month'])
-        if self.has_value(u'day'):
-            res[u'day'] = data[u'day']
+        if self.has_value('year'):
+            res['year'] = data['year']
+        if self.has_value('month'):
+            res['month'] = int(data['month'])
+        if self.has_value('day'):
+            res['day'] = data['day']
         return res
 
     def metric_name(self):
         metric_name = ''
         data = self.cleaned_data
-        if self.has_value(u'year'):
-            metric_name = str(data[u'year'])
-            if self.has_value(u'month'):
-                metric_name = str(data[u'month']) + '-' + metric_name
-                if self.has_value(u'day'):
-                    metric_name = str(data[u'day']) + '-' + metric_name
+        if self.has_value('year'):
+            metric_name = str(data['year'])
+            if self.has_value('month'):
+                metric_name = str(data['month']) + '-' + metric_name
+                if self.has_value('day'):
+                    metric_name = str(data['day']) + '-' + metric_name
         return metric_name
 
     def time_unit(self):
-        if self.has_value(u'day'):
-            return u'hour'
-        elif self.has_value(u'month'):
-            return u'day'
-        return u'month'
+        if self.has_value('day'):
+            return 'hour'
+        elif self.has_value('month'):
+            return 'day'
+        return 'month'
 
     def is_in_the_future(self):
         data = self.get_params()
@@ -207,10 +208,10 @@ class CalendarForm(forms.Form):
 
     def clean(self):
         data = super(CalendarForm, self).clean()
-        if self.has_value(u'day') and not self.has_value(u'month'):
-            self._errors[u'month'] = self.error_class([u'Month is required.'])
+        if self.has_value('day') and not self.has_value('month'):
+            self._errors['month'] = self.error_class(['Month is required.'])
         if self.is_in_the_future():
-            raise forms.ValidationError(u'Set a date in the past.')
+            raise forms.ValidationError('Set a date in the past.')
         return data
 
 
@@ -225,5 +226,5 @@ class MetricDetailForm(forms.Form):
             try:
                 resolve(cd['metric_url'])
             except Resolver404:
-                raise forms.ValidationError(u'Invalid url')
+                raise forms.ValidationError('Invalid url')
         return cd

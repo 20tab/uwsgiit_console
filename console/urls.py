@@ -1,9 +1,11 @@
+from __future__ import unicode_literals, absolute_import
+
 try:
     from django.conf.urls import patterns, url
 except ImportError:
     from django.conf.urls.defaults import patterns, url
 
-from console.models import IOReadContainerMetric, IOWriteContainerMetric,\
+from .models import IOReadContainerMetric, IOWriteContainerMetric,\
     NetworkRXContainerMetric, NetworkTXContainerMetric, CPUContainerMetric,\
     MemoryContainerMetric, QuotaContainerMetric, NetworkRXDomainMetric,\
     NetworkTXDomainMetric, HitsDomainMetric
