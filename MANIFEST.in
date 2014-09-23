@@ -1,3 +1,5 @@
 include README.md
 include LICENSE
 include run_tests
+recursive-include console/static *
+recursive-include console/templates *
