@@ -28,7 +28,8 @@ setup(
     install_requires=[
         'Django{}'.format(console.DJANGO_VERSION),
         'twentytab-select2{}'.format(console.SELECT2_VERSION),
-        'uwsgiit-py{}'.format(console.UWSGIIT_VERSION)
+        'uwsgiit-py{}'.format(console.UWSGIIT_VERSION),
+        'django-appconf{}'.format(console.APPCONF_VERSION)
     ],
     packages=find_packages(exclude=['demo', 'demo.*']),
     include_package_data=True,

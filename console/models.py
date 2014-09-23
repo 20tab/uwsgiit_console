@@ -1,8 +1,9 @@
+from __future__ import unicode_literals, absolute_import
 import json
 from datetime import date
 
 from django.db import models
-from console.utils import all_days_of, excluded_days
+from .utils import all_days_of, excluded_days
 
 
 def date_from_params(params):

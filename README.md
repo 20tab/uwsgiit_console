@@ -1,9 +1,20 @@
 uwsgiit_console
 ===============
 
+A django app to simplify the use of uWSGI.it api
+
+You can take a look at the metrics of your containers, domains or all of the metrics of your domains and containers with the same tag!
+
+![alt tag](https://github.com/20tab/uwsgiit_console/blob/master/static/demo/screens/screen.png)
+
 INSTALLATION
 ============
+## Installation
 
+Use the following command:
+```sh
+    pip install uwsgiit-console
+```
 
 ## Configuration
 
@@ -43,7 +54,7 @@ DEFAULT_API_URL = 'https://whatever.you.want/'  #Default 'https://api.uwsgi.it/a
 ```py
 urlpatterns = patterns('',
     ... ,
-    (r'whatever/you/want', include('uwsgiit_console.urls')),
+    (r'whatever/you/want', include('console.urls')),
     ...
 )
 

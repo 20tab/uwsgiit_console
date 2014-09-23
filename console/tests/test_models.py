@@ -4,6 +4,8 @@ from datetime import date, timedelta
 
 from django.test import TestCase
 from django.conf import settings
+from django.utils.six.moves import xrange
+
 
 from uwsgiit.api import UwsgiItClient
 
@@ -32,7 +34,7 @@ class MetricTesterMixin():
             raise TypeError('Cannot handle {class_name} class'.format(
                 class_name=metric_class.__name__))
 
-        start = date(2010, 01, 01)
+        start = date(2010, 1, 1)
         end = date(2010, 12, 31)
 
         cls.test_metrics = []
@@ -86,7 +88,7 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
         self.assertEqual(QuotaContainerMetric().unit_of_measure, 'bytes')
 
     def test_generic_metric_to_string_prints_date(self):
-        self.assertEqual(str(self.test_metrics[0]), '2010-1-1')
+        self.assertEqual(self.test_metrics[0].__unicode__(), '2010-1-1')
 
     def test_metrics_returns_right_json_for_specific_day_from_db(self):
         result = NetworkRXContainerMetric(container=1).metrics(
@@ -221,7 +223,7 @@ class DomainMetricTests(MetricTesterMixin, TestCase):
         self.assertEqual(HitsDomainMetric().unit_of_measure, 'hits')
 
     def test_generic_metric_to_string_prints_date(self):
-        self.assertEqual(str(self.test_metrics[0]), '2010-1-1')
+        self.assertEqual(self.test_metrics[0].__unicode__(), '2010-1-1')
 
     def test_metrics_returns_right_json_for_specific_day_from_db(self):
         result = NetworkRXDomainMetric(domain=1).metrics(

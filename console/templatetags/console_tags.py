@@ -1,3 +1,5 @@
+from __future__ import unicode_literals, absolute_import
+
 from django import template
 
 
@@ -18,37 +20,37 @@ def get_metrics_list(parser, token):
         metric_type = bits[1]
     else:
         raise template.TemplateSyntaxError("{} expected format is 'metric_type as varname'".format(bits[0]))
-    if metric_type == u'domain_per_tag':
+    if metric_type == 'domain_per_tag':
         metric_list = (
-            (u'console_domain_net_rx_per_tag', u'Network RX'),
-            (u'console_domain_net_tx_per_tag', u'Network TX'),
-            (u'console_domain_hits_per_tag', u'Hits')
+            ('console_domain_net_rx_per_tag', 'Network RX'),
+            ('console_domain_net_tx_per_tag', 'Network TX'),
+            ('console_domain_hits_per_tag', 'Hits')
         )
-    elif metric_type == u'container_per_tag':
+    elif metric_type == 'container_per_tag':
         metric_list = (
-            (u'console_container_io_read_per_tag', u'IO Read'),
-            (u'console_container_io_write_per_tag', u'IO Write'),
-            (u'console_container_net_rx_per_tag', u'Network RX'),
-            (u'console_container_net_tx_per_tag', u'Network TX'),
-            (u'console_container_cpu_per_tag', u'CPU Ticks'),
-            (u'console_container_mem_per_tag', u'Memory'),
-            (u'console_container_quota_per_tag', u'Quota')
+            ('console_container_io_read_per_tag', 'IO Read'),
+            ('console_container_io_write_per_tag', 'IO Write'),
+            ('console_container_net_rx_per_tag', 'Network RX'),
+            ('console_container_net_tx_per_tag', 'Network TX'),
+            ('console_container_cpu_per_tag', 'CPU Ticks'),
+            ('console_container_mem_per_tag', 'Memory'),
+            ('console_container_quota_per_tag', 'Quota')
         )
-    elif metric_type == u'domain':
+    elif metric_type == 'domain':
         metric_list = (
-            (u'console_domain_net_rx', u'Network RX'),
-            (u'console_domain_net_tx', u'Network TX'),
-            (u'console_domain_hits', u'Hits')
+            ('console_domain_net_rx', 'Network RX'),
+            ('console_domain_net_tx', 'Network TX'),
+            ('console_domain_hits', 'Hits')
         )
-    elif metric_type == u'container':
+    elif metric_type == 'container':
         metric_list = (
-            (u'console_container_io_read', u'IO Read'),
-            (u'console_container_io_write', u'IO Write'),
-            (u'console_container_net_rx', u'Network RX'),
-            (u'console_container_net_tx', u'Network TX'),
-            (u'console_container_cpu', u'CPU Ticks'),
-            (u'console_container_mem', u'Memory'),
-            (u'console_container_quota', u'Quota')
+            ('console_container_io_read', 'IO Read'),
+            ('console_container_io_write', 'IO Write'),
+            ('console_container_net_rx', 'Network RX'),
+            ('console_container_net_tx', 'Network TX'),
+            ('console_container_cpu', 'CPU Ticks'),
+            ('console_container_mem', 'Memory'),
+            ('console_container_quota', 'Quota')
         )
     else:
         raise template.TemplateSyntaxError(
@@ -64,4 +66,4 @@ class MakeListNode(template.Node):
 
     def render(self, context):
         context[self.varname] = self.items
-        return ""
+        return ''

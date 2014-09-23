@@ -1,6 +1,8 @@
 import unittest
 from datetime import date
 
+from django.utils.six.moves import xrange
+
 from console.utils import all_days_of, excluded_days, daterange
 
 

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals, absolute_import
 import json
 import re
 
@@ -17,8 +18,8 @@ def stats_render(request, metrics, **kwargs):
                 request.session.get('password'),
                 request.session.get('api_url'))
 
-    time_unit = u'hour'
-    metric_name = u'Invalid date'
+    time_unit = 'hour'
+    metric_name = 'Invalid date'
     stats = []
     if request.POST and request.is_ajax:
         calendar = CalendarForm(request.POST)
@@ -84,7 +85,7 @@ def metric_detail(request):
             result = re.search(
                 r'^year=\d{4}&month=\d{0,2}&day=\d{0,2}$', date)
             if result is None:
-                msg = u'Invalid Date'
+                msg = 'Invalid Date'
                 raise ValidationError(msg)
 
         form = MetricDetailForm(request.GET)

@@ -1,3 +1,0 @@
-Django
-uwsgiit-py>=0.8.1
-twentytab-select2

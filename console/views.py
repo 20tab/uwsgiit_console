@@ -1,3 +1,4 @@
+from __future__ import unicode_literals, absolute_import
 from datetime import datetime
 
 from django.template import RequestContext
@@ -216,8 +217,8 @@ def domains(request):
                 cd = domain_form.cleaned_data
                 did = cd['did']
                 tags_post = []
-                if u'{}-tags'.format(did) in request.POST:
-                    tags_post = request.POST.getlist(u'{}-tags'.format(did))
+                if '{}-tags'.format(did) in request.POST:
+                    tags_post = request.POST.getlist('{}-tags'.format(did))
                 client.update_domain(did, {'tags': tags_post})
     if 'del' in request.GET:
         name = request.GET['del']
@@ -260,17 +261,17 @@ def domain(request, id):
     tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
 
     if request.POST:
-        if u'did' in request.POST:
+        if 'did' in request.POST:
             domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
                 params = {}
-                if u'tags' in cd:
-                    params[u'tags'] = cd[u'tags']
-                if u'note' in cd:
-                    params[u'note'] = cd[u'note']
+                if 'tags' in cd:
+                    params['tags'] = cd['tags']
+                if 'note' in cd:
+                    params['note'] = cd['note']
                 client.update_domain(id, params)
-    elif u'del' in request.GET:
+    elif 'del' in request.GET:
         name = request.GET['del']
         client.delete_domain(name)
 
