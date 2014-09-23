@@ -1,12 +1,16 @@
 from __future__ import unicode_literals
 
-
 from . import conf
 
 
-VERSION = (0, 2, 1)
+VERSION = (0, 2, 3)
 
 __version__ = '.'.join((str(each) for each in VERSION[:4]))
+
+DJANGO_VERSION = '==1.7'
+SELECT2_VERSION = '==0.10'
+UWSGIIT_VERSION = '==0.8.1'
+APPCONF_VERSION = '==0.6'
 
 
 def get_version():

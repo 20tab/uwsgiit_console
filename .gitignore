@@ -13,3 +13,7 @@
 media/
 analysis
 francesco.ini
+dist/
+uwsgiit_console.egg-info/
+build/
+fabfile.py
