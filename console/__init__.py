@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-from . import conf
-
 
 VERSION = (0, 2, 3)
 

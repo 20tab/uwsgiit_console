@@ -4,6 +4,7 @@ from datetime import date
 
 from django.db import models
 from .utils import all_days_of, excluded_days
+from . import conf
 
 
 def date_from_params(params):
