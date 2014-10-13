@@ -108,8 +108,13 @@ def containers(request, id):
         del container_copy['note']
 
         # Get last quota metric
-        used_quota = client.container_metric(id, 'quota', None).json()[0][1]
-        used_quota /= 1024 * 1024
+        quota_metrics = client.container_metric(id, 'quota', None).json()
+        if len(quota_metrics) > 0:
+            used_quota = quota_metrics[-1][1]
+            used_quota /= 1024 * 1024
+        # If there are no metrics (in case of new container)
+        else:
+            used_quota = 0
 
         container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
         container_copy['memory'] = str(container_copy['memory']) + 'MB'
