@@ -14,6 +14,7 @@
         </ul>
     </div>
     <div class="col-sm-9 col-lg-10">
+        <p>Tip: You can leave day field clean to get whole month</p>
         <form action="{% url metrics.0.0 arg %}" method="post" class="form-horizontal inline calendar" id="calendar-{{ id }}">
             {% csrf_token %}
             {{ calendar }}
