@@ -5,12 +5,36 @@ import re
 from django import forms
 from django.conf import settings
 from django.utils.dates import MONTHS
+from django.core.validators import validate_email
 from django.core.urlresolvers import resolve, Resolver404
 
 from uwsgiit.api import UwsgiItClient
 from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
 
 from .models import UwsgiItApi
+
+
+def email_list_validator(value):
+    "Check if value consists only of valid emails."
+    # Use the parent's handling of required fields, etc.
+    for email in value:
+        validate_email(email.strip())
+
+
+class MultiEmailField(forms.CharField):
+
+    default_validators = [email_list_validator]
+
+    def to_python(self, value):
+        "Normalize data to a list of strings."
+        # Return an empty list if no input was given.
+        if value in self.empty_values:
+            return []
+        return value.split(',')
+
+    def clean(self, value):
+        value = super(MultiEmailField, self).clean(value)
+        return ','.join([email.strip() for email in value])
 
 
 class LoginForm(forms.Form):
@@ -46,6 +70,8 @@ class LoginForm(forms.Form):
 class MeForm(forms.Form):
     company = forms.CharField(label='Company', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}))
+    email = MultiEmailField(label='Email', widget=forms.TextInput(
+        attrs={'class': 'form-control col-xs-8'}), required=False)
     password = forms.CharField(label='Password', widget=forms.PasswordInput(
         attrs={'class': 'form-control'}, render_value=True))
     re_password = forms.CharField(
@@ -91,6 +117,10 @@ class SSHForm(forms.Form):
 
 
 class ContainerForm(forms.Form):
+    name = forms.CharField(label='Name', required=False)
+    quota_threshold = forms.IntegerField(
+        label='Quota Threshold', min_value=0, max_value=100)
+    nofollow = forms.BooleanField(label='NoFollow', required=False)
     distro = forms.CharField(label='Distro', widget=forms.Select(choices=()))
     tags = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
@@ -100,6 +130,12 @@ class ContainerForm(forms.Form):
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
         required=False)
+    jid = forms.CharField(label='Jabber ID', required=False)
+    jid_destinations = forms.CharField(
+        label='Jabber Destinations', required=False)
+    jid_secret = forms.CharField(
+        label='Jabber Password', widget=forms.PasswordInput(), required=False)
+
     note = forms.CharField(
         widget=forms.Textarea(
             attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}),

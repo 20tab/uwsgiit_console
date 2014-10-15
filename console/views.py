@@ -73,17 +73,24 @@ def me_page(request):
 
     me = client.me().json()
     v_dict = {'me': me}
-    me_form = MeForm(initial={'company': me['company'],
-                              'password': request.session.get('password'),
-                              're_password': request.session.get('password'),
-                              'vat': me['vat']})
+    me_form = MeForm(initial={
+        'company': me['company'],
+        'email': me['email'],
+        'password': request.session.get('password'),
+        're_password': request.session.get('password'),
+        'vat': me['vat']
+    })
+
     if request.POST:
         me_form = MeForm(request.POST)
         if me_form.is_valid():
             cd = me_form.cleaned_data
-            client.update_me({'company': cd['company'],
-                              'password': cd['password'],
-                              'vat': cd['vat']})
+            client.update_me({
+                'company': cd['company'],
+                'email': cd['email'],
+                'password': cd['password'],
+                'vat': cd['vat']
+            })
             request.session['password'] = cd['password']
 
     v_dict['me_form'] = me_form
@@ -106,6 +113,10 @@ def containers(request, id):
         del container_copy['distro_name']
         del container_copy['tags']
         del container_copy['note']
+        del container_copy['quota_threshold']
+        del container_copy['nofollow']
+        del container_copy['jid']
+        del container_copy['jid_destinations']
 
         # Get last quota metric
         quota_metrics = client.container_metric(id, 'quota', None).json()
@@ -118,7 +129,6 @@ def containers(request, id):
 
         container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
         container_copy['memory'] = str(container_copy['memory']) + 'MB'
-        container_copy['quota_threshold'] = str(container_copy['quota_threshold']) + '%'
         res['container_copy'] = container_copy
         res['container'] = container
 
@@ -129,24 +139,52 @@ def containers(request, id):
 
         containers_actual_link_to = [x for x in client.containers().json() if x['uid'] != int(id)]
 
-        link_to = [(x['uid'], u"{} ({})".format(
+        link_to = [(x['uid'], u'{} ({})'.format(
             x['name'], x['uid'])) for x in containers_actual_link_to]
+
         containerform = ContainerForm(
-            tag_choices=tag_list, link_to_choices=link_to, distro_choices=distros_list,
-            initial={'distro': "{}".format(container['distro']),
-                     'note': container['note']})
+            tag_choices=tag_list,
+            link_to_choices=link_to,
+            distro_choices=distros_list,
+            initial={
+                'name': container['name'],
+                'quota_threshold': container['quota_threshold'],
+                'nofollow': container['nofollow'],
+                'distro': '{}'.format(container['distro']),
+                'note': container['note'],
+                'jid': container['jid'],
+                'jid_destinations': container['jid_destinations']
+            }
+        )
         sshform = SSHForm()
         calendar = CalendarForm()
 
         active_panel = None
         if request.POST:
             if 'distro' in request.POST:
-                containerform = ContainerForm(request.POST, tag_choices=tag_list, link_to_choices=link_to, distro_choices=distros_list)
+                containerform = ContainerForm(
+                    request.POST,
+                    tag_choices=tag_list,
+                    link_to_choices=link_to,
+                    distro_choices=distros_list)
+
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
-                    client.update_container(id, {'distro': cd['distro'],
-                                                 'tags': cd['tags'],
-                                                 'note': cd['note']})
+                    container_updates = {
+                        'distro': cd['distro'],
+                        'tags': cd['tags'],
+                        'note': cd['note'],
+                        'nofollow': cd['nofollow'],
+                        'quota_threshold': cd['quota_threshold']
+                    }
+
+                    optional_values = (
+                        'name', 'jid', 'jid_destinations', 'jid_secret')
+
+                    for ov in optional_values:
+                        if ov in cd:
+                            container_updates[ov] = cd[ov]
+                    client.update_container(id, container_updates)
 
                     list_link_to = [x['uid'] for x in containers_actual_link_to]
 
@@ -186,7 +224,6 @@ def containers(request, id):
 
         containerform.fields['tags'].initial = container['tags']
         containerform.fields['link_to'].initial = container['linked_to']
-        containerform.fields['note'].initial = container['note']
 
         res['containerform'] = containerform
         res['sshform'] = sshform
@@ -233,7 +270,7 @@ def domains(request):
     for d in client.domains().json():
         name = d['name']
         if len(name.split('.')) > 2:
-            name = "{}.{}".format(name.split('.')[-2], name.split('.')[-1])
+            name = '{}.{}'.format(name.split('.')[-2], name.split('.')[-1])
         d['key_name'] = name
         doms.append(d)
 
