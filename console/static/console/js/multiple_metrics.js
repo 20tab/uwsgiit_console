@@ -16,6 +16,12 @@ $(document).ready(function() {
                     $('#get-metrics-' + id).button('reset');
                     return;
                 }
+                console.log(data['metric_name']);
+                if (metrics[id] != undefined && metrics[id].date_list.indexOf(data['metric_name']) != -1 ){
+                    alert('Graph already present');
+                    $('#get-metrics-' + id).button('reset');
+                    return;
+                }
 
                 data['stats'] = combineMultipleMetrics(
                     data['stats'],
@@ -36,7 +42,8 @@ $(document).ready(function() {
                         shared_graph: undefined,
                         metric_list: [],
                         form_id: undefined,
-                        palette: new Rickshaw.Color.Palette()
+                        palette: new Rickshaw.Color.Palette(),
+                        date_list: []
                     };
 
                     chart_id = '#chart-' + id;
@@ -55,7 +62,9 @@ $(document).ready(function() {
                     legend_id = '#legend-' + id + '-' + data['metric_name'];
                     legend_container_id = '#legend_container-' + id + '-' + data['metric_name'];
                 }
+
                 var attribute_value = frm_data.substring(frm_data.indexOf("&") + 1);
+                metrics[id].date_list.push(data['metric_name']);
 
                 var returned_metrics = {
                     color: metrics[id].palette.color(),
