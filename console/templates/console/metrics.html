@@ -8,7 +8,7 @@
                 {% else %}
                     {% if active_panel == '{{ metric.0 }}' %}active{% endif %}
                 {% endif %}">
-                <a href="#" data-toggle="tab" onclick="$('#calendar-{{ id }}').attr('action', '{% url metric.0 arg %}'); clearGraph('{{ id }}');">{{ metric.1 }}</a>
+                <a href="#" data-toggle="tab" onclick="$('#calendar-{{ id }}').attr('action', '{% url metric.0 arg %}'); clearGraphs('{{ id }}');">{{ metric.1 }}</a>
             </li>
         {% endfor %}
         </ul>
@@ -19,7 +19,7 @@
             {{ calendar }}
             <button id="get-metrics-{{ id }}" data-loading-text="Loading..." class="btn btn-primary get-metrics-btn" data-id="{{ id }}">Go</button>
         </form>
-        <button class="inline btn btn-primary" onclick="clearGraph('{{ id }}');">Clear Graphs</button>
+        <button class="inline btn btn-primary" onclick="clearGraphs('{{ id }}');">Clear Graphs</button>
         {% include "console/metrics_container.html" %}
     </div>
 </div>

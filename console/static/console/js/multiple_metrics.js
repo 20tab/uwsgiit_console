@@ -16,7 +16,6 @@ $(document).ready(function() {
                     $('#get-metrics-' + id).button('reset');
                     return;
                 }
-                console.log(data['metric_name']);
                 if (metrics[id] != undefined && metrics[id].date_list.indexOf(data['metric_name']) != -1 ){
                     alert('Graph already present');
                     $('#get-metrics-' + id).button('reset');
@@ -36,7 +35,7 @@ $(document).ready(function() {
                 var legend_container_id;
 
                 if (metrics[id] == undefined || metrics[id].last_time_unit != data['time_unit']){
-                    clearGraph(id);
+                    clearGraphs(id);
                     metrics[id] = {
                         last_time_unit: data['time_unit'],
                         shared_graph: undefined,
@@ -53,7 +52,6 @@ $(document).ready(function() {
                 else {
                     $('#chart_container-' + id).append(
                         '<div id="chart-' + id + '-' + data['metric_name'] + '"></div>\
-                        <div id="timeline-' + id + '-' + data['metric_name'] + '"></div>\
                         <div id="legend_container-' + id + '-' + data['metric_name'] + '">\
                             <div id="legend-' + id + '-' + data['metric_name'] + '"></div>\
                         </div>'
@@ -120,6 +118,9 @@ $(document).ready(function() {
                 generateGraphDetails(graph, data['time_unit'], data['unit_of_measure'], legend_id);
                 generateModal(id, data['metric_name'], chart_id, legend_id, legend_container_id);
                 generateOpenInNewPageButton(id, data['metric_name'], frm_action, attribute_value, legend_container_id);
+                if (graph != metrics[id].shared_graph){
+                    generateCloseGraphButton(id, data['metric_name'], legend_container_id);
+                }
                 if (metrics[id].form_id == undefined){
                     metrics[id].form_id = '#form-' + id + '-' + data['metric_name'];
                 }

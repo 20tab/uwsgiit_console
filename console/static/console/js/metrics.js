@@ -3,17 +3,22 @@ var monthNames = [ "January", "February", "March", "April", "May", "June",
 
 var metrics = {};
 
-function clearGraph(id) {
+function clearGraphs(id) {
     $('#legend-' + id).empty();
     $('#chart_container-' + id).html(
         '<div id="chart-' + id + '"></div>\
-        <div id="timeline-' + id + '"></div>\
         <div id="legend_container-' + id + '">\
             <div id="legend-' + id + '" class="legend-class"></div>\
         </div>');
     metrics[id] = undefined;
 }
 
+function clearGraph(id){
+    console.log("ao")
+
+    $("#chart-" + id).remove();
+    $("#legend_container-" + id).remove();
+}
 
 function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit, calculateAverage){
 
@@ -189,6 +194,12 @@ function generateOpenInNewPageButton(id, form_id, metric_url, date, legend_conta
 
     addDateAsHiddenInputToForm('#' + form.attr('id') , date);
     form.append('<button class="btn btn-primary btn-lg" type="submit">Open In a New Page</button>');
+}
+
+function generateCloseGraphButton(id, metric_name, legend_container_id){
+    var identifier = id + '-' + metric_name;
+    var button = '<button class="btn btn-primary btn-lg btn-close-graph" onclick="clearGraph(\'' + identifier + '\');">Close Graph</button>';
+    $(legend_container_id).append(button);
 }
 
 function addDateAsHiddenInputToForm(form_id, date){
