@@ -37,6 +37,18 @@ class MultiEmailField(forms.CharField):
         return ','.join([email.strip() for email in value])
 
 
+class TagsFormMixin(forms.Form):
+    tags = forms.MultipleChoiceField(
+        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
+        choices=(),
+        required=False)
+
+    def __init__(self, *args, **kwargs):
+        tag_choices = kwargs.pop('tag_choices')
+        super(TagsFormMixin, self).__init__(*args, **kwargs)
+        self.fields['tags'].choices = tag_choices
+
+
 class LoginForm(forms.Form):
     action_login = forms.IntegerField(
         label='', widget=forms.HiddenInput(), initial=1)
@@ -116,16 +128,12 @@ class SSHForm(forms.Form):
         return data
 
 
-class ContainerForm(forms.Form):
+class ContainerForm(TagsFormMixin):
     name = forms.CharField(label='Name', required=False)
     quota_threshold = forms.IntegerField(
         label='Quota Threshold', min_value=0, max_value=100)
     nofollow = forms.BooleanField(label='NoFollow', required=False)
     distro = forms.CharField(label='Distro', widget=forms.Select(choices=()))
-    tags = forms.MultipleChoiceField(
-        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(),
-        required=False)
     link_to = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
@@ -143,11 +151,9 @@ class ContainerForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         distro_choices = kwargs.pop('distro_choices')
-        tag_choices = kwargs.pop('tag_choices')
         link_to_choices = kwargs.pop('link_to_choices')
         super(ContainerForm, self).__init__(*args, **kwargs)
         self.fields['distro'].widget.choices = distro_choices
-        self.fields['tags'].choices = tag_choices
         self.fields['link_to'].choices = link_to_choices
 
 
@@ -155,20 +161,11 @@ class TagForm(forms.Form):
     name = forms.CharField(label='Name')
 
 
-class DomainForm(forms.Form):
+class DomainForm(TagsFormMixin):
 
     did = forms.IntegerField(widget=forms.HiddenInput, required=False)
     note = forms.CharField(required=False, widget=forms.Textarea(
         attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}))
-    tags = forms.MultipleChoiceField(
-        choices=(), required=False,
-        widget=SelectMultipleAutocomplete(
-            plugin_options={"width": "300px"}))
-
-    def __init__(self, *args, **kwargs):
-        tag_choices = kwargs.pop('tag_choices')
-        super(DomainForm, self).__init__(*args, **kwargs)
-        self.fields['tags'].choices = tag_choices
 
 
 class NewDomainForm(forms.Form):
@@ -264,3 +261,14 @@ class MetricDetailForm(forms.Form):
             except Resolver404:
                 raise forms.ValidationError('Invalid url')
         return cd
+
+
+class NewLoopboxForm(forms.Form):
+    # container = forms.IntegerField(label='', widget=forms.HiddenInput())
+    filename = forms.CharField(label='Filename')
+    mountpoint = forms.CharField(label='Mount Point')
+    readonly = forms.BooleanField(label='Readonly', required=False)
+
+
+class LoopboxForm(TagsFormMixin):
+    lid = forms.IntegerField(widget=forms.HiddenInput, required=False)
