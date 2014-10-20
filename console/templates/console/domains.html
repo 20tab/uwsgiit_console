@@ -27,7 +27,7 @@
             </thead>
             <tbody>
                 {% for d in domains %}
-                <tr class="domain_row" data-category="{{ d.0.tags|join:' ' }}">
+                <tr class="table_row" data-category="{{ d.0.tags|join:' ' }}">
                     <td><a href="{% url 'console_domain' id=d.0.id %}">{{ d.0.id }}</a></td>
                     <td>{{ d.0.name }}</td>
                     <td>{{ d.0.uuid }}</td>

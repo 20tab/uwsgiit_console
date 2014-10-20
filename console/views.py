@@ -11,7 +11,7 @@ from uwsgiit.api import UwsgiItClient as UC
 
 from .decorators import login_required
 from .forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
-    DomainForm, NewDomainForm, CalendarForm
+    DomainForm, NewDomainForm, CalendarForm, LoopboxForm, NewLoopboxForm
 
 
 def logout(request):
@@ -107,6 +107,7 @@ def containers(request, id):
                 request.session.get('api_url'))
     if id:
         container = client.container(id).json()
+
         container_copy = container.copy()
         del container_copy['ssh_keys']
         del container_copy['distro']
@@ -158,6 +159,7 @@ def containers(request, id):
         )
         sshform = SSHForm()
         calendar = CalendarForm()
+        newloopboxform = NewLoopboxForm()
 
         active_panel = None
         if request.POST:
@@ -194,6 +196,7 @@ def containers(request, id):
                     for link in list_link_to:
                         if unicode(link) not in cd['link_to']:
                             client.update_container(id, {'unlink': link})
+
             elif 'action' in request.POST:
                 action = request.POST.get('action')
                 active_panel = 'ssh'
@@ -222,12 +225,47 @@ def containers(request, id):
                             else:
                                 messages.error(request, 'An error occurred, please try again')
 
+            else:
+                active_panel = 'loopboxes'
+                if 'mountpoint' in request.POST:
+                    newloopboxform = NewLoopboxForm(request.POST)
+                    if newloopboxform.is_valid():
+                        cd = newloopboxform.cleaned_data
+                        r = client.create_loopbox(id, cd['filename'], cd['mountpoint'])
+                        if r.uerror:
+                            newloopboxform.add_error(None, 'An error occurred: {}'.format(r.json()['error']))
+                elif 'lid' in request.POST:
+                    loopbox_form = LoopboxForm(request.POST, tag_choices=tag_list)
+                    if loopbox_form.is_valid():
+                        cd = loopbox_form.cleaned_data
+                        lid = cd['lid']
+                        tags_post = request.POST.getlist('{}-tags'.format(lid))
+                        client.update_loopbox(lid, {'tags': tags_post})
+
+        elif request.GET and 'del-loopbox' in request.GET:
+            lid = request.GET['del-loopbox']
+            client.delete_loopbox(lid)
+
+        loopboxes = client.loopboxes(container=id).json()
+
+        loopboxes_list = []
+        used_tags = []
+
+        for l in loopboxes:
+            form = LoopboxForm(initial={'lid': l['id'], 'tags': l['tags']}, prefix=l['id'], tag_choices=tag_list)
+            loopboxes_list.append((l, form))
+            used_tags.extend([tag for tag in l['tags'] if tag not in used_tags])
+
+        res['loopboxes'] = loopboxes_list
+        res['tags'] = used_tags
+
         containerform.fields['tags'].initial = container['tags']
         containerform.fields['link_to'].initial = container['linked_to']
 
         res['containerform'] = containerform
         res['sshform'] = sshform
         res['calendar'] = calendar
+        res['newloopboxform'] = newloopboxform
         res['active_panel'] = active_panel
     return main_render(request, 'console/containers.html', res)
 
