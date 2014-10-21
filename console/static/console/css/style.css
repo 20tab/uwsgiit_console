@@ -67,3 +67,4 @@ body { padding-top: 70px; }
 
 .btn-close-graph{margin-left: 4px;}
 
+.scrollable{overflow-y: scroll;max-height: 600px;padding-left: 15px;padding-right: 15px;}

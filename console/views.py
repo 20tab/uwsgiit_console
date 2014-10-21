@@ -61,6 +61,13 @@ def home(request):
 
     if client.username is None:
         v_dict['login_form'] = login_form
+    else:
+        if 'del-alarm' in request.GET:
+            client.delete_alarm(request.GET['del-alarm'])
+
+        v_dict['alarms'] = client.alarms().json()
+        for a in v_dict['alarms']:
+            a['unix'] = datetime.fromtimestamp(a['unix'])
 
     return main_render(request, 'console/index.html', v_dict)
 
