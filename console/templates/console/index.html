@@ -98,14 +98,54 @@
                         <div class="panel-body">
                              <div class="table-responsive">
                                 <table class="table table-hover table-bordered">
-                                    {% for k, v in a.items %}
-                                        {% if v and k != 'msg' and k != 'id' and k != 'color' %}
-                                            <tr>
-                                                <td>{{ k|get_title }}</td>
-                                                <td>{{ v }}</td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
+                                    {% if a_container %}
+                                    <tr>
+                                        <td>Container</td>
+                                        <td><input class="to_select_2" type="hidden" id="container" data-filter="container"></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_class %}
+                                    <tr>
+                                        <td>Class</td>
+                                        <td><input class="to_select_2" type="hidden" id="_class" data-filter="class"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_level %}
+                                    <tr>
+                                        <td>Level</td>
+                                        <td><input class="to_select_2" type="hidden" id="level" data-filter="level"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_color %}
+                                    <tr>
+                                        <td>Color</td>
+                                        <td><input class="to_select_2" type="hidden" id="color" data-filter="color"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_vassal %}
+                                    <tr>
+                                        <td>Vassal</td>
+                                        <td><input class="to_select_2" type="hidden" id="vassal" data-filter="vassal"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_filename %}
+                                    <tr>
+                                        <td>Filename</td>
+                                        <td><input class="to_select_2" type="hidden" id="filename" data-filter="filename"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_line %}
+                                    <tr>
+                                        <td>Line</td>
+                                        <td><input class="to_select_2" type="hidden" id="line" data-filter="line"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_func %}
+                                    <tr>
+                                        <td>Function</td>
+                                        <td><input class="to_select_2" type="hidden" id="func" data-filter="func"/></td>
+                                    </tr>
+                                    {% endif %}
                                 </table>
                             </div>
                         </div>
@@ -114,11 +154,17 @@
             </div>
             <div class="panel-group scrollable" id="alarms-accordion">
                 {% for a in alarms %}
-                    <div class="panel panel-default">
+
+                    <div class="panel panel-default table_row"
+                        {% for k, v in a.items %}
+                            {% if v and k != 'msg' and k != 'id' and k != 'unix' %} data-{{ k }}="{{ v }}"{% endif %}
+                        {% endfor%}>
                         <div style="background-color:{{ a.color }};" class="panel-heading">
                             <h4 class="panel-title">
                                 <a data-toggle="collapse" data-parent="#alarms-accordion" href="#alarm-{{ a.id }}">
-                                    {{ a.msg }} <a class="pull-right" href="?del-alarm={{ a.id }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                                    {{ a.msg }} <a class="pull-right" href="?del-alarm={{ a.id }}">
+                                        <span class="glyphicon glyphicon-remove-circle"></span>
+                                    </a>
                                 </a>
                             </h4>
                         </div>
@@ -161,5 +207,46 @@
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="{{ STATIC_URL }}console/bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
 <script src="{{ STATIC_URL }}console/js/functions.js"></script>
+<script>
+{% if a_container %}var container = {{a_container|safe}};{% endif %}
+{% if a_class %}var _class = {{a_class|safe}};{% endif %}
+{% if a_level %}var level = {{a_level|safe}};{% endif %}
+{% if a_color %}var color = {{a_color|safe}};{% endif %}
+{% if a_vassal %}var vassal = {{a_vassal|safe}};{% endif %}
+{% if a_filename %}var filename = {{a_filename|safe}};{% endif %}
+{% if a_func %}var func = {{a_func|safe}};{% endif %}
+{% if a_line %}var line = {{a_line|safe}};{% endif %}
 
+var last_filters = {};
+function filter_list(e){
+    console.log('came')
+    var filter = $(this).attr('data-filter');
+    if (last_filters[filter] == undefined || last_filters[filter] != e.val){
+        $('.table_row.hidden').removeClass('hidden');
+        last_filters[filter] = e.val;
+        var query_string = '';
+        for (k in last_filters){
+            if (last_filters[k] != undefined){
+                query_string += '[data-'+k+'*="'+last_filters[k]+'"]'
+            }
+        }
+        console.log(query_string);
+        $('.table_row').not(query_string).addClass('hidden');
+    }
+    else {
+        // last_filters[filter] = undefined;
+    }
+}
+
+$('.to_select_2').each(function() {
+    $(this).select2({
+        width: '100%',
+        placeholder: 'select ' + $(this).attr('id'),
+        data: window[$(this).attr('id')],
+        allowClear: true,
+    });
+    $(this).on("select2-selecting", filter_list);
+});
+
+</script>
 {% endblock %}

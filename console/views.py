@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, absolute_import
+import json
 from datetime import datetime
 
 from django.template import RequestContext
@@ -66,8 +67,22 @@ def home(request):
             client.delete_alarm(request.GET['del-alarm'])
 
         v_dict['alarms'] = client.alarms().json()
+
+        alarms_used_keys = ('a_color', 'a_container', 'a_class', 'a_level', 'a_vassal', 'a_filename', 'a_func', 'a_line')
+        for k in alarms_used_keys:
+            v_dict[k] = set()
+
         for a in v_dict['alarms']:
             a['unix'] = datetime.fromtimestamp(a['unix'])
+            for k in a:
+                if k != 'unix' and k != 'id' and k != 'msg' and a[k]:
+                    v_dict['a_{}'.format(k)].add(a[k])
+
+        for k in alarms_used_keys:
+            if v_dict[k]:
+                v_dict[k] = json.dumps([{'id': '', 'text': ''}] + [{'id': x, 'text': str(x)} for x in v_dict[k] if v_dict[k]])
+            else:
+                del v_dict[k]
 
     return main_render(request, 'console/index.html', v_dict)
 
