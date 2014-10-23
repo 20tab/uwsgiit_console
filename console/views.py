@@ -80,7 +80,12 @@ def home(request):
 
         for k in alarms_used_keys:
             if v_dict[k]:
-                v_dict[k] = json.dumps([{'id': '', 'text': ''}] + [{'id': x, 'text': str(x)} for x in v_dict[k] if v_dict[k]])
+                if k == 'a_level':
+                    levels = {0: 'System', 1: 'User', 2: 'Exception', 3: 'Traceback', 4: 'Log'}
+                    v_dict[k] = [{'id': x, 'text': levels[x]} for x in v_dict[k] if v_dict[k]]
+                else:
+                    v_dict[k] = [{'id': x, 'text': str(x)} for x in v_dict[k] if v_dict[k]]
+                v_dict[k] = json.dumps([{'id': '', 'text': ''}] + v_dict[k])
             else:
                 del v_dict[k]
 
@@ -138,6 +143,7 @@ def containers(request, id):
         del container_copy['note']
         del container_copy['quota_threshold']
         del container_copy['nofollow']
+        del container_copy['linked_to']
         del container_copy['jid']
         del container_copy['jid_destinations']
 
@@ -160,14 +166,14 @@ def containers(request, id):
 
         tag_list = [(x['name'], x['name']) for x in client.list_tags().json()]
 
-        containers_actual_link_to = [x for x in client.containers().json() if x['uid'] != int(id)]
+        containers_actual_linked_to = [x for x in client.containers().json() if x['uid'] != int(id)]
 
-        link_to = [(x['uid'], u'{} ({})'.format(
-            x['name'], x['uid'])) for x in containers_actual_link_to]
+        linked_to = [(x['uid'], '{} ({})'.format(
+            x['name'], x['uid'])) for x in containers_actual_linked_to]
 
         containerform = ContainerForm(
             tag_choices=tag_list,
-            link_to_choices=link_to,
+            linked_to_choices=linked_to,
             distro_choices=distros_list,
             initial={
                 'name': container['name'],
@@ -189,7 +195,7 @@ def containers(request, id):
                 containerform = ContainerForm(
                     request.POST,
                     tag_choices=tag_list,
-                    link_to_choices=link_to,
+                    linked_to_choices=linked_to,
                     distro_choices=distros_list)
 
                 if containerform.is_valid():
@@ -210,13 +216,13 @@ def containers(request, id):
                             container_updates[ov] = cd[ov]
                     client.update_container(id, container_updates)
 
-                    list_link_to = [x['uid'] for x in containers_actual_link_to]
+                    list_linked_to = [x['uid'] for x in containers_actual_linked_to]
 
-                    for link in cd['link_to']:
-                        if link not in list_link_to:
+                    for link in cd['linked_to']:
+                        if link not in list_linked_to:
                             client.update_container(id, {'link': link})
-                    for link in list_link_to:
-                        if unicode(link) not in cd['link_to']:
+                    for link in list_linked_to:
+                        if unicode(link) not in cd['linked_to']:
                             client.update_container(id, {'unlink': link})
 
             elif 'action' in request.POST:
@@ -282,7 +288,7 @@ def containers(request, id):
         res['tags'] = used_tags
 
         containerform.fields['tags'].initial = container['tags']
-        containerform.fields['link_to'].initial = container['linked_to']
+        containerform.fields['linked_to'].initial = container['linked_to']
 
         res['containerform'] = containerform
         res['sshform'] = sshform

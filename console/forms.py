@@ -134,7 +134,7 @@ class ContainerForm(TagsFormMixin):
         label='Quota Threshold', min_value=0, max_value=100)
     nofollow = forms.BooleanField(label='NoFollow', required=False)
     distro = forms.CharField(label='Distro', widget=forms.Select(choices=()))
-    link_to = forms.MultipleChoiceField(
+    linked_to = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
         required=False)
@@ -151,10 +151,10 @@ class ContainerForm(TagsFormMixin):
 
     def __init__(self, *args, **kwargs):
         distro_choices = kwargs.pop('distro_choices')
-        link_to_choices = kwargs.pop('link_to_choices')
+        linked_to_choices = kwargs.pop('linked_to_choices')
         super(ContainerForm, self).__init__(*args, **kwargs)
         self.fields['distro'].widget.choices = distro_choices
-        self.fields['link_to'].choices = link_to_choices
+        self.fields['linked_to'].choices = linked_to_choices
 
 
 class TagForm(forms.Form):
