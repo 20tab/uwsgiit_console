@@ -34,6 +34,10 @@
                 {% csrf_token %}
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered">
+                        <tr>
+                            <td>Connection</td>
+                            <td>ssh {{container_copy.uid}}@{{container.server_address}}</td>
+                        </tr>
                     {% for k, v in container_copy.items %}
                         <tr>
                             <td>{{ k|get_title }}</td>
