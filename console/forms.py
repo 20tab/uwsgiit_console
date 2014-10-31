@@ -177,7 +177,7 @@ class CalendarForm(forms.Form):
     year = forms.IntegerField()
     month = forms.ChoiceField(
         required=False,
-        widget=SelectAutocomplete(plugin_options={"width": "300px"}),
+        widget=SelectAutocomplete(plugin_options={"width": "200px"}),
         choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
     day = forms.IntegerField(required=False)
 
