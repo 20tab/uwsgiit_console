@@ -55,6 +55,9 @@
                     <li{% if "/tags/" in path %} class="active"{% endif %}>
                         <a href="/tags/">Tags</a>
                     </li>
+                    <li{% if "/alarms/" in path %} class="active"{% endif %}>
+                        <a href="/alarms/">Alarms</a>
+                    </li>
                     <li><a href="/logout/">Logout</a></li>
                 </ul>
             {% else %}
@@ -89,71 +92,7 @@
         </div>
         <div class="col-xs-12 col-md-6">
             <h3>Latest Alarms</h3>
-            <div class="panel-group" id="search-accordion">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">
-                            <a data-toggle="collapse" data-parent="#search-accordion" href="#search-alarm">Filter Alarms</a>
-                        </h4>
-                    </div>
-                    <div id="search-alarm" class="panel-collapse collapse">
-                        <div class="panel-body">
-                             <div class="table-responsive">
-                                <table class="table table-hover table-bordered">
-                                    {% if a_container %}
-                                    <tr>
-                                        <td>Container</td>
-                                        <td><input class="to_select_2" type="hidden" id="container" data-filter="container"></td>
-                                    </tr>
-                                    {% endif %}
-                                    {% if a_class %}
-                                    <tr>
-                                        <td>Class</td>
-                                        <td><input class="to_select_2" type="hidden" id="_class" data-filter="class"/></td>
-                                    </tr>
-                                    {% endif %}
-                                    {% if a_level %}
-                                    <tr>
-                                        <td>Level</td>
-                                        <td><input class="to_select_2" type="hidden" id="level" data-filter="level"/></td>
-                                    </tr>
-                                    {% endif %}
-                                    {% if a_color %}
-                                    <tr>
-                                        <td>Color</td>
-                                        <td><input class="to_select_2" type="hidden" id="color" data-filter="color"/></td>
-                                    </tr>
-                                    {% endif %}
-                                    {% if a_vassal %}
-                                    <tr>
-                                        <td>Vassal</td>
-                                        <td><input class="to_select_2" type="hidden" id="vassal" data-filter="vassal"/></td>
-                                    </tr>
-                                    {% endif %}
-                                    {% if a_filename %}
-                                    <tr>
-                                        <td>Filename</td>
-                                        <td><input class="to_select_2" type="hidden" id="filename" data-filter="filename"/></td>
-                                    </tr>
-                                    {% endif %}
-                                    {% if a_line %}
-                                    <tr>
-                                        <td>Line</td>
-                                        <td><input class="to_select_2" type="hidden" id="line" data-filter="line"/></td>
-                                    </tr>
-                                    {% endif %}
-                                    {% if a_func %}
-                                    <tr>
-                                        <td>Function</td>
-                                        <td><input class="to_select_2" type="hidden" id="func" data-filter="func"/></td>
-                                    </tr>
-                                    {% endif %}
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             <div class="panel-group scrollable max-height-800" id="alarms-accordion">
                 {% for a in alarms %}
 
@@ -209,29 +148,12 @@
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="{{ STATIC_URL }}console/bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
 <script src="{{ STATIC_URL }}console/js/functions.js"></script>
+{% if last_alarm_id %}{# if user is logged in #}
 <script>
-{% if a_container %}var container = {{a_container|safe}};{% endif %}
-{% if a_class %}var _class = {{a_class|safe}};{% endif %}
-{% if a_level %}
-    var levels = {
-        0: 'System',
-        1: 'User',
-        2: 'Exception',
-        3: 'Traceback',
-        4: 'Log'
-    };
-    var level = {{a_level|safe}};
-    for (i in level){
-        if (level[i].id != ''){
-            level[i].text = levels[level[i].id];
-        }
-    }
-{% endif %}
-{% if a_color %}var color = {{a_color|safe}};{% endif %}
-{% if a_vassal %}var vassal = {{a_vassal|safe}};{% endif %}
-{% if a_filename %}var filename = {{a_filename|safe}};{% endif %}
-{% if a_func %}var func = {{a_func|safe}};{% endif %}
-{% if a_line %}var line = {{a_line|safe}};{% endif %}
+    var latest_alarms_url = "{% url 'console_latest_alarms' %}";
+    var alarm_url = "{% url 'console_alarms' %}";
+    var last_alarm_id = {{ last_alarm_id }};
 </script>
-<script src="{{ STATIC_URL }}console/js/alarm_filter.js"></script>
+<script src="{{ STATIC_URL }}console/js/latest_alarms.js"></script>
+{% endif %}
 {% endblock %}

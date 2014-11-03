@@ -5,14 +5,15 @@ from datetime import datetime
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 
 from uwsgiit.api import UwsgiItClient as UC
 
 from .decorators import login_required
 from .forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
-    DomainForm, NewDomainForm, CalendarForm, LoopboxForm, NewLoopboxForm
+    DomainForm, NewDomainForm, CalendarForm, LoopboxForm, NewLoopboxForm,\
+    AlarmForm
 
 
 def logout(request):
@@ -20,7 +21,7 @@ def logout(request):
     return HttpResponseRedirect('/')
 
 
-def main_render(request, template, v_dict={}):
+def main_render(request, template, v_dict={}, last_alarm_id=None):
     username = request.session.get('username', False)
     password = request.session.get('password', False)
     api_url = request.session.get('api_url', False)
@@ -30,6 +31,10 @@ def main_render(request, template, v_dict={}):
 
         v_dict['containers'] = sorted(
             client.containers().json(), key=lambda k: k['name'])
+
+        if not last_alarm_id:
+            last_alarm_id = client.alarms(range=1).json()[0]['id']
+        v_dict['last_alarm_id'] = last_alarm_id
 
     return render_to_response(
         template, v_dict, context_instance=RequestContext(request))
@@ -66,30 +71,12 @@ def home(request):
         if 'del-alarm' in request.GET:
             client.delete_alarm(request.GET['del-alarm'])
 
-        v_dict['alarms'] = client.alarms().json()
-
-        alarms_used_keys = ('a_color', 'a_container', 'a_class', 'a_level', 'a_vassal', 'a_filename', 'a_func', 'a_line')
-        for k in alarms_used_keys:
-            v_dict[k] = set()
+        v_dict['alarms'] = client.alarms(range='10').json()
 
         for a in v_dict['alarms']:
             a['unix'] = datetime.fromtimestamp(a['unix'])
-            for k in a:
-                if k != 'unix' and k != 'id' and k != 'msg' and a[k]:
-                    v_dict['a_{}'.format(k)].add(a[k])
 
-        for k in alarms_used_keys:
-            if v_dict[k]:
-                if k == 'a_level':
-                    levels = {0: 'System', 1: 'User', 2: 'Exception', 3: 'Traceback', 4: 'Log'}
-                    v_dict[k] = [{'id': x, 'text': levels[x]} for x in v_dict[k] if v_dict[k]]
-                else:
-                    v_dict[k] = [{'id': x, 'text': str(x)} for x in v_dict[k] if v_dict[k]]
-                v_dict[k] = json.dumps([{'id': '', 'text': ''}] + v_dict[k])
-            else:
-                del v_dict[k]
-
-    return main_render(request, 'console/index.html', v_dict)
+    return main_render(request, 'console/index.html', v_dict, v_dict['alarms'][0]['id'])
 
 
 @login_required
@@ -270,9 +257,36 @@ def containers(request, id):
                         tags_post = request.POST.getlist('{}-tags'.format(lid))
                         client.update_loopbox(lid, {'tags': tags_post})
 
-        elif request.GET and 'del-loopbox' in request.GET:
-            lid = request.GET['del-loopbox']
-            client.delete_loopbox(lid)
+        elif request.GET:
+            if 'del-loopbox' in request.GET:
+                active_panel = 'loopboxes'
+                client.delete_loopbox(request.GET['del-loopbox'])
+            if 'del-alarm' in request.GET:
+                active_panel = 'alarms'
+                client.delete_alarm(request.GET['del-alarm'])
+
+        res['alarms'] = client.alarms(container=id).json()
+
+        alarms_used_keys = ('a_color', 'a_container', 'a_class', 'a_level', 'a_vassal', 'a_filename', 'a_func', 'a_line')
+        for k in alarms_used_keys:
+            res[k] = set()
+
+        for a in res['alarms']:
+            a['unix'] = datetime.fromtimestamp(a['unix'])
+            for k in a:
+                if k != 'unix' and k != 'id' and k != 'msg' and a[k]:
+                    res['a_{}'.format(k)].add(a[k])
+
+        for k in alarms_used_keys:
+            if res[k]:
+                if k == 'a_level':
+                    levels = {0: 'System', 1: 'User', 2: 'Exception', 3: 'Traceback', 4: 'Log'}
+                    res[k] = [{'id': x, 'text': levels[x]} for x in res[k] if res[k]]
+                else:
+                    res[k] = [{'id': x, 'text': str(x)} for x in res[k] if res[k]]
+                res[k] = json.dumps([{'id': '', 'text': ''}] + res[k])
+            else:
+                del res[k]
 
         loopboxes = client.loopboxes(container=id).json()
 
@@ -432,3 +446,42 @@ def tag(request, tag):
     res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
     return main_render(request, 'console/tag.html', res)
+
+
+@login_required
+def alarms(request):
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
+    res = {}
+    alarm_form = AlarmForm()
+    alarms = None
+    if request.POST:
+        if 'action_filter' in request.POST:
+            alarm_form = AlarmForm(request.POST)
+            if alarm_form.is_valid():
+                cd = alarm_form.cleaned_data
+                r = client.alarms(**cd)
+                if r.uerror:
+                    alarm_form.add_error(None, r.json()['error'])
+                    alarms = ()
+                else:
+                    alarms = r.json()
+    if alarms is None:
+        alarms = client.alarms(range=100).json()
+    for a in alarms:
+        a['unix'] = datetime.fromtimestamp(a['unix'])
+    res['alarm_form'] = alarm_form
+    res['alarms'] = alarms
+    return main_render(request, 'console/alarms.html', res)
+
+
+@login_required
+def latest_alarms(request):
+    client = UC(request.session.get('username'),
+                request.session.get('password'),
+                request.session.get('api_url'))
+
+    alarms = client.alarms(range=5)
+
+    return HttpResponse(alarms.content)

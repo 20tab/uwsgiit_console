@@ -21,6 +21,8 @@ urlpatterns = patterns(
     url(r'^domains/$', 'domains', name='console_domains'),
     url(r'^tags/(?P<tag>\w+)$', 'tag', name='console_tag'),
     url(r'^tags/$', 'tags', name='console_tags'),
+    url(r'^alarms/$', 'alarms', name='console_alarms'),
+    url(r'^latest_alarms/$', 'latest_alarms', name='console_latest_alarms'),
 )
 
 urlpatterns += patterns(
