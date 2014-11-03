@@ -49,6 +49,15 @@ class TagsFormMixin(forms.Form):
         self.fields['tags'].choices = tag_choices
 
 
+class BootstrapForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        super(BootstrapForm, self).__init__(*args, **kwargs)
+        for field in self.fields.keys():
+            if not isinstance(self.fields[field].widget, (SelectAutocomplete, SelectMultipleAutocomplete)):
+                self.fields[field].widget.attrs['class'] = 'form-control'
+
+
 class LoginForm(forms.Form):
     action_login = forms.IntegerField(
         label='', widget=forms.HiddenInput(), initial=1)
@@ -263,7 +272,7 @@ class MetricDetailForm(forms.Form):
         return cd
 
 
-class NewLoopboxForm(forms.Form):
+class NewLoopboxForm(BootstrapForm):
     # container = forms.IntegerField(label='', widget=forms.HiddenInput())
     filename = forms.CharField(label='Filename')
     mountpoint = forms.CharField(label='Mount Point')
@@ -272,3 +281,28 @@ class NewLoopboxForm(forms.Form):
 
 class LoopboxForm(TagsFormMixin):
     lid = forms.IntegerField(widget=forms.HiddenInput, required=False)
+
+
+class AlarmForm(BootstrapForm):
+    action_filter = forms.IntegerField(
+        label='', widget=forms.HiddenInput(), initial=1)
+    container = forms.IntegerField(required=False)
+    vassal = forms.CharField(required=False)
+    _class = forms.CharField(label='Class', required=False)
+    color = forms.CharField(max_length=7, required=False)
+    level = forms.ChoiceField(
+        required=False,
+        widget=SelectAutocomplete(plugin_options={"width": "100%"}),
+        choices=(
+            ('', ' '), (0, 'System'), (1, 'User'),
+            (2, 'Exception'), (3, 'Traceback'), (4, 'Log')
+        )
+    )
+    line = forms.IntegerField(min_value=0, required=False)
+    filename = forms.CharField(required=False)
+    func = forms.CharField(label='Function', required=False)
+
+    def clean(self):
+        cd = super(AlarmForm, self).clean()
+        del cd['action_filter']
+        return cd
