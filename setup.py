@@ -14,6 +14,7 @@ setup(
         "Framework :: Django",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Programming Language :: JavaScript",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
@@ -28,8 +29,11 @@ setup(
     install_requires=[
         'Django{}'.format(console.DJANGO_VERSION),
         'twentytab-select2{}'.format(console.SELECT2_VERSION),
-        'uwsgiit-py{}'.format(console.UWSGIIT_VERSION),
-        'django-appconf{}'.format(console.APPCONF_VERSION)
+        'django-appconf{}'.format(console.APPCONF_VERSION),
+        'uwsgiit-py{}'.format(console.UWSGIIT_VERSION)
+    ],
+    dependency_links=[
+        'http://github.com/Jiloc/uwsgiit-py/tarball/master/v0.9.0#egg=uwsgiit-py-0.9.0',
     ],
     packages=find_packages(exclude=['demo', 'demo.*']),
     include_package_data=True,
