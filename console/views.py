@@ -133,6 +133,7 @@ def containers(request, id):
         del container_copy['linked_to']
         del container_copy['jid']
         del container_copy['jid_destinations']
+        del container_copy['name']
 
         # Get last quota metric
         quota_metrics = client.container_metric(id, 'quota', None).json()
