@@ -152,7 +152,8 @@
 <script>
     var latest_alarms_url = "{% url 'console_latest_alarms' %}";
     var alarm_url = "{% url 'console_alarms' %}";
-    var last_alarm_id = {{ last_alarm_id }};
+    var last_alarm_id = {% if last_alarm_id %}{{ last_alarm_id }}{% else %}undefined{%endif%};
+
 </script>
 <script src="{{ STATIC_URL }}console/js/latest_alarms.js"></script>
 {% endif %}

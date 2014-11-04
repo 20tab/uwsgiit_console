@@ -21,7 +21,7 @@ def logout(request):
     return HttpResponseRedirect('/')
 
 
-def main_render(request, template, v_dict={}, last_alarm_id=None):
+def main_render(request, template, v_dict={}):
     username = request.session.get('username', False)
     password = request.session.get('password', False)
     api_url = request.session.get('api_url', False)
@@ -31,10 +31,9 @@ def main_render(request, template, v_dict={}, last_alarm_id=None):
 
         v_dict['containers'] = sorted(
             client.containers().json(), key=lambda k: k['name'])
-
-        if not last_alarm_id:
-            last_alarm_id = client.alarms(range=1).json()[0]['id']
-        v_dict['last_alarm_id'] = last_alarm_id
+        last_alarm = client.alarms(range=1).json()
+        if last_alarm:
+            v_dict['last_alarm_id'] = last_alarm[0]['id']
 
     return render_to_response(
         template, v_dict, context_instance=RequestContext(request))
@@ -76,7 +75,7 @@ def home(request):
         for a in v_dict['alarms']:
             a['unix'] = datetime.fromtimestamp(a['unix'])
 
-    return main_render(request, 'console/index.html', v_dict, v_dict['alarms'][0]['id'])
+    return main_render(request, 'console/index.html', v_dict)
 
 
 @login_required
@@ -468,6 +467,10 @@ def alarms(request):
                     alarms = ()
                 else:
                     alarms = r.json()
+
+    elif 'del-alarm' in request.GET:
+            client.delete_alarm(request.GET['del-alarm'])
+
     if alarms is None:
         alarms = client.alarms(range=100).json()
     for a in alarms:
