@@ -1,7 +1,9 @@
 uwsgiit_console
 ===============
 
-A django app to simplify the use of uWSGI.it api
+A django app to simplify the use of uWSGI.it api with a few extras.
+
+Real-time notification system for alarms!
 
 You can take a look at the metrics of your containers, domains or all of the metrics of your domains and containers with the same tag!
 
@@ -15,6 +17,8 @@ Use the following command:
 ```sh
     pip install uwsgiit-console
 ```
+
+You should install this [uwsgi plugin](https://github.com/unbit/uwsgi-gif) too if you want to get colored gifs for real-time alarms.
 
 ## Configuration
 
@@ -69,6 +73,15 @@ Run collectstatic command or map static directory.
 
 In order to make it work you have to add one UwsgiItApi instance in the database containing the url you put in DEFAULT_API_URL.
 
+- uwsgi-gif
+
+If you installed uwsgi-gif you have to add those lines to your vassals:
+
+```ini
+[uwsgi]
+plugin = gif
+route = ^/foo_(\d+)_(\d+)_(\d+)\.gif$ gif:width=80,height=80,red=$1,green=$2,blue=$3
+```
 
 
 TEST
