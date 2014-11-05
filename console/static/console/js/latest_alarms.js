@@ -42,7 +42,7 @@ if (("Notification" in window)) {
                 last_alarm_id = data[0]['id'];
             },
             complete: function() {
-                setTimeout(get_latest_alarms, 1800);
+                setTimeout(get_latest_alarms, 180000);
             }
         });
     }
