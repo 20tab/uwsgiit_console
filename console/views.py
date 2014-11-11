@@ -71,6 +71,8 @@ def home(request):
             client.delete_alarm(request.GET['del-alarm'])
 
         v_dict['alarms'] = client.alarms(range='10').json()
+        if 'error' in v_dict['alarms']:
+            return logout(request)
 
         for a in v_dict['alarms']:
             a['unix'] = datetime.fromtimestamp(a['unix'])
@@ -85,6 +87,9 @@ def me_page(request):
                 request.session.get('api_url'))
 
     me = client.me().json()
+    if 'error' in me:
+        return logout(request)
+
     v_dict = {'me': me}
     me_form = MeForm(initial={
         'company': me['company'],
@@ -120,6 +125,8 @@ def containers(request, id):
                 request.session.get('api_url'))
     if id:
         container = client.container(id).json()
+        if 'error' in container:
+            return logout(request)
 
         container_copy = container.copy()
         del container_copy['ssh_keys']
@@ -323,6 +330,8 @@ def domains(request):
     calendar = CalendarForm()
 
     all_tags = client.list_tags().json()
+    if 'error' in all_tags:
+        return logout(request)
 
     tags_list = [('', '')] + [(x['name'], x['name']) for x in all_tags]
 
@@ -380,7 +389,11 @@ def domain(request, id):
                 request.session.get('password'),
                 request.session.get('api_url'))
 
-    tags_list = [('', '')] + [(x['name'], x['name']) for x in client.list_tags().json()]
+    all_tags = client.list_tags().json()
+    if 'error' in all_tags:
+        return logout(request)
+
+    tags_list = [('', '')] + [(x['name'], x['name']) for x in all_tags]
 
     if request.POST:
         if 'did' in request.POST:
@@ -418,6 +431,11 @@ def tags(request):
                 request.session.get('password'),
                 request.session.get('api_url'))
 
+    res['tags'] = client.list_tags().json()
+
+    if 'error' in res['tags']:
+        return logout(request)
+
     if request.POST:
         tagform = TagForm(request.POST)
         if tagform.is_valid():
@@ -428,7 +446,6 @@ def tags(request):
         id = request.GET['id']
         client.delete_tag(id)
 
-    res['tags'] = client.list_tags().json()
     res['tagform'] = tagform
     return main_render(request, 'console/tags.html', res)
 
@@ -440,10 +457,12 @@ def tag(request, tag):
                 request.session.get('password'),
                 request.session.get('api_url'))
 
+    res['tagged_domains'] = client.domains(tags=[tag]).json()
+    if 'error' in res['tagged_domains']:
+        return logout(request)
     res['tag'] = tag
     res['calendar_domains'] = CalendarForm(auto_id='calendar-domains-%s')
     res['calendar_containers'] = CalendarForm(auto_id='calendar-containers-%s')
-    res['tagged_domains'] = client.domains(tags=[tag]).json()
     res['tagged_containers'] = client.containers(tags=[tag]).json()
     return main_render(request, 'console/tag.html', res)
 
@@ -455,7 +474,11 @@ def alarms(request):
                 request.session.get('api_url'))
     res = {}
     alarm_form = AlarmForm()
-    alarms = None
+    alarms = client.alarms(range=100).json()
+
+    if 'error' in alarms:
+        return logout(request)
+
     if request.POST:
         if 'action_filter' in request.POST:
             alarm_form = AlarmForm(request.POST)
@@ -471,8 +494,6 @@ def alarms(request):
     elif 'del-alarm' in request.GET:
             client.delete_alarm(request.GET['del-alarm'])
 
-    if alarms is None:
-        alarms = client.alarms(range=100).json()
     for a in alarms:
         a['unix'] = datetime.fromtimestamp(a['unix'])
     res['alarm_form'] = alarm_form
@@ -487,5 +508,7 @@ def latest_alarms(request):
                 request.session.get('api_url'))
 
     alarms = client.alarms(range=5)
+    if 'error' in alarms:
+        return logout(request)
 
     return HttpResponse(alarms.content)
