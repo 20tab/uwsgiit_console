@@ -127,9 +127,9 @@ class SSHForm(forms.Form):
             key = data['key'].strip()
             if len(key) > 130:
                 if not 'ssh-rsa ' in key and not 'ssh-dsa ' in key:
-                    msg = 'Insered value is not a valid ssh key'
+                    msg = 'Inserted value is not a valid ssh key'
                     raise forms.ValidationError(msg)
-                if key.count('\n') > 1:
+                if key.count('\n') > 0:
                     msg = 'too much newlines in the ssh key'
                     raise forms.ValidationError(msg)
             else:
