@@ -119,17 +119,18 @@ class SSHForm(forms.Form):
 
     def clean(self):
         """Raise a ValidationError if the
-           value is longer than 4096 or doesn't
-           match an ssh-rsa regex
+           value is not bigger than 130 bytes
+           check for ssh-rsa and ssh-dsa strings
         """
         data = super(SSHForm, self).clean()
         if 'key' in data:
             key = data['key'].strip()
-            if len(key) <= 4096:
-                result = re.search(
-                    r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@*$', key)
-                if result is None:
-                    msg = 'Insered value is not a ssh-rsa key'
+            if len(key) > 130:
+                if not 'ssh-rsa ' in key and not 'ssh-dsa ' in key:
+                    msg = 'Inserted value is not a valid ssh key'
+                    raise forms.ValidationError(msg)
+                if key.count('\n') > 0:
+                    msg = 'too much newlines in the ssh key'
                     raise forms.ValidationError(msg)
             else:
                 msg = 'Key too long'
