@@ -5,7 +5,7 @@ from datetime import datetime
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib import messages
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.conf import settings
 
 from uwsgiit.api import UwsgiItClient as UC
@@ -512,3 +512,15 @@ def latest_alarms(request):
         return logout(request)
 
     return HttpResponse(alarms.content)
+
+
+@login_required
+def alarm_key(request):
+    if request.method == 'POST' and 'container' in request.POST:
+        client = UC(request.session.get('username'),
+                    request.session.get('password'),
+                    request.session.get('api_url'))
+        r = client.create_alarm_key(request.POST['container'])
+        return HttpResponse(r.content)
+
+    return HttpResponseForbidden()

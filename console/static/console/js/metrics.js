@@ -14,8 +14,6 @@ function clearGraphs(id) {
 }
 
 function clearGraph(id){
-    console.log("ao")
-
     $("#chart-" + id).remove();
     $("#legend_container-" + id).remove();
 }

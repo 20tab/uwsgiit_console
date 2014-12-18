@@ -150,6 +150,15 @@
         <!-- Alarms -->
         <div class="tab-pane{% if active_panel == 'alarms' %} active{% endif %}" id="alarms">
             <h2>Latest alarms for container {{ container.uid }}</h2>
+            <div class="well well-sm">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="btn-alarm-key" type="button">Generate Alarm Key</button>
+                    </span>
+                    <input type="text" onclick="this.select()" class="form-control" value="" id="input-alarm-key"/>
+                </div>
+            </div>
+
             {% if alarms %}
             <div class="panel-group" id="search-accordion">
                 <div class="panel panel-default">
@@ -290,5 +299,32 @@
         {% if a_line %}var line = {{a_line|safe}};{% endif %}
     </script>
     <script src="{{ STATIC_URL }}console/js/alarm_filter.js"></script>
+    <script>
+        $('#btn-alarm-key').click(function(){
+            $(this).button('loading');
+            $.ajax({
+                type: "POST",
+                url: "{% url 'console_alarm_key' %}",
+                data: {
+                    container: {{ container.uid }},
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                dataType: "json",
+                success: function(data) {
+                    if('error' in data){
+                        alert(data['error']);
+                    }
+                    else{
+                        $('#input-alarm-key').val(data['alarm_key']);
+                    }
+                },
+                error: function(e) {
+                    console.log('error' ,e);
+                }
+            });
+            $(this).button('reset');
+            return false;
+        });
+    </script>
 {% endblock %}
 
