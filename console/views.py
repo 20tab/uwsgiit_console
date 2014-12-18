@@ -1,12 +1,13 @@
 from __future__ import unicode_literals, absolute_import
-import json
 from datetime import datetime
+import json
 
+from django.conf import settings
+from django.contrib import messages
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.contrib import messages
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
-from django.conf import settings
+from django.http import HttpResponseRedirect, HttpResponse,\
+    HttpResponseForbidden
 
 from uwsgiit.api import UwsgiItClient as UC
 
@@ -128,19 +129,6 @@ def containers(request, id):
         if 'error' in container:
             return logout(request)
 
-        container_copy = container.copy()
-        del container_copy['ssh_keys']
-        del container_copy['distro']
-        del container_copy['distro_name']
-        del container_copy['tags']
-        del container_copy['note']
-        del container_copy['quota_threshold']
-        del container_copy['nofollow']
-        del container_copy['linked_to']
-        del container_copy['jid']
-        del container_copy['jid_destinations']
-        del container_copy['name']
-
         # Get last quota metric
         quota_metrics = client.container_metric(id, 'quota', None).json()
         if len(quota_metrics) > 0:
@@ -150,9 +138,6 @@ def containers(request, id):
         else:
             used_quota = 0
 
-        container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
-        container_copy['memory'] = str(container_copy['memory']) + 'MB'
-        res['container_copy'] = container_copy
         res['container'] = container
 
         distros_list = sorted(client.distros().json(), key=lambda distro: distro['id'], reverse=True)
@@ -169,19 +154,20 @@ def containers(request, id):
             tag_choices=tag_list,
             linked_to_choices=linked_to,
             distro_choices=distros_list,
-            initial={
-                'name': container['name'],
-                'quota_threshold': container['quota_threshold'],
-                'nofollow': container['nofollow'],
-                'distro': '{}'.format(container['distro']),
-                'note': container['note'],
-                'jid': container['jid'],
-                'jid_destinations': container['jid_destinations']
-            }
+            initial=container
         )
         sshform = SSHForm()
         calendar = CalendarForm()
         newloopboxform = NewLoopboxForm()
+
+        container_copy = {k: container[k] for k in container if k not in containerform.fields}
+        del container_copy['ssh_keys']
+        del container_copy['distro_name']
+
+        container_copy['storage'] = str(used_quota) + ' / ' + str(container_copy['storage']) + ' MB'
+        container_copy['memory'] = str(container_copy['memory']) + 'MB'
+
+        res['container_copy'] = container_copy
 
         active_panel = None
         if request.POST:
@@ -203,7 +189,10 @@ def containers(request, id):
                     }
 
                     optional_values = (
-                        'name', 'jid', 'jid_destinations', 'jid_secret')
+                        'name', 'jid', 'jid_destinations', 'jid_secret',
+                        'alarm_freq', 'pushover_user', 'pushover_token',
+                        'pushover_sound',
+                    )
 
                     for ov in optional_values:
                         if ov in cd:

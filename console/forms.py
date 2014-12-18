@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, absolute_import
 from datetime import datetime, timedelta
-import re
 
 from django import forms
 from django.conf import settings
@@ -153,6 +152,13 @@ class ContainerForm(TagsFormMixin):
         label='Jabber Destinations', required=False)
     jid_secret = forms.CharField(
         label='Jabber Password', widget=forms.PasswordInput(), required=False)
+
+    pushover_user = forms.CharField(label='Pushover User', required=False)
+    pushover_token = forms.CharField(label='Pushover Token', required=False)
+    pushover_sound = forms.CharField(label='Pushover Sound', required=False)
+
+    alarm_freq = forms.IntegerField(
+        label='Alarm Frequency', required=False, min_value=60)
 
     note = forms.CharField(
         widget=forms.Textarea(
