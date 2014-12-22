@@ -32,8 +32,8 @@
                     <td>{{ d.0.name }}</td>
                     <td>{{ d.0.uuid }}</td>
                     <td>
-                        <form class="inline form-inline" role="form" action="." method="post">{% csrf_token %}
-                            <input name="did" value="{{ d.0.id }}" type="hidden">
+                        <form class="inline form-inline add-domain-form" role="form" action="{% url 'console_add_domain_tag' d.0.id %}" method="post">
+                            {% csrf_token %}
                             {{ d.1.tags }}
                             <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
                         </form>
@@ -49,5 +49,7 @@
 
 {% block footer_js %}
     {{ block.super }}
+    <script>var static_url = '{{ STATIC_URL }}';</script>
     <script src="{{ STATIC_URL }}console/js/tag_filter.js"></script>
+    <script src="{{ STATIC_URL }}console/js/add_tags.js"></script>
 {% endblock %}

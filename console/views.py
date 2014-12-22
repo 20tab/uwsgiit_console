@@ -9,12 +9,12 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponse,\
     HttpResponseForbidden
 
-from uwsgiit.api import UwsgiItClient as UC
+from .utils import ConsoleClient as CC
 
 from .decorators import login_required
 from .forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
     DomainForm, NewDomainForm, CalendarForm, LoopboxForm, NewLoopboxForm,\
-    AlarmForm
+    AlarmForm, TagsForm
 
 
 def logout(request):
@@ -28,7 +28,7 @@ def main_render(request, template, v_dict={}):
     api_url = request.session.get('api_url', False)
 
     if username and password and api_url:
-        client = UC(username, password, api_url)
+        client = CC(username, password, api_url)
 
         v_dict['containers'] = sorted(
             client.containers().json(), key=lambda k: k['name'])
@@ -57,7 +57,7 @@ def home(request):
     password = request.session.get('password', None)
     api_url = request.session.get('api_url', settings.DEFAULT_API_URL)
 
-    client = UC(username, password, api_url)
+    client = CC(username, password, api_url)
 
     news = client.news().json()
     for n in news:
@@ -83,7 +83,7 @@ def home(request):
 
 @login_required
 def me_page(request):
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
 
@@ -121,7 +121,7 @@ def me_page(request):
 @login_required
 def containers(request, id):
     res = {}
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
     if id:
@@ -143,7 +143,7 @@ def containers(request, id):
         distros_list = sorted(client.distros().json(), key=lambda distro: distro['id'], reverse=True)
         distros_list = [(x['id'], x['name']) for x in distros_list]
 
-        tag_list = [(x['name'], x['name']) for x in client.list_tags().json()]
+        tag_list = client.get_tag_list()
 
         containers_actual_linked_to = [x for x in client.containers().json() if x['uid'] != int(id)]
 
@@ -311,7 +311,7 @@ def containers(request, id):
 @login_required
 def domains(request):
     res = {}
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
 
@@ -322,7 +322,7 @@ def domains(request):
     if 'error' in all_tags:
         return logout(request)
 
-    tags_list = [('', '')] + [(x['name'], x['name']) for x in all_tags]
+    tags_list = client.get_tag_list()
 
     if request.POST:
         if 'name' in request.POST:
@@ -331,15 +331,6 @@ def domains(request):
                 name = new_domain.cleaned_data['name']
                 client.add_domain(name)
                 new_domain = NewDomainForm()
-        else:
-            domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
-            if domain_form.is_valid():
-                cd = domain_form.cleaned_data
-                did = cd['did']
-                tags_post = []
-                if '{}-tags'.format(did) in request.POST:
-                    tags_post = request.POST.getlist('{}-tags'.format(did))
-                client.update_domain(did, {'tags': tags_post})
     if 'del' in request.GET:
         name = request.GET['del']
         client.delete_domain(name)
@@ -358,7 +349,7 @@ def domains(request):
     used_tags = []
 
     for d in doms:
-        form = DomainForm(initial={'did': d['id'], 'tags': d['tags']}, prefix=d['id'], tag_choices=tags_list)
+        form = DomainForm(initial={'tags': d['tags']}, prefix=d['id'], tag_choices=tags_list)
         domains_list.append((d, form))
         used_tags.extend([tag for tag in d['tags'] if tag not in used_tags])
 
@@ -374,7 +365,7 @@ def domains(request):
 def domain(request, id):
     calendar = CalendarForm()
     res = {}
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
 
@@ -382,10 +373,11 @@ def domain(request, id):
     if 'error' in all_tags:
         return logout(request)
 
-    tags_list = [('', '')] + [(x['name'], x['name']) for x in all_tags]
+    tags_list = client.get_tag_list()
 
     if request.POST:
-        if 'did' in request.POST:
+        if 'tags' in request.POST or\
+            'note' in request.POST:
             domain_form = DomainForm(data=request.POST, tag_choices=tags_list)
             if domain_form.is_valid():
                 cd = domain_form.cleaned_data
@@ -401,7 +393,7 @@ def domain(request, id):
 
     domain = client.domain(id).json()
     form = DomainForm(tag_choices=tags_list, initial={
-        'did': id, 'tags': domain['tags'], 'note': domain['note']})
+        'tags': domain['tags'], 'note': domain['note']})
 
     del domain['tags']
     del domain['note']
@@ -416,7 +408,7 @@ def domain(request, id):
 def tags(request):
     res = {}
     tagform = TagForm()
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
 
@@ -442,7 +434,7 @@ def tags(request):
 @login_required
 def tag(request, tag):
     res = {}
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
 
@@ -458,7 +450,7 @@ def tag(request, tag):
 
 @login_required
 def alarms(request):
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
     res = {}
@@ -492,7 +484,7 @@ def alarms(request):
 
 @login_required
 def latest_alarms(request):
-    client = UC(request.session.get('username'),
+    client = CC(request.session.get('username'),
                 request.session.get('password'),
                 request.session.get('api_url'))
 
@@ -506,10 +498,21 @@ def latest_alarms(request):
 @login_required
 def alarm_key(request):
     if request.method == 'POST' and 'container' in request.POST:
-        client = UC(request.session.get('username'),
+        client = CC(request.session.get('username'),
                     request.session.get('password'),
                     request.session.get('api_url'))
         r = client.create_alarm_key(request.POST['container'])
         return HttpResponse(r.content)
+    return HttpResponseForbidden()
 
+
+@login_required
+def add_domain_tag(request, id):
+    if request.method == 'POST' and '{}-tags'.format(id) in request.POST:
+        client = CC(request.session.get('username'),
+                    request.session.get('password'),
+                    request.session.get('api_url'))
+        tags_post = request.POST.getlist('{}-tags'.format(id))
+        r = client.update_domain(id, {'tags': tags_post})
+        return HttpResponse(r.content)
     return HttpResponseForbidden()
