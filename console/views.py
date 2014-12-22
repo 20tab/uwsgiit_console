@@ -412,20 +412,21 @@ def tags(request):
                 request.session.get('password'),
                 request.session.get('api_url'))
 
-    res['tags'] = client.list_tags().json()
-
-    if 'error' in res['tags']:
-        return logout(request)
-
     if request.POST:
         tagform = TagForm(request.POST)
         if tagform.is_valid():
             cd = tagform.cleaned_data
             client.create_tag(cd['name'])
             tagform = TagForm()
+
     elif request.GET and 'id' in request.GET:
         id = request.GET['id']
         client.delete_tag(id)
+
+    res['tags'] = client.list_tags().json()
+
+    if 'error' in res['tags']:
+        return logout(request)
 
     res['tagform'] = tagform
     return main_render(request, 'console/tags.html', res)
