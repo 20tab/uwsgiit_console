@@ -122,9 +122,9 @@ class SSHFormTests(FormTesterMixin, TestCase):
 
     def test_SSHForm_data_validation_for_valid_data(self):
         keys = [
-            {'key': 'ssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-            {'key': '\n\tssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-            {'key': 'ssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local      \n'},
+            {'key': 'ssh-rsa ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + 'Test@Test.local'},
+            {'key': '\n\tssh-rsa ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + 'Test@Test.local'},
+            {'key': 'ssh-dsa ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + 'Test@Test.local      \n'},
 
         ]
         for key in keys:
@@ -135,14 +135,16 @@ class SSHFormTests(FormTesterMixin, TestCase):
 
     def test_SSHForm_with_wrong_ssh_throws_error(self):
         keys = [
-            {'data': {'key': 'ssh-rsaZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-                'error': 'Insered value is not a ssh-rsa key'},
-            {'data': {'key': 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-                'error': 'Insered value is not a ssh-rsa key'},
-            {'data': {'key': 'ssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'},
-                'error': 'Insered value is not a ssh-rsa key'},
-            {'data': {'key': 'ssh-rsa ' + ('a' * 4096) + ' Test@Test.local'},
-                'error': 'Key too long'}
+            {'data': {'key': 'ssh-rsa' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + ' Test@Test.local'},
+                'error': 'Inserted value is not a valid ssh key'},
+            {'data': {'key': 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + ' Test@Test.local'},
+                'error': 'Inserted value is not a valid ssh key'},
+            {'data': {'key': 'ssh-rs ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3},
+                'error': 'Inserted value is not a valid ssh key'},
+            {'data': {'key': 'ssh-rsa ' + 'ZZZB3NzaC1yc2E\nZZZDAQABAFFBAQCui4hJItITzlRHo'*3 },
+                'error': 'Too many newlines in the ssh key'},
+            {'data': {'key': 'ssh-rsa a Test@Test.local'},
+                'error': 'Key too short'}
         ]
         for key in keys:
             form = SSHForm(key['data'])

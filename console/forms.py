@@ -36,7 +36,7 @@ class MultiEmailField(forms.CharField):
         return ','.join([email.strip() for email in value])
 
 
-class TagsFormMixin(forms.Form):
+class TagsForm(forms.Form):
     tags = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
@@ -44,7 +44,7 @@ class TagsFormMixin(forms.Form):
 
     def __init__(self, *args, **kwargs):
         tag_choices = kwargs.pop('tag_choices')
-        super(TagsFormMixin, self).__init__(*args, **kwargs)
+        super(TagsForm, self).__init__(*args, **kwargs)
         self.fields['tags'].choices = tag_choices
 
 
@@ -129,15 +129,15 @@ class SSHForm(forms.Form):
                     msg = 'Inserted value is not a valid ssh key'
                     raise forms.ValidationError(msg)
                 if key.count('\n') > 0:
-                    msg = 'too much newlines in the ssh key'
+                    msg = 'Too many newlines in the ssh key'
                     raise forms.ValidationError(msg)
             else:
-                msg = 'Key too long'
+                msg = 'Key too short'
                 raise forms.ValidationError(msg)
         return data
 
 
-class ContainerForm(TagsFormMixin):
+class ContainerForm(TagsForm):
     name = forms.CharField(label='Name', required=False)
     quota_threshold = forms.IntegerField(
         label='Quota Threshold', min_value=0, max_value=100)
@@ -177,9 +177,7 @@ class TagForm(forms.Form):
     name = forms.CharField(label='Name')
 
 
-class DomainForm(TagsFormMixin):
-
-    did = forms.IntegerField(widget=forms.HiddenInput, required=False)
+class DomainForm(TagsForm):
     note = forms.CharField(required=False, widget=forms.Textarea(
         attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}))
 
@@ -286,7 +284,7 @@ class NewLoopboxForm(BootstrapForm):
     readonly = forms.BooleanField(label='Readonly', required=False)
 
 
-class LoopboxForm(TagsFormMixin):
+class LoopboxForm(TagsForm):
     lid = forms.IntegerField(widget=forms.HiddenInput, required=False)
 
 
