@@ -6,7 +6,7 @@
 
 {% block content %}
 
-    <h3>Container <b>{{ container.name }} ({{ container.uid }})</b></h3>
+        <h3 class="inline-block">Container <b>{{ container.name }} ({{ container.uid }})</b></h3> <button id="reboot-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">Reboot</button>
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
@@ -57,6 +57,7 @@
 
                     </table>
                     <button id="update-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">Update</button>
+                    <button id="update-and-reboot-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">Update and Reboot</button>
                 </div>
             </form>
         </div>
@@ -273,7 +274,6 @@
         var subject = '{{ container.name }}' + ' ' + '{{ container.uid }}';
     </script>
     <script src="{{ STATIC_URL }}console/js/multiple_metrics.js"></script>
-    <script src="{{ STATIC_URL }}console/js/tag_filter.js"></script>
     <script>
         {% if a_container %}var container = {{a_container|safe}};{% endif %}
         {% if a_class %}var _class = {{a_class|safe}};{% endif %}
@@ -300,26 +300,31 @@
     </script>
     <script src="{{ STATIC_URL }}console/js/alarm_filter.js"></script>
     <script>
+        var reboot_container_url = "{% url 'console_reboot_container' container.uid %}";
+    </script>
+    <script src="{{ STATIC_URL }}console/js/reboot_container.js"></script>
+
+    <script>
         $('#btn-alarm-key').click(function(){
             $(this).button('loading');
             $.ajax({
                 type: "POST",
-                url: "{% url 'console_alarm_key' %}",
+                url: "{% url 'console_alarm_key' container.uid %}",
                 data: {
                     container: {{ container.uid }},
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                    csrfmiddlewaretoken: csrf_token,
                 },
                 dataType: "json",
                 success: function(data) {
                     if('error' in data){
-                        alert(data['error']);
+                        alert('An error occurred: '+ data['error']);
                     }
                     else{
                         $('#input-alarm-key').val(data['alarm_key']);
                     }
                 },
                 error: function(e) {
-                    console.log('error' ,e);
+                    alert('An error occurred. Try that again in a few moments.');
                 }
             });
             $(this).button('reset');

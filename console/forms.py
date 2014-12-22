@@ -165,6 +165,8 @@ class ContainerForm(TagsForm):
             attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}),
         required=False)
 
+    reboot = forms.BooleanField(required=False, widget=forms.HiddenInput)
+
     def __init__(self, *args, **kwargs):
         distro_choices = kwargs.pop('distro_choices')
         linked_to_choices = kwargs.pop('linked_to_choices')

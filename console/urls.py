@@ -23,8 +23,9 @@ urlpatterns = patterns(
     url(r'^tags/$', 'tags', name='console_tags'),
     url(r'^alarms/$', 'alarms', name='console_alarms'),
     url(r'^latest_alarms/$', 'latest_alarms', name='console_latest_alarms'),
-    url(r'^alarm_key/$', 'alarm_key', name='console_alarm_key'),
+    url(r'^alarm_key/(?P<id>\d+)$', 'alarm_key', name='console_alarm_key'),
     url(r'^add_domain_tag/(?P<id>\d+)$', 'add_domain_tag', name='console_add_domain_tag'),
+    url(r'^reboot_container/(?P<id>\d+)$', 'reboot_container', name='console_reboot_container'),
 )
 
 urlpatterns += patterns(

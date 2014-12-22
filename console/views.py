@@ -178,6 +178,7 @@ def containers(request, id):
                     linked_to_choices=linked_to,
                     distro_choices=distros_list)
 
+                print request.POST, 'before'
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
                     container_updates = {
@@ -191,14 +192,16 @@ def containers(request, id):
                     optional_values = (
                         'name', 'jid', 'jid_destinations', 'jid_secret',
                         'alarm_freq', 'pushover_user', 'pushover_token',
-                        'pushover_sound',
+                        'pushover_sound'
                     )
-
                     for ov in optional_values:
                         if ov in cd:
                             container_updates[ov] = cd[ov]
-                    client.update_container(id, container_updates)
+                    if 'reboot' in cd and cd['reboot']:
+                        container_updates['reboot'] = True
+                    # client.update_container(id, container_updates)
 
+                    print container_updates, 'after'
                     list_linked_to = [x['uid'] for x in containers_actual_linked_to]
 
                     for link in cd['linked_to']:
@@ -497,12 +500,12 @@ def latest_alarms(request):
 
 
 @login_required
-def alarm_key(request):
-    if request.method == 'POST' and 'container' in request.POST:
+def alarm_key(request, id):
+    if request.method == 'POST':
         client = CC(request.session.get('username'),
                     request.session.get('password'),
                     request.session.get('api_url'))
-        r = client.create_alarm_key(request.POST['container'])
+        r = client.create_alarm_key(id)
         return HttpResponse(r.content)
     return HttpResponseForbidden()
 
@@ -515,5 +518,16 @@ def add_domain_tag(request, id):
                     request.session.get('api_url'))
         tags_post = request.POST.getlist('{}-tags'.format(id))
         r = client.update_domain(id, {'tags': tags_post})
+        return HttpResponse(r.content)
+    return HttpResponseForbidden()
+
+
+@login_required
+def reboot_container(request, id):
+    if request.method == 'POST':
+        client = CC(request.session.get('username'),
+                    request.session.get('password'),
+                    request.session.get('api_url'))
+        r = client.reboot_container(id)
         return HttpResponse(r.content)
     return HttpResponseForbidden()

@@ -1,11 +1,21 @@
 jQuery(function($){
 
-    $('#update-container').on('click', function(){
+    $('#update-container').on('click', function(e){
+        e.preventDefault();
         $(this).button('loading');
         $('#container-form').submit();
     });
 
-    $('#add-key').on('click', function(){
+    $('#update-and-reboot-container').on('click', function(e){
+        e.preventDefault();
+        $(this).button('loading');
+        var form = $('#container-form');
+        form.find('input[name="reboot"]').attr('value', 'True')
+        form.submit();
+    });
+
+    $('#add-key').on('click', function(e){
+        e.preventDefault();
         $(this).button('loading');
         $('#id_action').val($(this).attr('id'));
         $('#ssh-form').submit();
@@ -18,4 +28,21 @@ jQuery(function($){
         $('#id_action').val($(this).data('action'));
         $('#ssh-form').submit();
     });
+
+    var last_tag;
+    $('.tag_filter').on('click', function(e) {
+        e.preventDefault();
+        var filter = $(this).attr('data-filter');
+        $('.table_row.hidden').removeClass('hidden');
+        if (last_tag == undefined || last_tag != filter){
+            $('.table_row').not('[data-category*="'+filter+'"]').addClass('hidden');
+            $('.tag_filter.active').removeClass('active');
+            $('.tag_filter[data-filter="'+filter+'"]').addClass('active');
+            last_tag = filter;
+        } else {
+            $('.tag_filter[data-filter="'+filter+'"]').removeClass('active');
+            last_tag = undefined;
+        }
+    });
+
 });

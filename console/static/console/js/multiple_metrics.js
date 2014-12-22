@@ -38,7 +38,6 @@ $(document).ready(function() {
                     clearGraphs(id);
                     metrics[id] = {
                         last_time_unit: data['time_unit'],
-                        // shared_graph: undefined,
                         metric_list: [],
                         form_id: undefined,
                         palette: new Rickshaw.Color.Palette(),
@@ -78,7 +77,6 @@ $(document).ready(function() {
                 }
 
                 var graph = new Rickshaw.Graph({
-                    // width: 400,
                     height: 200,
                     element: $(chart_id)[0],
                     renderer: 'area',
@@ -86,42 +84,12 @@ $(document).ready(function() {
                     series: [returned_metrics]
                 });
 
-
-                // if (metrics[id].shared_graph != undefined){
-                //     for (i in metrics[id].metric_list){
-                //         metrics[id].shared_graph.series[i] = metrics[id].metric_list[i];
-                //     }
-                //     while (metrics[id].shared_graph.series.length > metrics[id].metric_list){
-                //         metrics[id].shared_graph.series.pop();
-                //     }
-                //     metrics[id].shared_graph.update();
-                //     $('#legend-' + id).empty();
-                //     var shared_graphs_legend = new Rickshaw.Graph.Legend({
-                //         graph: metrics[id].shared_graph,
-                //         element: $('#legend-' + id)[0]
-                //     });
-                //     var shared_graphs_shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
-                //         graph: metrics[id].shared_graph,
-                //         legend: shared_graphs_legend
-                //     });
-                //     var shared_graphs_highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
-                //         graph: metrics[id].shared_graph,
-                //         legend: shared_graphs_legend
-                //     });
-                //     addDateAsHiddenInputToForm(metrics[id].form_id, attribute_value);
-                // }
-                // else{
-                //     metrics[id].shared_graph = graph;
-                // }
-
                 graph.render();
 
                 generateGraphDetails(graph, data['time_unit'], data['unit_of_measure'], legend_id);
-                // generateModal(id, data['metric_name'], chart_id, legend_id, legend_container_id);
                 generateOpenInNewPageButton(id, data['metric_name'], frm_action, attribute_value, legend_container_id);
-                // if (graph != metrics[id].shared_graph){
                 generateCloseGraphButton(id, data['metric_name'], legend_container_id);
-                // }
+
                 if (metrics[id].form_id == undefined){
                     metrics[id].form_id = '#form-' + id + '-' + data['metric_name'];
                 }

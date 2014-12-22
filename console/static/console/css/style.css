@@ -72,3 +72,7 @@ body { padding-top: 70px; }
 .overflow-x-auto{overflow-x: auto;}
 
 .max-height-800{max-height: 800px;}
+
+#reboot-container{margin:0px 0px 7px 20px;}
+
+.inline-block{display:inline-block;}

@@ -13,6 +13,7 @@
 <body>
 {% endblock %}
 {% block body %}{% endblock %}
+<script>var csrf_token = "{{ csrf_token }}";</script>
 {% block footer_js %}{% endblock %}
 </body>
 </html>
