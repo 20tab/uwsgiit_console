@@ -3,6 +3,12 @@
 {% block content %}
 
     <div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <p>Tip: You can add a domain only if it's DNS zone contains a TXT record with this content: <strong>uwsgi:{{uuid}}</strong></p>
         <form id="add-domain-form" class="form-inline" role="form" action="{% url 'console_domains' %}" method="post">
             {% csrf_token %}
             {{ new_domain }}

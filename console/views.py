@@ -332,8 +332,13 @@ def domains(request):
             new_domain = NewDomainForm(request.POST)
             if new_domain.is_valid():
                 name = new_domain.cleaned_data['name']
-                client.add_domain(name)
-                new_domain = NewDomainForm()
+                r = client.add_domain(name)
+                if r.uerror:
+                    new_domain.add_error(None, 'Error: {}'.format(r.json()['error']))
+                else:
+                    messages.success(
+                        request, 'domain {} successfully added'.format(name))
+                    new_domain = NewDomainForm()
     if 'del' in request.GET:
         name = request.GET['del']
         client.delete_domain(name)
@@ -356,6 +361,7 @@ def domains(request):
         domains_list.append((d, form))
         used_tags.extend([tag for tag in d['tags'] if tag not in used_tags])
 
+    res['uuid'] = client.me().json()['uuid']
     res['domains'] = domains_list
     res['new_domain'] = new_domain
     res['calendar'] = calendar
