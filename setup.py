@@ -14,6 +14,7 @@ setup(
         "Framework :: Django",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Programming Language :: JavaScript",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
