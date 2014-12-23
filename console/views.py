@@ -14,7 +14,7 @@ from .utils import ConsoleClient as CC
 from .decorators import login_required
 from .forms import LoginForm, MeForm, SSHForm, ContainerForm, TagForm,\
     DomainForm, NewDomainForm, CalendarForm, LoopboxForm, NewLoopboxForm,\
-    AlarmForm, TagsForm
+    AlarmForm
 
 
 def logout(request):
@@ -32,7 +32,7 @@ def main_render(request, template, v_dict={}):
 
         v_dict['containers'] = sorted(
             client.containers().json(), key=lambda k: k['name'])
-        last_alarm = client.alarms(range=1).json()
+        last_alarm = client.alarms({'range': 1}).json()
         if last_alarm:
             v_dict['last_alarm_id'] = last_alarm[0]['id']
 
@@ -71,7 +71,7 @@ def home(request):
         if 'del-alarm' in request.GET:
             client.delete_alarm(request.GET['del-alarm'])
 
-        v_dict['alarms'] = client.alarms(range='10').json()
+        v_dict['alarms'] = client.alarms({'range': 10}).json()
         if 'error' in v_dict['alarms']:
             return logout(request)
 
@@ -178,7 +178,6 @@ def containers(request, id):
                     linked_to_choices=linked_to,
                     distro_choices=distros_list)
 
-                print request.POST, 'before'
                 if containerform.is_valid():
                     cd = containerform.cleaned_data
                     container_updates = {
@@ -201,7 +200,6 @@ def containers(request, id):
                         container_updates['reboot'] = True
                     # client.update_container(id, container_updates)
 
-                    print container_updates, 'after'
                     list_linked_to = [x['uid'] for x in containers_actual_linked_to]
 
                     for link in cd['linked_to']:
@@ -264,7 +262,7 @@ def containers(request, id):
                 active_panel = 'alarms'
                 client.delete_alarm(request.GET['del-alarm'])
 
-        res['alarms'] = client.alarms(container=id).json()
+        res['alarms'] = client.alarms({'container': id}).json()
 
         alarms_used_keys = ('a_color', 'a_container', 'a_class', 'a_level', 'a_vassal', 'a_filename', 'a_func', 'a_line')
         for k in alarms_used_keys:
@@ -465,7 +463,7 @@ def alarms(request):
                 request.session.get('api_url'))
     res = {}
     alarm_form = AlarmForm()
-    alarms = client.alarms(range=100).json()
+    alarms = client.alarms({'range': 100}).json()
 
     if 'error' in alarms:
         return logout(request)
@@ -475,7 +473,9 @@ def alarms(request):
             alarm_form = AlarmForm(request.POST)
             if alarm_form.is_valid():
                 cd = alarm_form.cleaned_data
-                r = client.alarms(**cd)
+                cd['class'] = cd['class_']
+                del cd['class_']
+                r = client.alarms(cd)
                 if r.uerror:
                     alarm_form.add_error(None, r.json()['error'])
                     alarms = ()
@@ -498,7 +498,7 @@ def latest_alarms(request):
                 request.session.get('password'),
                 request.session.get('api_url'))
 
-    alarms = client.alarms(range=5)
+    alarms = client.alarms({'range': 5})
     if 'error' in alarms:
         return logout(request)
 

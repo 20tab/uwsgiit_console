@@ -295,7 +295,7 @@ class AlarmForm(BootstrapForm):
         label='', widget=forms.HiddenInput(), initial=1)
     container = forms.IntegerField(required=False)
     vassal = forms.CharField(required=False)
-    _class = forms.CharField(label='Class', required=False)
+    class_ = forms.CharField(label='Class', required=False)
     color = forms.CharField(max_length=7, required=False)
     level = forms.ChoiceField(
         required=False,
