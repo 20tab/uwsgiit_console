@@ -125,7 +125,7 @@ class SSHForm(forms.Form):
         if 'key' in data:
             key = data['key'].strip()
             if len(key) > 130:
-                if not 'ssh-rsa ' in key and not 'ssh-dsa ' in key:
+                if 'ssh-rsa ' not in key and 'ssh-dsa ' not in key:
                     msg = 'Inserted value is not a valid ssh key'
                     raise forms.ValidationError(msg)
                 if key.count('\n') > 0:
@@ -142,7 +142,7 @@ class ContainerForm(TagsForm):
     quota_threshold = forms.IntegerField(
         label='Quota Threshold', min_value=0, max_value=100)
     nofollow = forms.BooleanField(label='NoFollow', required=False)
-    distro = forms.CharField(label='Distro', widget=forms.Select(choices=()))
+    distro = forms.IntegerField(label='Distro', widget=forms.Select(choices=()))
     linked_to = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),

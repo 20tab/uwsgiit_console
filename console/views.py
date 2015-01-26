@@ -198,7 +198,7 @@ def containers(request, id):
                             container_updates[ov] = cd[ov]
                     if 'reboot' in cd and cd['reboot']:
                         container_updates['reboot'] = True
-                    # client.update_container(id, container_updates)
+                    client.update_container(id, container_updates)
 
                     list_linked_to = [x['uid'] for x in containers_actual_linked_to]
 
