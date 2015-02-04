@@ -55,7 +55,7 @@ class GenericMetric(models.Model):
 class ContainerMetric(GenericMetric):
 
     def metrics(self, client, params={}):
-        if not params:  #Gets Today metrics
+        if not params:  # Gets Today metrics
             return self.api_metrics(client, params)
 
         params, year, month, day = date_from_params(params)
@@ -101,7 +101,7 @@ class DomainMetric(GenericMetric):
     domain = models.PositiveIntegerField()
 
     def metrics(self, client, params={}, container=None):
-        if not params:  #Gets Today metrics
+        if not params:  # Gets Today metrics
             results = []
             for elem in self.api_metrics(client, params):
                 if container:
@@ -207,6 +207,24 @@ class MemoryContainerMetric(ContainerMetric):
     @property
     def verbose_name(self):
         return 'Memory'
+
+
+class RSSMemoryContainerMetric(ContainerMetric):
+    def api_metrics(self, client, params):
+        return client.container_metric(self.container, 'mem.rss', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'RSS Memory'
+
+
+class CacheMemoryContainerMetric(ContainerMetric):
+    def api_metrics(self, client, params):
+        return client.container_metric(self.container, 'mem.cache', params).json()
+
+    @property
+    def verbose_name(self):
+        return 'Cache Memory'
 
 
 # stores values from the container cgroup

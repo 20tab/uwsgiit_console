@@ -8,7 +8,8 @@ except ImportError:
 from .models import IOReadContainerMetric, IOWriteContainerMetric,\
     NetworkRXContainerMetric, NetworkTXContainerMetric, CPUContainerMetric,\
     MemoryContainerMetric, QuotaContainerMetric, NetworkRXDomainMetric,\
-    NetworkTXDomainMetric, HitsDomainMetric
+    NetworkTXDomainMetric, HitsDomainMetric, RSSMemoryContainerMetric,\
+    CacheMemoryContainerMetric
 
 
 urlpatterns = patterns(
@@ -43,6 +44,10 @@ urlpatterns += patterns(
         kwargs={'model': CPUContainerMetric, 'absolute_values': False, 'average': False}),
     url(r'^metrics/container/mem/id/(\d+)/$', 'container_metrics', name='console_container_mem',
         kwargs={'model': MemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/mem.rss/id/(\d+)/$', 'container_metrics', name='console_container_mem_rss',
+        kwargs={'model': RSSMemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/mem.cache/id/(\d+)/$', 'container_metrics', name='console_container_mem_cache',
+        kwargs={'model': CacheMemoryContainerMetric, 'absolute_values': True, 'average': True}),
     url(r'^metrics/container/quota/id/(\d+)/$', 'container_metrics', name='console_container_quota',
         kwargs={'model': QuotaContainerMetric, 'absolute_values': True, 'average': False}),
 
@@ -58,6 +63,10 @@ urlpatterns += patterns(
         kwargs={'model': CPUContainerMetric, 'absolute_values': False, 'average': True}),
     url(r'^metrics/container/mem/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_mem_per_tag',
         kwargs={'model': MemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/mem.rss/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_mem_rss_per_tag',
+        kwargs={'model': RSSMemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/mem.cache/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_mem_cache_per_tag',
+        kwargs={'model': CacheMemoryContainerMetric, 'absolute_values': True, 'average': True}),
     url(r'^metrics/container/quota/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_quota_per_tag',
         kwargs={'model': QuotaContainerMetric, 'absolute_values': True, 'average': False}),
 
