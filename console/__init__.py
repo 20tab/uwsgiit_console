@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 
-VERSION = (0, 3, 3)
+VERSION = (0, 3, 4)
 
 __version__ = '.'.join((str(each) for each in VERSION[:4]))
 
