@@ -138,11 +138,12 @@ class ContainerMetricTests(MetricTesterMixin, TestCase):
             settings.TEST_PASSWORD,
             settings.DEFAULT_API_URL)
 
-        results = NetworkRXContainerMetric(container=settings.TEST_CONTAINER).metrics(
-            client, params={
-                'year': self.yesterday.year,
-                'month': self.yesterday.month,
-                'day': self.yesterday.day})
+        results = NetworkRXContainerMetric(
+            container=settings.TEST_CONTAINER).metrics(
+                client, params={
+                    'year': self.yesterday.year,
+                    'month': self.yesterday.month,
+                    'day': self.yesterday.day})
 
         metric_from_db = NetworkRXContainerMetric.objects.get(
             container=settings.TEST_CONTAINER,

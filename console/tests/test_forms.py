@@ -155,7 +155,7 @@ class SSHFormTests(FormTesterMixin, TestCase):
 class ContainerFormTests(TestCase):
 
     def test_ContainerForm_data_validation_for_valid_data(self):
-        form = ContainerForm({'tags': ['1'], 'linked_to': ['1'], 'distro': ['1'], 'quota_threshold': 90}, distro_choices=((1, 1), (2, 2)), tag_choices=((1, 1), (2, 2)), linked_to_choices=((1, 1), (2, 2)))
+        form = ContainerForm({'tags': ['1'], 'linked_to': ['1'], 'distro': 1, 'quota_threshold': 90}, distro_choices=((1, 1), (2, 2)), tag_choices=((1, 1), (2, 2)), linked_to_choices=((1, 1), (2, 2)))
         self.assertTrue(form.is_valid())
         #this will throw an error if it doesn't clean correctly
         self.assertIsNotNone(form.clean())
