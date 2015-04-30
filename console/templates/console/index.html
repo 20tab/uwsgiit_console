@@ -61,15 +61,32 @@
                     <li><a href="/logout/">Logout</a></li>
                 </ul>
             {% else %}
-                <form class="navbar-form navbar-right" role="form" action="." method="post">{% csrf_token %}
-                    {% for field in login_form %}
-                        <div class="form-group{% if field.errors %} has-error{% endif %}">
-                            <label for="{{ field.id_for_label }}" class="control-label">{{ field.label }}</label>{{ field }}
-                        </div>
-                    {% endfor %}
+                <form class="navbar-form navbar-right" role="form" action="." method="post">
+                    {% csrf_token %}
+                    {{login_form.action_login}}
+                    <div class="form-group{% if field.errors %} has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="control-label">
+                            {{ login_form.username.label }}
+                        </label>
+                        {{login_form.username}}
+                    </div>
+
+                    <div class="form-group{% if field.errors %} has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="control-label">
+                            {{ login_form.password.label }}
+                        </label>
+                        {{login_form.password}}
+                    </div>
+                    <div class="form-group{% if field.errors %} has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="control-label">
+                            {{ login_form.api_url.label }}
+                        </label>
+                        {{login_form.api_url}}
+                    </div>
                     <button type="submit" class="btn btn-primary">Login</button>
                 </form>
             {% endif %}
+            </div>
         </div><!-- /.container-fluid -->
     </nav>
     <h1>{{ CONSOLE_TITLE }} <small>{{ CONSOLE_SUBTITLE }}</small></h1>
@@ -95,7 +112,6 @@
 
             <div class="panel-group scrollable max-height-800" id="alarms-accordion">
                 {% for a in alarms %}
-
                     <div class="panel panel-default table_row"
                         {% for k, v in a.items %}
                             {% if v and k != 'msg' and k != 'id' and k != 'unix' %} data-{{ k }}="{{ v }}"{% endif %}
@@ -103,9 +119,10 @@
                         <div style="background-color:{{ a.color }};" class="panel-heading">
                             <h4 class="panel-title">
                                 <a data-toggle="collapse" data-parent="#alarms-accordion" href="#alarm-{{ a.id }}">
-                                    {{ a.msg }} <a class="pull-right" href="?del-alarm={{ a.id }}">
-                                        <span class="glyphicon glyphicon-remove-circle"></span>
-                                    </a>
+                                    {{ a.msg }}
+                                </a>
+                                <a class="pull-right" href="?del-alarm={{ a.id }}">
+                                    <span class="glyphicon glyphicon-remove-circle"></span>
                                 </a>
                             </h4>
                         </div>
@@ -132,7 +149,7 @@
     </div>
     {% endif %}
     {% endblock %}
-    <footer aria-role="banner" role="banner" id="footer" class="top-border top-padding margin-top">
+    <footer id="footer" class="top-border top-padding margin-top">
         <p class="col-xs-4">Uwsgi.it</p>
         <div class="col-xs-8">
             <ul class="pull-right list-unstyled flat">
