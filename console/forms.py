@@ -156,6 +156,8 @@ class ContainerForm(TagsForm):
     pushover_user = forms.CharField(label='Pushover User', required=False)
     pushover_token = forms.CharField(label='Pushover Token', required=False)
     pushover_sound = forms.CharField(label='Pushover Sound', required=False)
+    pushbullet_token = forms.CharField(label='Pushbullet Token', required=False)
+    slack_webhook = forms.CharField(label='Slack Webhook', required=False)
 
     alarm_freq = forms.IntegerField(
         label='Alarm Frequency', required=False, min_value=60)

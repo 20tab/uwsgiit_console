@@ -191,7 +191,7 @@ def containers(request, id):
                     optional_values = (
                         'name', 'jid', 'jid_destinations', 'jid_secret',
                         'alarm_freq', 'pushover_user', 'pushover_token',
-                        'pushover_sound'
+                        'pushover_sound', 'pushbullet_token', 'slack_webhook',
                     )
                     for ov in optional_values:
                         if ov in cd:
