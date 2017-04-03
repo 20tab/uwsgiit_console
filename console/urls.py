@@ -8,7 +8,8 @@ except ImportError:
 from .models import IOReadContainerMetric, IOWriteContainerMetric,\
     NetworkRXContainerMetric, NetworkTXContainerMetric, CPUContainerMetric,\
     MemoryContainerMetric, QuotaContainerMetric, NetworkRXDomainMetric,\
-    NetworkTXDomainMetric, HitsDomainMetric
+    NetworkTXDomainMetric, HitsDomainMetric, RSSMemoryContainerMetric,\
+    CacheMemoryContainerMetric
 
 
 urlpatterns = patterns(
@@ -19,8 +20,13 @@ urlpatterns = patterns(
     url(r'^containers/(?P<id>\d+)$', 'containers', name='console_containers'),
     url(r'^domains/(?P<id>\d+)$', 'domain', name='console_domain'),
     url(r'^domains/$', 'domains', name='console_domains'),
-    url(r'^tags/(?P<tag>\w+)$', 'tag', name='console_tag'),
+    url(r'^tags/(?P<tag>.+)$', 'tag', name='console_tag'),
     url(r'^tags/$', 'tags', name='console_tags'),
+    url(r'^alarms/$', 'alarms', name='console_alarms'),
+    url(r'^latest_alarms/$', 'latest_alarms', name='console_latest_alarms'),
+    url(r'^alarm_key/(?P<id>\d+)$', 'alarm_key', name='console_alarm_key'),
+    url(r'^add_domain_tag/(?P<id>\d+)$', 'add_domain_tag', name='console_add_domain_tag'),
+    url(r'^reboot_container/(?P<id>\d+)$', 'reboot_container', name='console_reboot_container'),
 )
 
 urlpatterns += patterns(
@@ -38,22 +44,30 @@ urlpatterns += patterns(
         kwargs={'model': CPUContainerMetric, 'absolute_values': False, 'average': False}),
     url(r'^metrics/container/mem/id/(\d+)/$', 'container_metrics', name='console_container_mem',
         kwargs={'model': MemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/mem.rss/id/(\d+)/$', 'container_metrics', name='console_container_mem_rss',
+        kwargs={'model': RSSMemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/mem.cache/id/(\d+)/$', 'container_metrics', name='console_container_mem_cache',
+        kwargs={'model': CacheMemoryContainerMetric, 'absolute_values': True, 'average': True}),
     url(r'^metrics/container/quota/id/(\d+)/$', 'container_metrics', name='console_container_quota',
         kwargs={'model': QuotaContainerMetric, 'absolute_values': True, 'average': False}),
 
-    url(r'^metrics/container/io.read/tag/(\w+)/$', 'container_metrics_per_tag', name='console_container_io_read_per_tag',
+    url(r'^metrics/container/io.read/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_io_read_per_tag',
         kwargs={'model': IOReadContainerMetric, 'absolute_values': False, 'average': False}),
-    url(r'^metrics/container/io.write/tag/(\w+)/$', 'container_metrics_per_tag', name='console_container_io_write_per_tag',
+    url(r'^metrics/container/io.write/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_io_write_per_tag',
         kwargs={'model': IOWriteContainerMetric, 'absolute_values': False, 'average': False}),
-    url(r'^metrics/container/net.rx/tag/(\w+)/$', 'container_metrics_per_tag', name='console_container_net_rx_per_tag',
+    url(r'^metrics/container/net.rx/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_net_rx_per_tag',
         kwargs={'model': NetworkRXContainerMetric, 'absolute_values': False, 'average': False}),
-    url(r'^metrics/container/net.tx/tag/(\w+)/$', 'container_metrics_per_tag', name='console_container_net_tx_per_tag',
+    url(r'^metrics/container/net.tx/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_net_tx_per_tag',
         kwargs={'model': NetworkTXContainerMetric, 'absolute_values': False, 'average': False}),
-    url(r'^metrics/container/cpu/tag/(\w+)/$', 'container_metrics_per_tag', name='console_container_cpu_per_tag',
+    url(r'^metrics/container/cpu/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_cpu_per_tag',
         kwargs={'model': CPUContainerMetric, 'absolute_values': False, 'average': True}),
-    url(r'^metrics/container/mem/tag/(\w+)/$', 'container_metrics_per_tag', name='console_container_mem_per_tag',
+    url(r'^metrics/container/mem/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_mem_per_tag',
         kwargs={'model': MemoryContainerMetric, 'absolute_values': True, 'average': True}),
-    url(r'^metrics/container/quota/tag/(\w+)/$', 'container_metrics_per_tag', name='console_container_quota_per_tag',
+    url(r'^metrics/container/mem.rss/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_mem_rss_per_tag',
+        kwargs={'model': RSSMemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/mem.cache/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_mem_cache_per_tag',
+        kwargs={'model': CacheMemoryContainerMetric, 'absolute_values': True, 'average': True}),
+    url(r'^metrics/container/quota/tag/(.+)/$', 'container_metrics_per_tag', name='console_container_quota_per_tag',
         kwargs={'model': QuotaContainerMetric, 'absolute_values': True, 'average': False}),
 
     url(r'^metrics/domain/net.rx/id/(\d+)/$', 'domain_metrics', name='console_domain_net_rx',
@@ -63,10 +77,10 @@ urlpatterns += patterns(
     url(r'^metrics/domain/hits/id/(\d+)/$', 'domain_metrics', name='console_domain_hits',
         kwargs={'model': HitsDomainMetric, 'absolute_values': False, 'average': False}),
 
-    url(r'^metrics/domain/net.rx/tag/(\w+)/$', 'domain_metrics_per_tag', name='console_domain_net_rx_per_tag',
+    url(r'^metrics/domain/net.rx/tag/(.+)/$', 'domain_metrics_per_tag', name='console_domain_net_rx_per_tag',
         kwargs={'model': NetworkRXDomainMetric, 'absolute_values': False, 'average': False}),
-    url(r'^metrics/domain/net.tx/tag/(\w+)/$', 'domain_metrics_per_tag', name='console_domain_net_tx_per_tag',
+    url(r'^metrics/domain/net.tx/tag/(.+)/$', 'domain_metrics_per_tag', name='console_domain_net_tx_per_tag',
         kwargs={'model': NetworkTXDomainMetric, 'absolute_values': False, 'average': False}),
-    url(r'^metrics/domain/hits/tag/(\w+)/$', 'domain_metrics_per_tag', name='console_domain_hits_per_tag',
+    url(r'^metrics/domain/hits/tag/(.+)/$', 'domain_metrics_per_tag', name='console_domain_hits_per_tag',
         kwargs={'model': HitsDomainMetric, 'absolute_values': False, 'average': False}),
 )

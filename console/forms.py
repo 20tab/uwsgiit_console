@@ -1,16 +1,60 @@
 from __future__ import unicode_literals, absolute_import
 from datetime import datetime, timedelta
-import re
 
 from django import forms
 from django.conf import settings
 from django.utils.dates import MONTHS
+from django.core.validators import validate_email
 from django.core.urlresolvers import resolve, Resolver404
 
 from uwsgiit.api import UwsgiItClient
 from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
 
 from .models import UwsgiItApi
+
+
+def email_list_validator(value):
+    "Check if value consists only of valid emails."
+    # Use the parent's handling of required fields, etc.
+    for email in value:
+        validate_email(email.strip())
+
+
+class MultiEmailField(forms.CharField):
+
+    default_validators = [email_list_validator]
+
+    def to_python(self, value):
+        "Normalize data to a list of strings."
+        # Return an empty list if no input was given.
+        if value in self.empty_values:
+            return []
+        return value.split(',')
+
+    def clean(self, value):
+        value = super(MultiEmailField, self).clean(value)
+        return ','.join([email.strip() for email in value])
+
+
+class TagsForm(forms.Form):
+    tags = forms.MultipleChoiceField(
+        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
+        choices=(),
+        required=False)
+
+    def __init__(self, *args, **kwargs):
+        tag_choices = kwargs.pop('tag_choices')
+        super(TagsForm, self).__init__(*args, **kwargs)
+        self.fields['tags'].choices = tag_choices
+
+
+class BootstrapForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        super(BootstrapForm, self).__init__(*args, **kwargs)
+        for field in self.fields.keys():
+            if not isinstance(self.fields[field].widget, (SelectAutocomplete, SelectMultipleAutocomplete)):
+                self.fields[field].widget.attrs['class'] = 'form-control'
 
 
 class LoginForm(forms.Form):
@@ -46,6 +90,8 @@ class LoginForm(forms.Form):
 class MeForm(forms.Form):
     company = forms.CharField(label='Company', widget=forms.TextInput(
         attrs={'class': 'form-control col-xs-8'}))
+    email = MultiEmailField(label='Email', widget=forms.TextInput(
+        attrs={'class': 'form-control col-xs-8'}), required=False)
     password = forms.CharField(label='Password', widget=forms.PasswordInput(
         attrs={'class': 'form-control'}, render_value=True))
     re_password = forms.CharField(
@@ -72,67 +118,72 @@ class SSHForm(forms.Form):
 
     def clean(self):
         """Raise a ValidationError if the
-           value is longer than 4096 or doesn't
-           match an ssh-rsa regex
+           value is not bigger than 130 bytes
+           check for ssh-rsa and ssh-dsa strings
         """
         data = super(SSHForm, self).clean()
         if 'key' in data:
             key = data['key'].strip()
-            if len(key) <= 4096:
-                result = re.search(
-                    r'^ssh-rsa [^ \t\n\r]* [^ \t\n\r]*@*$', key)
-                if result is None:
-                    msg = 'Insered value is not a ssh-rsa key'
+            if len(key) > 130:
+                if 'ssh-rsa ' not in key and 'ssh-dsa ' not in key:
+                    msg = 'Inserted value is not a valid ssh key'
+                    raise forms.ValidationError(msg)
+                if key.count('\n') > 0:
+                    msg = 'Too many newlines in the ssh key'
                     raise forms.ValidationError(msg)
             else:
-                msg = 'Key too long'
+                msg = 'Key too short'
                 raise forms.ValidationError(msg)
         return data
 
 
-class ContainerForm(forms.Form):
-    distro = forms.CharField(label='Distro', widget=forms.Select(choices=()))
-    tags = forms.MultipleChoiceField(
+class ContainerForm(TagsForm):
+    name = forms.CharField(label='Name', required=False)
+    quota_threshold = forms.IntegerField(
+        label='Quota Threshold', min_value=0, max_value=100)
+    nofollow = forms.BooleanField(label='NoFollow', required=False)
+    distro = forms.IntegerField(label='Distro', widget=forms.Select(choices=()))
+    linked_to = forms.MultipleChoiceField(
         widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
         required=False)
-    link_to = forms.MultipleChoiceField(
-        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
-        choices=(),
-        required=False)
+    jid = forms.CharField(label='Jabber ID', required=False)
+    jid_destinations = forms.CharField(
+        label='Jabber Destinations', required=False)
+    jid_secret = forms.CharField(
+        label='Jabber Password', widget=forms.PasswordInput(), required=False)
+
+    pushover_user = forms.CharField(label='Pushover User', required=False)
+    pushover_token = forms.CharField(label='Pushover Token', required=False)
+    pushover_sound = forms.CharField(label='Pushover Sound', required=False)
+    pushbullet_token = forms.CharField(label='Pushbullet Token', required=False)
+    slack_webhook = forms.CharField(label='Slack Webhook', required=False)
+
+    alarm_freq = forms.IntegerField(
+        label='Alarm Frequency', required=False, min_value=60)
+
     note = forms.CharField(
         widget=forms.Textarea(
             attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}),
         required=False)
 
+    reboot = forms.BooleanField(required=False, widget=forms.HiddenInput)
+
     def __init__(self, *args, **kwargs):
         distro_choices = kwargs.pop('distro_choices')
-        tag_choices = kwargs.pop('tag_choices')
-        link_to_choices = kwargs.pop('link_to_choices')
+        linked_to_choices = kwargs.pop('linked_to_choices')
         super(ContainerForm, self).__init__(*args, **kwargs)
         self.fields['distro'].widget.choices = distro_choices
-        self.fields['tags'].choices = tag_choices
-        self.fields['link_to'].choices = link_to_choices
+        self.fields['linked_to'].choices = linked_to_choices
 
 
 class TagForm(forms.Form):
     name = forms.CharField(label='Name')
 
 
-class DomainForm(forms.Form):
-
-    did = forms.IntegerField(widget=forms.HiddenInput, required=False)
+class DomainForm(TagsForm):
     note = forms.CharField(required=False, widget=forms.Textarea(
         attrs={'cols': 50, 'rows': 3, 'class': 'form-control'}))
-    tags = forms.MultipleChoiceField(
-        choices=(), required=False,
-        widget=SelectMultipleAutocomplete(
-            plugin_options={"width": "300px"}))
-
-    def __init__(self, *args, **kwargs):
-        tag_choices = kwargs.pop('tag_choices')
-        super(DomainForm, self).__init__(*args, **kwargs)
-        self.fields['tags'].choices = tag_choices
 
 
 class NewDomainForm(forms.Form):
@@ -144,7 +195,7 @@ class CalendarForm(forms.Form):
     year = forms.IntegerField()
     month = forms.ChoiceField(
         required=False,
-        widget=SelectAutocomplete(plugin_options={"width": "300px"}),
+        widget=SelectAutocomplete(plugin_options={"width": "200px"}),
         choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
     day = forms.IntegerField(required=False)
 
@@ -227,4 +278,40 @@ class MetricDetailForm(forms.Form):
                 resolve(cd['metric_url'])
             except Resolver404:
                 raise forms.ValidationError('Invalid url')
+        return cd
+
+
+class NewLoopboxForm(BootstrapForm):
+    # container = forms.IntegerField(label='', widget=forms.HiddenInput())
+    filename = forms.CharField(label='Filename')
+    mountpoint = forms.CharField(label='Mount Point')
+    readonly = forms.BooleanField(label='Readonly', required=False)
+
+
+class LoopboxForm(TagsForm):
+    lid = forms.IntegerField(widget=forms.HiddenInput, required=False)
+
+
+class AlarmForm(BootstrapForm):
+    action_filter = forms.IntegerField(
+        label='', widget=forms.HiddenInput(), initial=1)
+    container = forms.IntegerField(required=False)
+    vassal = forms.CharField(required=False)
+    class_ = forms.CharField(label='Class', required=False)
+    color = forms.CharField(max_length=7, required=False)
+    level = forms.ChoiceField(
+        required=False,
+        widget=SelectAutocomplete(plugin_options={"width": "100%"}),
+        choices=(
+            ('', ' '), (0, 'System'), (1, 'User'),
+            (2, 'Exception'), (3, 'Traceback'), (4, 'Log')
+        )
+    )
+    line = forms.IntegerField(min_value=0, required=False)
+    filename = forms.CharField(required=False)
+    func = forms.CharField(label='Function', required=False)
+
+    def clean(self):
+        cd = super(AlarmForm, self).clean()
+        del cd['action_filter']
         return cd

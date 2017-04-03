@@ -3,6 +3,12 @@
 {% block content %}
 
     <div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <p>Tip: You can add a domain only if it's DNS zone contains a TXT record with this content: <strong>uwsgi:{{uuid}}</strong></p>
         <form id="add-domain-form" class="form-inline" role="form" action="{% url 'console_domains' %}" method="post">
             {% csrf_token %}
             {{ new_domain }}
@@ -27,13 +33,13 @@
             </thead>
             <tbody>
                 {% for d in domains %}
-                <tr class="domain_row" data-category="{{ d.0.tags|join:' ' }}">
+                <tr class="table_row" data-category="{{ d.0.tags|join:' ' }}">
                     <td><a href="{% url 'console_domain' id=d.0.id %}">{{ d.0.id }}</a></td>
                     <td>{{ d.0.name }}</td>
                     <td>{{ d.0.uuid }}</td>
                     <td>
-                        <form class="inline form-inline" role="form" action="." method="post">{% csrf_token %}
-                            <input name="did" value="{{ d.0.id }}" type="hidden">
+                        <form class="inline form-inline add-domain-form" role="form" action="{% url 'console_add_domain_tag' d.0.id %}" method="post">
+                            {% csrf_token %}
                             {{ d.1.tags }}
                             <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
                         </form>
@@ -49,5 +55,6 @@
 
 {% block footer_js %}
     {{ block.super }}
-    <script src="{{ STATIC_URL }}console/js/tag_filter.js"></script>
+    <script>var static_url = '{{ STATIC_URL }}';</script>
+    <script src="{{ STATIC_URL }}console/js/add_tags.js"></script>
 {% endblock %}

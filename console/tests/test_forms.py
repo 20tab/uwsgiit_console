@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from pprint import pformat
 from datetime import date, timedelta
 
@@ -37,93 +38,93 @@ class LoginFormTests(FormTesterMixin, TestCase):
 
     def test_LoginForm_data_validation_for_invalid_data(self):
         invalid_data_list = [
-            {u'data': {u'username': u'test', u'api_url': self.test_api.id, u'action_login': 1},
-                u'error': (u'password', [u'This field is required.'])},
-            {u'data': {u'password': u'1234', u'api_url': self.test_api.id, u'action_login': 1},
-                u'error': (u'username', [u'This field is required.'])},
-            {u'data': {u'username': u'test', u'password': u'1234', u'action_login': 1},
-                u'error': (u'api_url', [u'This field is required.'])},
-            {u'data': {u'username': u'test', u'api_url': self.test_api.id},
-                u'error': (u'action_login', [u'This field is required.'])}
+            {'data': {'username': 'test', 'api_url': self.test_api.id, 'action_login': 1},
+                'error': ('password', ['This field is required.'])},
+            {'data': {'password': '1234', 'api_url': self.test_api.id, 'action_login': 1},
+                'error': ('username', ['This field is required.'])},
+            {'data': {'username': 'test', 'password': '1234', 'action_login': 1},
+                'error': ('api_url', ['This field is required.'])},
+            {'data': {'username': 'test', 'api_url': self.test_api.id},
+                'error': ('action_login', ['This field is required.'])}
         ]
 
         for invalid_data in invalid_data_list:
             self.assertFormError(
                 LoginForm,
-                invalid_data[u'error'][0],
-                invalid_data[u'error'][1],
-                invalid_data[u'data'])
+                invalid_data['error'][0],
+                invalid_data['error'][1],
+                invalid_data['data'])
 
     def test_LoginForm_data_validation_for_valid_data(self):
-        form = LoginForm({u'username': settings.TEST_USER, u'password': settings.TEST_PASSWORD,
-                         u'api_url': self.test_api.id, u'action_login': 1})
+        form = LoginForm({'username': settings.TEST_USER, 'password': settings.TEST_PASSWORD,
+                         'api_url': self.test_api.id, 'action_login': 1})
         self.assertTrue(form.is_valid())
         #this will throw an error if it doesn't clean correctly
         self.assertIsNotNone(form.clean())
 
     def test_LoginForm_with_wrong_credentials_throws_error(self):
-        form = LoginForm({u'username': u'test', u'password': u'1234', u'action_login': 1, u'api_url': self.test_api.id})
+        form = LoginForm({'username': 'test', 'password': '1234', 'action_login': 1, 'api_url': self.test_api.id})
         self.assertFalse(form.is_valid())
-        self.assertRaisesMessage(forms.ValidationError, u'Wrong username or password', form.clean)
+        self.assertRaisesMessage(forms.ValidationError, 'Wrong username or password', form.clean)
 
 
 class MeFormTests(FormTesterMixin, TestCase):
 
     def test_MeForm_data_validation_for_invalid_data(self):
         invalid_data_list = [
-            {u'data': {u'company': u'test', u're_password': u'1234'},
-                u'error': (u'password', [u'This field is required.'])},
-            {u'data': {u'password': u'1234', u're_password': u'1234', u'vat': 1},
-                u'error': (u'company', [u'This field is required.'])},
-            {u'data': {u'company': u'test', u'password': u'1234', u'vat': 1},
-                u'error': (u're_password', [u'This field is required.'])},
+            {'data': {'company': 'test', 're_password': '1234'},
+                'error': ('password', ['This field is required.'])},
+            {'data': {'password': '1234', 're_password': '1234', 'vat': 1},
+                'error': ('company', ['This field is required.'])},
+            {'data': {'company': 'test', 'password': '1234', 'vat': 1},
+                'error': ('re_password', ['This field is required.'])},
         ]
 
         for invalid_data in invalid_data_list:
             self.assertFormError(
                 MeForm,
-                invalid_data[u'error'][0],
-                invalid_data[u'error'][1],
-                invalid_data[u'data'])
+                invalid_data['error'][0],
+                invalid_data['error'][1],
+                invalid_data['data'])
 
     def test_MeForm_data_validation_for_valid_data(self):
-        form = MeForm({u'company': u'test', u'password': u'1234',
-                         u're_password': u'1234', u'vat': 1})
+        form = MeForm({'company': 'test', 'password': '1234',
+                         're_password': '1234', 'vat': 1})
         self.assertTrue(form.is_valid())
         #this will throw an error if it doesn't clean correctly
         self.assertIsNotNone(form.clean())
 
     def test_MeForm_with_different_passwords_throws_error(self):
         invalid_data = {
-            u'data': {u'company': u'test', u're_password': u'1234', u'password': u'123'},
-            u'error': (u're_password', [u'Passwords do not match'])}
+            'data': {'company': 'test', 're_password': '1234', 'password': '123'},
+            'error': ('re_password', ['Passwords do not match'])}
 
         self.assertFormError(
             MeForm,
-            invalid_data[u'error'][0],
-            invalid_data[u'error'][1],
-            invalid_data[u'data'])
+            invalid_data['error'][0],
+            invalid_data['error'][1],
+            invalid_data['data'])
 
 
 class SSHFormTests(FormTesterMixin, TestCase):
 
     def test_SSHForm_data_validation_for_invalid_data(self):
         invalid_data_list = [
-            {u'data': {}, u'error': (u'key', [u'This field is required.'])}
+            {'data': {}, 'error': ('key', ['This field is required.'])}
         ]
 
         for invalid_data in invalid_data_list:
             self.assertFormError(
                 SSHForm,
-                invalid_data[u'error'][0],
-                invalid_data[u'error'][1],
-                invalid_data[u'data'])
+                invalid_data['error'][0],
+                invalid_data['error'][1],
+                invalid_data['data'])
 
     def test_SSHForm_data_validation_for_valid_data(self):
         keys = [
-            {u'key': u'ssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-            {u'key': u'\n\tssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-            {u'key': u'ssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local      \n'},
+            {'key': 'ssh-rsa ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + 'Test@Test.local'},
+            {'key': '\n\tssh-rsa ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + 'Test@Test.local'},
+            {'key': 'ssh-dsa ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + 'Test@Test.local      \n'},
 
         ]
         for key in keys:
@@ -134,25 +135,27 @@ class SSHFormTests(FormTesterMixin, TestCase):
 
     def test_SSHForm_with_wrong_ssh_throws_error(self):
         keys = [
-            {u'data': {u'key': u'ssh-rsaZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-                u'error': u'Insered value is not a ssh-rsa key'},
-            {u'data': {u'key': u'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo Test@Test.local'},
-                u'error': u'Insered value is not a ssh-rsa key'},
-            {u'data': {u'key': u'ssh-rsa ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'},
-                u'error': u'Insered value is not a ssh-rsa key'},
-            {u'data': {u'key': u'ssh-rsa ' + (u'a' * 4096) + u' Test@Test.local'},
-                u'error': u'Key too long'}
+            {'data': {'key': 'ssh-rsa' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + ' Test@Test.local'},
+                'error': 'Inserted value is not a valid ssh key'},
+            {'data': {'key': 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3 + ' Test@Test.local'},
+                'error': 'Inserted value is not a valid ssh key'},
+            {'data': {'key': 'ssh-rs ' + 'ZZZB3NzaC1yc2EZZZDAQABAFFBAQCui4hJItITzlRHo'*3},
+                'error': 'Inserted value is not a valid ssh key'},
+            {'data': {'key': 'ssh-rsa ' + 'ZZZB3NzaC1yc2E\nZZZDAQABAFFBAQCui4hJItITzlRHo'*3 },
+                'error': 'Too many newlines in the ssh key'},
+            {'data': {'key': 'ssh-rsa a Test@Test.local'},
+                'error': 'Key too short'}
         ]
         for key in keys:
-            form = SSHForm(key[u'data'])
+            form = SSHForm(key['data'])
             self.assertFalse(form.is_valid())
-            self.assertRaisesMessage(forms.ValidationError, key[u'error'], form.clean)
+            self.assertRaisesMessage(forms.ValidationError, key['error'], form.clean)
 
 
 class ContainerFormTests(TestCase):
 
     def test_ContainerForm_data_validation_for_valid_data(self):
-        form = ContainerForm({u'tags': [u'1'], u'link_to': [u'1'], u'distro': [u'1']}, distro_choices=((1, 1), (2, 2)), tag_choices=((1, 1), (2, 2)), link_to_choices=((1, 1), (2, 2)))
+        form = ContainerForm({'tags': ['1'], 'linked_to': ['1'], 'distro': 1, 'quota_threshold': 90}, distro_choices=((1, 1), (2, 2)), tag_choices=((1, 1), (2, 2)), linked_to_choices=((1, 1), (2, 2)))
         self.assertTrue(form.is_valid())
         #this will throw an error if it doesn't clean correctly
         self.assertIsNotNone(form.clean())
@@ -161,7 +164,7 @@ class ContainerFormTests(TestCase):
 class DomainFormTests(TestCase):
 
     def test_DomainForm_data_validation_for_valid_data(self):
-        form = DomainForm({u'did': 267, u'tags': [1]}, tag_choices=((1, 1), (2, 2)))
+        form = DomainForm({'did': 267, 'tags': [1]}, tag_choices=((1, 1), (2, 2)))
         self.assertTrue(form.is_valid())
         #this will throw an error if it doesn't clean correctly
         self.assertIsNotNone(form.clean())
@@ -175,28 +178,28 @@ class CalendarFormTests(FormTesterMixin, TestCase):
 
     def test_CalendarForm_data_validation_for_invalid_data(self):
         invalid_data_list = [
-            {u'data': {u'year': 2014, u'day': 12},
-                u'error': (u'month', [u'Month is required.'])},
-            {u'data': {u'month': 1},
-                u'error': (u'year', [u'This field is required.'])},
-            {u'data': {u'month': 1, u'day': 12},
-                u'error': (u'year', [u'This field is required.'])},
-            {u'data': {u'day': 12},
-                u'error': (u'year', [u'This field is required.'])},
+            {'data': {'year': 2014, 'day': 12},
+                'error': ('month', ['Month is required.'])},
+            {'data': {'month': 1},
+                'error': ('year', ['This field is required.'])},
+            {'data': {'month': 1, 'day': 12},
+                'error': ('year', ['This field is required.'])},
+            {'data': {'day': 12},
+                'error': ('year', ['This field is required.'])},
         ]
 
         for invalid_data in invalid_data_list:
             self.assertFormError(
                 CalendarForm,
-                invalid_data[u'error'][0],
-                invalid_data[u'error'][1],
-                invalid_data[u'data'])
+                invalid_data['error'][0],
+                invalid_data['error'][1],
+                invalid_data['data'])
 
     def test_CalendarForm_data_validation_for_valid_data(self):
         valid_data_list = [
-            {u'year': self.today.year},
-            {u'year': self.today.year, u'month': self.today.month},
-            {u'year': self.today.year, u'month': self.today.month, u'day': self.today.day},
+            {'year': self.today.year},
+            {'year': self.today.year, 'month': self.today.month},
+            {'year': self.today.year, 'month': self.today.month, 'day': self.today.day},
         ]
         for valid_data in valid_data_list:
             form = CalendarForm(valid_data)
@@ -206,27 +209,27 @@ class CalendarFormTests(FormTesterMixin, TestCase):
 
     def test_CalendarForm_time_unit_returns_right_value(self):
         valid_data_list = [
-            {u'data': {u'year': self.today.year}, u'time_unit': u'month'},
-            {u'data': {u'year': self.today.year, u'month': self.today.month}, u'time_unit': u'day'},
-            {u'data': {u'year': self.today.year, u'month': self.today.month, u'day': self.today.day}, u'time_unit': 'hour'},
+            {'data': {'year': self.today.year}, 'time_unit': 'month'},
+            {'data': {'year': self.today.year, 'month': self.today.month}, 'time_unit': 'day'},
+            {'data': {'year': self.today.year, 'month': self.today.month, 'day': self.today.day}, 'time_unit': 'hour'},
         ]
         for valid_data in valid_data_list:
-            form = CalendarForm(valid_data[u'data'])
+            form = CalendarForm(valid_data['data'])
             self.assertEqual(form.is_valid(), True)
-            self.assertEqual(form.time_unit(), valid_data[u'time_unit'])
+            self.assertEqual(form.time_unit(), valid_data['time_unit'])
 
     def test_CalendarForm_is_in_future_fails_with_date_in_the_future(self):
         one_year_in_future = self.today + timedelta(365)
         tomorrow = self.today + timedelta(365)
         invalid_data_list = [
-            {u'year': one_year_in_future.year},
-            {u'year': one_year_in_future.year, u'month': one_year_in_future.month},
-            {u'year': one_year_in_future.year, u'month': one_year_in_future.month, u'day': one_year_in_future.day},
-            {u'year': tomorrow.year, u'month': tomorrow.month, u'day': tomorrow.day},
+            {'year': one_year_in_future.year},
+            {'year': one_year_in_future.year, 'month': one_year_in_future.month},
+            {'year': one_year_in_future.year, 'month': one_year_in_future.month, 'day': one_year_in_future.day},
+            {'year': tomorrow.year, 'month': tomorrow.month, 'day': tomorrow.day},
         ]
 
         for invalid_data in invalid_data_list:
             form = CalendarForm(invalid_data)
             self.assertFalse(form.is_valid())
-            self.assertRaisesMessage(forms.ValidationError, u'Set a date in the past.', form.clean)
+            self.assertRaisesMessage(forms.ValidationError, 'Set a date in the past.', form.clean)
 

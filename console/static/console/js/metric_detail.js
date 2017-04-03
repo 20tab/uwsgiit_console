@@ -26,7 +26,6 @@
             data: dates[i],
             dataType: 'json',
             success: function (data) {
-                console.log(data);
                 unit_of_measure = data['unit_of_measure'];
                 time_unit = data['time_unit'];
                 data['stats'] = combineMultipleMetrics(

@@ -8,18 +8,19 @@
                 {% else %}
                     {% if active_panel == '{{ metric.0 }}' %}active{% endif %}
                 {% endif %}">
-                <a href="#" data-toggle="tab" onclick="$('#calendar-{{ id }}').attr('action', '{% url metric.0 arg %}'); clearGraph('{{ id }}');">{{ metric.1 }}</a>
+                <a href="#" data-toggle="tab" onclick="$('#calendar-{{ id }}').attr('action', '{% url metric.0 arg %}'); clearGraphs('{{ id }}');">{{ metric.1 }}</a>
             </li>
         {% endfor %}
         </ul>
     </div>
     <div class="col-sm-9 col-lg-10">
+        <p>Tip: You can leave day field clean to get whole month</p>
         <form action="{% url metrics.0.0 arg %}" method="post" class="form-horizontal inline calendar" id="calendar-{{ id }}">
             {% csrf_token %}
             {{ calendar }}
             <button id="get-metrics-{{ id }}" data-loading-text="Loading..." class="btn btn-primary get-metrics-btn" data-id="{{ id }}">Go</button>
         </form>
-        <button class="inline btn btn-primary" onclick="clearGraph('{{ id }}');">Clear Graphs</button>
+        <button class="inline btn btn-primary" onclick="clearGraphs('{{ id }}');">Clear Graphs</button>
         {% include "console/metrics_container.html" %}
     </div>
 </div>

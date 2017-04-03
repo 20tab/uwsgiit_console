@@ -5,7 +5,7 @@ from django.conf import settings
 
 from console.forms import NewDomainForm, TagForm
 from console.views import home, me_page, logout, domains, domain, tags,\
-    tag, containers
+    tag, containers, alarms, latest_alarms
 from console.views_metrics import container_metrics, domain_metrics,\
     container_metrics_per_tag, domain_metrics_per_tag
 from console.models import IOReadContainerMetric, NetworkRXDomainMetric,\
@@ -50,7 +50,7 @@ class HomeViewTests(TestCase):
     def test_home_contains_right_html(self):
         response = home(self.request)
         self.assertContains(response, 'id="id_action_login" name="action_login"')
-        self.assertNotContains(response, 'href="#">Containers <span class="caret"></span></a>')
+        self.assertNotContains(response, 'Latest Alarms')
 
     def test_home_handles_logged_in_user(self):
         self.request.session = {
@@ -59,7 +59,7 @@ class HomeViewTests(TestCase):
             'api_url': settings.DEFAULT_API_URL}
         response = home(self.request)
         self.request.session = {}
-        self.assertContains(response, 'href="#">Containers <span class="caret"></span></a>')
+        self.assertContains(response, 'Latest Alarms')
         self.assertNotContains(response, 'id="id_action_login" name="action_login"')
 
     def test_home_view_login_redirects_to_me_html(self):
@@ -358,6 +358,102 @@ class Containers_ViewTests(TestCase):
         self.request_get.session = {}
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '({id})</b>'.format(id=settings.TEST_CONTAINER))
+
+
+class AlarmsViewTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.url = '/alarms/'
+        cls.request_get = request_factory.get(cls.url, follow=True)
+        cls.request_post = request_factory.post(cls.url, follow=True)
+        cls.request_get.session = {}
+        cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
+
+    def test_alarms_name_resolves_to_alarms_url(self):
+        url = reverse('console_alarms')
+        self.assertEqual(url, self.url)
+
+    def test_alarms_url_resolves_to_alarms_view(self):
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.func, alarms)
+
+    def test_alarms_doesnt_allow_anonymous(self):
+        response = alarms(self.request_get)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+        response = alarms(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_alarms_handles_logged_in_user(self):
+        self.request_get.session = {
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
+        response = alarms(self.request_get)
+        self.request_get.session = {}
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<form class="form-horizontal" role="form" method="POST">')
+
+
+class Latest_alarmsViewTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        request_factory = RequestFactory()
+        cls.url = '/latest_alarms/'
+        cls.request_get = request_factory.get(cls.url, follow=True)
+        cls.request_post = request_factory.post(cls.url, follow=True)
+        cls.request_get.session = {}
+        cls.request_post.session = {}
+        cls.test_api = UwsgiItApi(
+            url=settings.DEFAULT_API_URL,
+            name='TEST API')
+        cls.test_api.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.test_api.delete()
+
+    def test_latest_alarms_name_resolves_to_latest_alarms_url(self):
+        url = reverse('console_latest_alarms')
+        self.assertEqual(url, self.url)
+
+    def test_latest_alarms_url_resolves_to_latest_alarms_view(self):
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.func, latest_alarms)
+
+    def test_latest_alarms_doesnt_allow_anonymous(self):
+        response = latest_alarms(self.request_get)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+        response = latest_alarms(self.request_post)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+        self.assertEqual(response.url, '/')
+
+    def test_latest_alarms_handles_logged_in_user(self):
+        self.request_get.session = {
+            'username': settings.TEST_USER,
+            'password': settings.TEST_PASSWORD,
+            'api_url': settings.DEFAULT_API_URL}
+        response = latest_alarms(self.request_get)
+        self.request_get.session = {}
+        self.assertEqual(response.status_code, 200)
 
 
 class ContainerMetricViewTests(TestCase):

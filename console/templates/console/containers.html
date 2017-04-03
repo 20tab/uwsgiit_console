@@ -6,19 +6,25 @@
 
 {% block content %}
 
-    <h3>Container <b>{{ container.name }} ({{ container.uid }})</b></h3>
+        <h3 class="inline-block">Container <b>{{ container.name }} ({{ container.uid }})</b></h3> <button id="reboot-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">Reboot</button>
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
-      <li class="{% if not active_panel %}active{% endif %}">
-          <a href="#infos" data-toggle="tab">Info</a>
-      </li>
-      <li{% if active_panel == 'ssh' %} class="active"{% endif %}>
-          <a href="#ssh" data-toggle="tab">SSH keys</a>
-      </li>
-      <li{% if active_panel == 'metrics' %} class="active"{% endif %}>
-          <a href="#metrics" data-toggle="tab">Metrics</a>
-      </li>
+        <li class="{% if not active_panel %}active{% endif %}">
+            <a href="#infos" data-toggle="tab">Info</a>
+        </li>
+        <li{% if active_panel == 'ssh' %} class="active"{% endif %}>
+            <a href="#ssh" data-toggle="tab">SSH keys</a>
+        </li>
+        <li{% if active_panel == 'loopboxes' %} class="active"{% endif %}>
+            <a href="#loopboxes" data-toggle="tab">Loopboxes</a>
+        </li>
+        <li{% if active_panel == 'metrics' %} class="active"{% endif %}>
+            <a href="#metrics" data-toggle="tab">Metrics</a>
+        </li>
+        <li{% if active_panel == 'alarms' %} class="active"{% endif %}>
+            <a href="#alarms" data-toggle="tab">Alarms</a>
+        </li>
     </ul>
 
 
@@ -31,6 +37,10 @@
                 {% csrf_token %}
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered">
+                        <tr>
+                            <td>Connection</td>
+                            <td>ssh {{container_copy.uid}}@{{container.server_address}}</td>
+                        </tr>
                     {% for k, v in container_copy.items %}
                         <tr>
                             <td>{{ k|get_title }}</td>
@@ -47,6 +57,7 @@
 
                     </table>
                     <button id="update-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">Update</button>
+                    <button id="update-and-reboot-container" type="button" data-loading-text="Loading..." class="btn btn-primary submit-container-form">Update and Reboot</button>
                 </div>
             </form>
         </div>
@@ -81,13 +92,180 @@
             {% endfor %}
         </div>
 
+        <div class="tab-pane{% if active_panel == 'loopboxes' %} active{% endif %}" id="loopboxes">
+            <div class="margin-top">
+                <form id="addloopboxform" class="form-inline" role="form" action="{% url 'console_containers' container.uid %}" method="post">
+                    {% csrf_token %}
+                    {{ newloopboxform }}
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+            </div>
+            <br/>
+            {% if loopboxes %}
+                <p>
+                {% for tag in tags %}
+                    <button class="btn btn-default tag_filter margin-top" data-filter="{{ tag }}">{{ tag }}</button>
+                {% endfor %}
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered tablesorter" id="domains-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Filename</th>
+                                <th>Mount Point</th>
+                                <th>Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in loopboxes %}
+                            <tr class="table_row" data-category="{{ l.0.tags|join:' ' }}">
+                                <td>{{ l.0.id }}</a></td>
+                                <td>{{ l.0.filename }}</td>
+                                <td>{{ l.0.mountpoint }}</td>
+                                <td>
+                                    <form class="inline form-inline" role="form" action="{% url 'console_containers' container.uid %}" method="post">{% csrf_token %}
+                                        <input name="lid" value="{{ l.0.id }}" type="hidden">
+                                        {{ l.1.tags }}
+                                        <button type="submit" class="glyphicon glyphicon-floppy-save"></button>
+                                    </form>
+
+                                    <a href="?del-loopbox={{ l.0.id }}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No Loopboxes</p>
+            {% endif %}
+
+        </div>
         <!-- Metrics -->
         <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
             {% get_metrics_list container as metrics %}
             {% include "console/metrics.html" with arg=container.uid id='container' %}
         </div>
-    </div>
 
+        <!-- Alarms -->
+        <div class="tab-pane{% if active_panel == 'alarms' %} active{% endif %}" id="alarms">
+            <h2>Latest alarms for container {{ container.uid }}</h2>
+            <div class="well well-sm">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="btn-alarm-key" type="button">Generate Alarm Key</button>
+                    </span>
+                    <input type="text" onclick="this.select()" class="form-control" value="" id="input-alarm-key"/>
+                </div>
+            </div>
+
+            {% if alarms %}
+            <div class="panel-group" id="search-accordion">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" data-parent="#search-accordion" href="#search-alarm">Filter Alarms</a>
+                        </h4>
+                    </div>
+                    <div id="search-alarm" class="panel-collapse collapse">
+                        <div class="panel-body">
+                             <div class="table-responsive">
+                                <table class="table table-hover table-bordered">
+                                    {% if a_container %}
+                                    <tr>
+                                        <td>Container</td>
+                                        <td><input class="to_select_2" type="hidden" id="container" data-filter="container"></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_class %}
+                                    <tr>
+                                        <td>Class</td>
+                                        <td><input class="to_select_2" type="hidden" id="_class" data-filter="class"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_level %}
+                                    <tr>
+                                        <td>Level</td>
+                                        <td><input class="to_select_2" type="hidden" id="level" data-filter="level"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_color %}
+                                    <tr>
+                                        <td>Color</td>
+                                        <td><input class="to_select_2" type="hidden" id="color" data-filter="color"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_vassal %}
+                                    <tr>
+                                        <td>Vassal</td>
+                                        <td><input class="to_select_2" type="hidden" id="vassal" data-filter="vassal"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_filename %}
+                                    <tr>
+                                        <td>Filename</td>
+                                        <td><input class="to_select_2" type="hidden" id="filename" data-filter="filename"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_line %}
+                                    <tr>
+                                        <td>Line</td>
+                                        <td><input class="to_select_2" type="hidden" id="line" data-filter="line"/></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if a_func %}
+                                    <tr>
+                                        <td>Function</td>
+                                        <td><input class="to_select_2" type="hidden" id="func" data-filter="func"/></td>
+                                    </tr>
+                                    {% endif %}
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-group scrollable max-height-800" id="alarms-accordion">
+                {% for a in alarms %}
+
+                    <div class="panel panel-default table_row"
+                        {% for k, v in a.items %}
+                            {% if v and k != 'msg' and k != 'id' and k != 'unix' %} data-{{ k }}="{{ v }}"{% endif %}
+                        {% endfor%}>
+                        <div style="background-color:{{ a.color }};" class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#alarms-accordion" href="#alarm-{{ a.id }}">
+                                    {{ a.msg }} <a class="pull-right" href="?del-alarm={{ a.id }}">
+                                        <span class="glyphicon glyphicon-remove-circle"></span>
+                                    </a>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="alarm-{{ a.id }}" class="panel-collapse collapse{% if forloop.first %} in{% endif %}">
+                            <div class="panel-body">
+                                 <div class="table-responsive">
+                                    <table class="table table-hover table-bordered">
+                                        {% for k, v in a.items %}
+                                            {% if v and k != 'msg' and k != 'id' and k != 'color' %}
+                                                <tr>
+                                                    <td>{{ k|get_title }}</td>
+                                                    <td>{{ v }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No alarms</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
 
 {% block footer_js %}
@@ -96,6 +274,62 @@
         var subject = '{{ container.name }}' + ' ' + '{{ container.uid }}';
     </script>
     <script src="{{ STATIC_URL }}console/js/multiple_metrics.js"></script>
+    <script>
+        {% if a_container %}var container = {{a_container|safe}};{% endif %}
+        {% if a_class %}var _class = {{a_class|safe}};{% endif %}
+        {% if a_level %}
+            var levels = {
+                0: 'System',
+                1: 'User',
+                2: 'Exception',
+                3: 'Traceback',
+                4: 'Log'
+            };
+            var level = {{a_level|safe}};
+            for (i in level){
+                if (level[i].id != ''){
+                    level[i].text = levels[level[i].id];
+                }
+            }
+        {% endif %}
+        {% if a_color %}var color = {{a_color|safe}};{% endif %}
+        {% if a_vassal %}var vassal = {{a_vassal|safe}};{% endif %}
+        {% if a_filename %}var filename = {{a_filename|safe}};{% endif %}
+        {% if a_func %}var func = {{a_func|safe}};{% endif %}
+        {% if a_line %}var line = {{a_line|safe}};{% endif %}
+    </script>
+    <script src="{{ STATIC_URL }}console/js/alarm_filter.js"></script>
+    <script>
+        var reboot_container_url = "{% url 'console_reboot_container' container.uid %}";
+    </script>
+    <script src="{{ STATIC_URL }}console/js/reboot_container.js"></script>
 
+    <script>
+        $('#btn-alarm-key').click(function(){
+            $(this).button('loading');
+            $.ajax({
+                type: "POST",
+                url: "{% url 'console_alarm_key' container.uid %}",
+                data: {
+                    container: {{ container.uid }},
+                    csrfmiddlewaretoken: csrf_token,
+                },
+                dataType: "json",
+                success: function(data) {
+                    if('error' in data){
+                        alert('An error occurred: '+ data['error']);
+                    }
+                    else{
+                        $('#input-alarm-key').val(data['alarm_key']);
+                    }
+                },
+                error: function(e) {
+                    alert('An error occurred. Try that again in a few moments.');
+                }
+            });
+            $(this).button('reset');
+            return false;
+        });
+    </script>
 {% endblock %}
 

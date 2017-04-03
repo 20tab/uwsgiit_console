@@ -19,7 +19,9 @@ def get_metrics_list(parser, token):
         varname = bits[-1]
         metric_type = bits[1]
     else:
-        raise template.TemplateSyntaxError("{} expected format is 'metric_type as varname'".format(bits[0]))
+        raise template.TemplateSyntaxError(
+            "{} expected format is 'metric_type as varname'".format(bits[0]))
+
     if metric_type == 'domain_per_tag':
         metric_list = (
             ('console_domain_net_rx_per_tag', 'Network RX'),
@@ -34,6 +36,8 @@ def get_metrics_list(parser, token):
             ('console_container_net_tx_per_tag', 'Network TX'),
             ('console_container_cpu_per_tag', 'CPU Ticks'),
             ('console_container_mem_per_tag', 'Memory'),
+            ('console_container_mem_rss_per_tag', 'RSS Memory'),
+            ('console_container_mem_cache_per_tag', 'Cache Memory'),
             ('console_container_quota_per_tag', 'Quota')
         )
     elif metric_type == 'domain':
@@ -50,11 +54,14 @@ def get_metrics_list(parser, token):
             ('console_container_net_tx', 'Network TX'),
             ('console_container_cpu', 'CPU Ticks'),
             ('console_container_mem', 'Memory'),
+            ('console_container_mem_rss', 'RSS Memory'),
+            ('console_container_mem_cache', 'Cache Memory'),
             ('console_container_quota', 'Quota')
         )
     else:
         raise template.TemplateSyntaxError(
-            "Expected metric types are domain_per_tag, container_per_tag, domain or container_per_tag, got {}".format(metric_type))
+            ("Expected metric types are domain_per_tag, container_per_tag, "
+             "domain or container_per_tag, got {}").format(metric_type))
 
     return MakeListNode(metric_list, varname)
 

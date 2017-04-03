@@ -4,6 +4,13 @@ from calendar import monthrange
 
 from django.utils.six.moves import xrange
 
+from uwsgiit.api import UwsgiItClient as UC
+
+
+class ConsoleClient(UC):
+    def get_tag_list(self):
+        return [(x['name'], x['name']) for x in self.list_tags().json()]
+
 
 def diff(a, b):
     return list(set(a) - set(b))

@@ -3,17 +3,20 @@ var monthNames = [ "January", "February", "March", "April", "May", "June",
 
 var metrics = {};
 
-function clearGraph(id) {
+function clearGraphs(id) {
     $('#legend-' + id).empty();
     $('#chart_container-' + id).html(
         '<div id="chart-' + id + '"></div>\
-        <div id="timeline-' + id + '"></div>\
         <div id="legend_container-' + id + '">\
             <div id="legend-' + id + '" class="legend-class"></div>\
         </div>');
     metrics[id] = undefined;
 }
 
+function clearGraph(id){
+    $("#chart-" + id).remove();
+    $("#legend_container-" + id).remove();
+}
 
 function combineMultipleMetrics(list, absoluteValues, unitOfMeasure, timeUnit, calculateAverage){
 
@@ -153,33 +156,6 @@ function generateGraphDetails(graph, time_unit, unit_of_measure, legend_id){
     yAxis.render();
 }
 
-
-function generateModal(id, modal_id, chart_id, legend_id, legend_container_id){
-    var identifier = id + '-' + modal_id;
-    var modal = '<button class="btn btn-primary btn-lg btn-modal" data-toggle="modal" data-target="#modal-' + identifier + '">Open Graph</button>\
-    <div class="modal fade" id="modal-' + identifier + '" tabindex="-1" role="dialog" aria-labelledby="label-' + identifier + '" aria-hidden="true">\
-        <div class="modal-dialog">\
-            <div class="modal-content">\
-                <div class="modal-header">\
-                    <button type="button" class="close" data-dismiss="modal">\
-                        <span aria-hidden="true">&times;</span>\
-                        <span class="sr-only">Close</span>\
-                    </button>\
-                    <h4 class="modal-title" id="label-' + identifier + '">' + modal_id + '</h4>\
-                </div>\
-                <div class="modal-body" id="modal-body-' + identifier + '"></div>\
-                <div class="modal-footer">\
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
-                </div>\
-            </div>\
-        </div>\
-    </div>'
-
-    $(legend_container_id).append(modal);
-    $(chart_id).clone().appendTo('#modal-body-' + identifier);
-    $(legend_id).clone().appendTo('#modal-body-' + identifier);
-}
-
 function generateOpenInNewPageButton(id, form_id, metric_url, date, legend_container_id){
     var identifier = 'form-' + id + '-' + form_id;
     var form = $('<form/>', {action: metric_detail_url, method: 'GET', target: '_blank', id: identifier, class: 'inline'}).appendTo(legend_container_id);
@@ -189,6 +165,12 @@ function generateOpenInNewPageButton(id, form_id, metric_url, date, legend_conta
 
     addDateAsHiddenInputToForm('#' + form.attr('id') , date);
     form.append('<button class="btn btn-primary btn-lg" type="submit">Open In a New Page</button>');
+}
+
+function generateCloseGraphButton(id, metric_name, legend_container_id){
+    var identifier = id + '-' + metric_name;
+    var button = '<button class="btn btn-primary btn-lg btn-close-graph" onclick="clearGraph(\'' + identifier + '\');">Close Graph</button>';
+    $(legend_container_id).append(button);
 }
 
 function addDateAsHiddenInputToForm(form_id, date){
