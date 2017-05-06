@@ -4,8 +4,7 @@ import json
 
 from django.conf import settings
 from django.contrib import messages
-from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse,\
     HttpResponseForbidden
 
@@ -36,8 +35,7 @@ def main_render(request, template, v_dict={}):
         if last_alarm:
             v_dict['last_alarm_id'] = last_alarm[0]['id']
 
-    return render_to_response(
-        template, v_dict, context_instance=RequestContext(request))
+    return render(request, template, context=v_dict)
 
 
 def home(request):
@@ -206,7 +204,7 @@ def containers(request, id):
                         if link not in list_linked_to:
                             client.update_container(id, {'link': link})
                     for link in list_linked_to:
-                        if unicode(link) not in cd['linked_to']:
+                        if link not in cd['linked_to']:
                             client.update_container(id, {'unlink': link})
 
             elif 'action' in request.POST:
