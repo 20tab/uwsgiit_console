@@ -48,6 +48,7 @@ def container_metrics(request, container, **kwargs):
 @login_required
 def domain_metrics(request, domain, **kwargs):
     metrics = [kwargs['model'](domain=domain)]
+    print(metrics)
     return stats_render(request, metrics, **kwargs)
 
 
@@ -71,7 +72,6 @@ def domain_metrics_per_tag(request, tag, **kwargs):
 
     domains = client.domains(tags=[tag]).json()
     metrics = [kwargs['model'](domain=d['id']) for d in domains]
-
     return stats_render(request, metrics, **kwargs)
 
 

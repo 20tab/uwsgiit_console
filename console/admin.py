@@ -6,17 +6,17 @@ from .models import *
 
 
 class ContainerMetricAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'container', 'year', 'month', 'day')
+    list_display = ('__str__', 'container', 'year', 'month', 'day')
     list_filter = ('year', 'month', 'day')
 
 
 class DomainMetricAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'container', 'year', 'month', 'day')
+    list_display = ('__str__', 'container', 'year', 'month', 'day')
     list_filter = ('year', 'month', 'day')
 
 
 class UwsgiItApiAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'name', 'url')
+    list_display = ('__str__', 'name', 'url')
     list_filter = ('name', 'url')
 
 
