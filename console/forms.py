@@ -8,7 +8,6 @@ from django.core.validators import validate_email
 from django.core.urlresolvers import resolve, Resolver404
 
 from uwsgiit.api import UwsgiItClient
-from select2.widgets import SelectMultipleAutocomplete, SelectAutocomplete
 
 from .models import UwsgiItApi
 
@@ -38,7 +37,6 @@ class MultiEmailField(forms.CharField):
 
 class TagsForm(forms.Form):
     tags = forms.MultipleChoiceField(
-        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
         required=False)
 
@@ -53,8 +51,7 @@ class BootstrapForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(BootstrapForm, self).__init__(*args, **kwargs)
         for field in self.fields.keys():
-            if not isinstance(self.fields[field].widget, (SelectAutocomplete, SelectMultipleAutocomplete)):
-                self.fields[field].widget.attrs['class'] = 'form-control'
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 
 class LoginForm(forms.Form):
@@ -71,7 +68,8 @@ class LoginForm(forms.Form):
         super(LoginForm, self).__init__(*args, **kwargs)
         self.fields['api_url'].queryset = UwsgiItApi.objects.all()
         self.fields['api_url'].initial = UwsgiItApi.objects.get_or_create(
-            url=settings.DEFAULT_API_URL)[0]
+            url=settings.DEFAULT_API_URL, name=settings.CONSOLE_SUBTITLE
+        )[0]
 
     def clean(self):
         cd = super(LoginForm, self).clean()
@@ -144,7 +142,6 @@ class ContainerForm(TagsForm):
     nofollow = forms.BooleanField(label='NoFollow', required=False)
     distro = forms.IntegerField(label='Distro', widget=forms.Select(choices=()))
     linked_to = forms.MultipleChoiceField(
-        widget=SelectMultipleAutocomplete(plugin_options={"width": "300px"}),
         choices=(),
         required=False)
     jid = forms.CharField(label='Jabber ID', required=False)
@@ -195,7 +192,6 @@ class CalendarForm(forms.Form):
     year = forms.IntegerField()
     month = forms.ChoiceField(
         required=False,
-        widget=SelectAutocomplete(plugin_options={"width": "200px"}),
         choices=[('', '')] + [(k, v) for k, v in MONTHS.items()])
     day = forms.IntegerField(required=False)
 
@@ -301,7 +297,6 @@ class AlarmForm(BootstrapForm):
     color = forms.CharField(max_length=7, required=False)
     level = forms.ChoiceField(
         required=False,
-        widget=SelectAutocomplete(plugin_options={"width": "100%"}),
         choices=(
             ('', ' '), (0, 'System'), (1, 'User'),
             (2, 'Exception'), (3, 'Traceback'), (4, 'Log')
