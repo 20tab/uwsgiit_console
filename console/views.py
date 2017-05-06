@@ -306,6 +306,7 @@ def containers(request, id):
         res['calendar'] = calendar
         res['newloopboxform'] = newloopboxform
         res['active_panel'] = active_panel
+        res['domains'] = client.domains_in_container(id).json()
     return main_render(request, 'console/containers.html', res)
 
 
@@ -408,6 +409,7 @@ def domain(request, id):
     res['calendar'] = calendar
     res['domain'] = domain
     res['domainform'] = form
+    res['containers_per_domain'] = client.containers_per_domain(id).json()
     return main_render(request, 'console/domain.html', res)
 
 
