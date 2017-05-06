@@ -22,6 +22,9 @@
         <li{% if active_panel == 'metrics' %} class="active"{% endif %}>
             <a href="#metrics" data-toggle="tab">Metrics</a>
         </li>
+        <li{% if active_panel == 'domains' %} class="active"{% endif %}>
+            <a href="#domains" data-toggle="tab">Domains</a>
+        </li>
         <li{% if active_panel == 'alarms' %} class="active"{% endif %}>
             <a href="#alarms" data-toggle="tab">Alarms</a>
         </li>
@@ -120,7 +123,7 @@
                         <tbody>
                             {% for l in loopboxes %}
                             <tr class="table_row" data-category="{{ l.0.tags|join:' ' }}">
-                                <td>{{ l.0.id }}</a></td>
+                                <td>{{ l.0.id }}</td>
                                 <td>{{ l.0.filename }}</td>
                                 <td>{{ l.0.mountpoint }}</td>
                                 <td>
@@ -147,7 +150,33 @@
             {% get_metrics_list container as metrics %}
             {% include "console/metrics.html" with arg=container.uid id='container' %}
         </div>
+        <!-- Domains -->
+        <div class="tab-pane{% if active_panel == 'domains' %} active{% endif %}" id="domains">
+            <div class="row margin-top">
 
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered tablesorter" id="domains-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>UUID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in domains %}
+                            <tr class="table_row">
+                                <td><a href="{% url 'console_domain' id=d.id %}">{{ d.id }}</a></td>
+                                <td>{{ d.name }}</td>
+                                <td>{{ d.uuid }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
         <!-- Alarms -->
         <div class="tab-pane{% if active_panel == 'alarms' %} active{% endif %}" id="alarms">
             <h2>Latest alarms for container {{ container.uid }}</h2>

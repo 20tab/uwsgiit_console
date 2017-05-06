@@ -11,6 +11,12 @@ class ConsoleClient(UC):
     def get_tag_list(self):
         return [(x['name'], x['name']) for x in self.list_tags().json()]
 
+    def domains_in_container(self, id):
+        return self.get(['containers', id, 'domains'])
+
+    def containers_per_domain(self, id):
+        return self.get(['domains', id, 'containers'])
+
 
 def diff(a, b):
     return list(set(a) - set(b))

@@ -70,8 +70,8 @@ class LoginForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
         self.fields['api_url'].queryset = UwsgiItApi.objects.all()
-        self.fields['api_url'].initial = UwsgiItApi.objects.get(
-            url=settings.DEFAULT_API_URL)
+        self.fields['api_url'].initial = UwsgiItApi.objects.get_or_create(
+            url=settings.DEFAULT_API_URL)[0]
 
     def clean(self):
         cd = super(LoginForm, self).clean()

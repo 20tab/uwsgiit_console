@@ -9,6 +9,9 @@
       <li class="{% if not active_panel %}active{% endif %}">
           <a href="#infos" data-toggle="tab">Info</a>
       </li>
+      <li{% if active_panel == 'containers' %} class="active"{% endif %}>
+          <a href="#containers" data-toggle="tab">Containers</a>
+      </li>
       <li{% if active_panel == 'metrics' %} class="active"{% endif %}>
           <a href="#metrics" data-toggle="tab">Metrics</a>
       </li>
@@ -39,9 +42,37 @@
                 {# <a href="?del={{ d.0.name }}"><span class="glyphicon glyphicon-remove-circle" style="position:right"></span>Delete Domain</a> #}
             </div>
         </div>
+        <div class="tab-pane{% if active_panel == 'containers' %} active{% endif %}" id="containers">
 
 
-       <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
+            <div class="row margin-top">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered tablesorter" id="domains-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>UUID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in containers_per_domain %}
+                            <tr class="table_row">
+                                <td><a href="{% url 'console_containers' id=c.uid %}">{{ c.uid }}</a></td>
+                                <td>{{ c.name }}</td>
+                                <td>{{ c.uuid }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+
+        </div>
+
+        <div class="tab-pane{% if active_panel == 'metrics' %} active{% endif %}" id="metrics">
             {% get_metrics_list domain as metrics %}
             {% include "console/metrics.html" with arg=domain.id id='domain' %}
         </div>
