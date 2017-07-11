@@ -22,6 +22,8 @@ urlpatterns = [
     url(r'^alarm_key/(?P<id>\d+)$', alarm_key, name='console_alarm_key'),
     url(r'^add_domain_tag/(?P<id>\d+)$', add_domain_tag, name='console_add_domain_tag'),
     url(r'^reboot_container/(?P<id>\d+)$', reboot_container, name='console_reboot_container'),
+
+    url(r'^domains-in-container/(?P<id>\d+)$', domains_in_container, name='domains_in_container'),
 ]
 
 urlpatterns += [

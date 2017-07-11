@@ -1,7 +1,10 @@
-Django
-django-appconf
-requests
-six
-twentytab-select2
-uwsgiit-py
-uwsgi
+Django==1.11.3
+django-appconf==1.0.2
+django-debug-toolbar==1.8
+pytz==2017.2
+requests==2.13.0
+six==1.10.0
+sqlparse==0.2.3
+twentytab-select2==0.11
+uWSGI==2.0.15
+uwsgiit-py==0.10.0

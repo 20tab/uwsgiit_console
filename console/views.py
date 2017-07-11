@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse,\
-    HttpResponseForbidden
+    HttpResponseForbidden, Http404
 
 from .utils import ConsoleClient as CC
 
@@ -304,8 +304,24 @@ def containers(request, id):
         res['calendar'] = calendar
         res['newloopboxform'] = newloopboxform
         res['active_panel'] = active_panel
-        res['domains'] = client.domains_in_container(id).json()
+        # res['domains'] = client.domains_in_container(id).json()
     return main_render(request, 'console/containers.html', res)
+
+
+def domains_in_container(request, id):
+    # if request.is_ajax():
+
+        client = CC(
+            request.session.get('username'),
+            request.session.get('password'),
+            request.session.get('api_url')
+        )
+
+        return HttpResponse(
+            json.dumps(client.domains_in_container(id).json()),
+            content_type="application/json"
+        )
+    # raise Http404
 
 
 @login_required

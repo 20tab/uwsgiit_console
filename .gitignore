@@ -17,3 +17,4 @@ dist/
 uwsgiit_console.egg-info/
 build/
 fabfile.py
+demo/db.sqlite3
