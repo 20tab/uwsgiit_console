@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse,\
     HttpResponseForbidden, Http404
+from django.template.loader import render_to_string
 
 from .utils import ConsoleClient as CC
 
@@ -304,12 +305,12 @@ def containers(request, id):
         res['calendar'] = calendar
         res['newloopboxform'] = newloopboxform
         res['active_panel'] = active_panel
-        # res['domains'] = client.domains_in_container(id).json()
     return main_render(request, 'console/containers.html', res)
 
 
+@login_required
 def domains_in_container(request, id):
-    # if request.is_ajax():
+    if request.is_ajax():
 
         client = CC(
             request.session.get('username'),
@@ -317,11 +318,12 @@ def domains_in_container(request, id):
             request.session.get('api_url')
         )
 
+        rendered = render_to_string('console/container/domains.html', {'domains': client.domains_in_container(id).json()})
         return HttpResponse(
-            json.dumps(client.domains_in_container(id).json()),
+            json.dumps({'rendered': rendered}),
             content_type="application/json"
         )
-    # raise Http404
+    raise Http404
 
 
 @login_required
@@ -423,8 +425,25 @@ def domain(request, id):
     res['calendar'] = calendar
     res['domain'] = domain
     res['domainform'] = form
-    res['containers_per_domain'] = client.containers_per_domain(id).json()
     return main_render(request, 'console/domain.html', res)
+
+
+@login_required
+def containers_per_domain(request, id):
+    if request.is_ajax():
+
+        client = CC(
+            request.session.get('username'),
+            request.session.get('password'),
+            request.session.get('api_url')
+        )
+
+        rendered = render_to_string('console/domain/containers.html', {'containers_per_domain': client.containers_per_domain(id).json()})
+        return HttpResponse(
+            json.dumps({'rendered': rendered}),
+            content_type="application/json"
+        )
+    raise Http404
 
 
 @login_required

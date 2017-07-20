@@ -48,7 +48,6 @@ def container_metrics(request, container, **kwargs):
 @login_required
 def domain_metrics(request, domain, **kwargs):
     metrics = [kwargs['model'](domain=domain)]
-    print(metrics)
     return stats_render(request, metrics, **kwargs)
 
 

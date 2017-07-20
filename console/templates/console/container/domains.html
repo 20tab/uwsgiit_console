@@ -1,0 +1,7 @@
+{% for d in domains %}
+<tr class="table_row">
+    <td><a href="{% url 'console_domain' id=d.id %}">{{ d.id }}</a></td>
+    <td>{{ d.name }}</td>
+    <td>{{ d.uuid }}</td>
+</tr>
+{% endfor %}

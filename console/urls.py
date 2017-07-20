@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^reboot_container/(?P<id>\d+)$', reboot_container, name='console_reboot_container'),
 
     url(r'^domains-in-container/(?P<id>\d+)$', domains_in_container, name='domains_in_container'),
+    url(r'^containers-per-domain/(?P<id>\d+)$', containers_per_domain, name='containers_per_domain'),
 ]
 
 urlpatterns += [

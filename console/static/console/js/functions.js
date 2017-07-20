@@ -45,6 +45,22 @@ jQuery(function($){
         }
     });
 
+
+    function fill_related(elem){
+        if(elem != undefined){
+            $.ajax({
+                url: elem.attr('data-url'),
+                dataType: 'json',
+                success: function(data){
+                    elem.html(data.rendered)
+                }
+            })
+        }
+    }
+
+    fill_related($('#table-domains-in-container'));
+    fill_related($('#table-containers-per-domain'));
+
     $('select').select2({
         width: '200px'
     });

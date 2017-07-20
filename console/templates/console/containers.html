@@ -162,19 +162,14 @@
                                 <th>UUID</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for d in domains %}
-                            <tr class="table_row">
-                                <td><a href="{% url 'console_domain' id=d.id %}">{{ d.id }}</a></td>
-                                <td>{{ d.name }}</td>
-                                <td>{{ d.uuid }}</td>
-                            </tr>
-                            {% endfor %}
+                        <tbody id="table-domains-in-container" data-url="{% url 'domains_in_container' container.uid %}">
+                            {# ajax query to load this content #}
                         </tbody>
                     </table>
                 </div>
 
             </div>
+
         </div>
         <!-- Alarms -->
         <div class="tab-pane{% if active_panel == 'alarms' %} active{% endif %}" id="alarms">

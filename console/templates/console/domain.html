@@ -55,14 +55,8 @@
                                 <th>UUID</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for c in containers_per_domain %}
-                            <tr class="table_row">
-                                <td><a href="{% url 'console_containers' id=c.uid %}">{{ c.uid }}</a></td>
-                                <td>{{ c.name }}</td>
-                                <td>{{ c.uuid }}</td>
-                            </tr>
-                            {% endfor %}
+                        <tbody id="table-containers-per-domain" data-url="{% url 'containers_per_domain' domain.id %}">
+                            {# ajax query to load this content #}
                         </tbody>
                     </table>
                 </div>
