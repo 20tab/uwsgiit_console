@@ -1,7 +1,7 @@
-language: python                                                                                                     
+language: python
 python:
-	- 2.7
+    - 2.7
     - 3.3
 script: ./run_tests
 notifications:
-     slack: 20tab:mnx0ViMEi5IlYWl9AO4Kt9lm
+    slack: 20tab:mnx0ViMEi5IlYWl9AO4Kt9lm
