@@ -7,13 +7,11 @@
 *migrations
 .idea
 .DS_Store
-.swp
-.un~
+*.swp
+*.un~
 .tox
 .coverage
 media/
-analysis
-francesco.ini
 dist/
 uwsgiit_console.egg-info/
 build/

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/20tab/uwsgiit_console.svg?branch=master)](https://travis-ci.org/20tab/uwsgiit_console)
+
 uwsgiit_console
 ===============
 
