@@ -36,13 +36,17 @@ jQuery(function($){
         $('.table_row.hidden').removeClass('hidden');
         if (last_tag == undefined || last_tag != filter){
             $('.table_row').not('[data-category*="'+filter+'"]').addClass('hidden');
+            $('.table_row[data-category*="'+filter+'"]').addClass('search-item');
             $('.tag_filter.active').removeClass('active');
             $('.tag_filter[data-filter="'+filter+'"]').addClass('active');
             last_tag = filter;
         } else {
             $('.tag_filter[data-filter="'+filter+'"]').removeClass('active');
+            $('.table_row[data-category*="'+filter+'"]').removeClass('search-item');
+
             last_tag = undefined;
         }
+        $(document).trigger('filter:click', e, this);
     });
 
 

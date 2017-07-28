@@ -196,7 +196,22 @@
 
             searchTable(tableBody);
             sortColumn(obj, tableBody);
-
+            $(document).on('filter:click', function(evt, filter) {
+                // console.log('filter clicked', evt, filter);
+                if ($(filter.target).hasClass('active')) {
+                    activeSearch = true;
+                } else {
+                    activeSearch = false;
+                }
+                setPageCount(tableBody);
+                addPages();
+                // pageCount = Math.ceil(tableBody.children('.search-item').length / pageRowCount);
+                // if (pageCount == 0) {
+                    // pageCount = 1;
+                // }
+                // addPages();
+                // paginate(tableBody, 1);
+            })
             $('body').on('click', '.pagination li', function (event) {
                 var listItem;
 
