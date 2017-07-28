@@ -76,3 +76,13 @@ body { padding-top: 70px; }
 #reboot-container{margin:0px 0px 7px 20px;}
 
 .inline-block{display:inline-block;}
+.dropdown-menu {
+    max-height: 90vh;
+    overflow: scroll;
+}
+
+@media (max-width: 769px) {
+    .dropdown-menu{
+        max-height: initial;
+    }
+}
