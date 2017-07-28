@@ -64,4 +64,6 @@ jQuery(function($){
     $('select').select2({
         width: '200px'
     });
+
+     $('#domains-table').bdt();
 });
