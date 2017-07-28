@@ -384,7 +384,7 @@
          */
         function searchTable(tableBody) {
             $("#search").on("keyup", function () {
-                $.each(tableBody.find("tr"), function () {
+                $.each(tableBody.find("tr td:nth-child(2)"), function () {
 
                     var text = $(this)
                         .text()
@@ -394,12 +394,14 @@
                     var searchTerm = $("#search").val();
 
                     if (text.toLowerCase().indexOf(searchTerm.toLowerCase()) == -1) {
-                        $(this)
-                            .hide()
+                        $(this).closest('tr')
+                            // .hide()
+                            .addClass('hidden')
                             .removeClass('search-item');
                     } else {
-                        $(this)
-                            .show()
+                        $(this).closest('tr')
+                            // .show()
+                            .removeClass('hidden')
                             .addClass('search-item');
                     }
 
@@ -452,11 +454,13 @@
             var pagination = $('.pagination');
 
             rows
-                .hide();
+                // .hide();
+                .addClass('hidden');
 
             rows
                 .slice(startRow, endRow)
-                .show();
+                .removeClass('hidden')
+                // .show();
 
             pagination
                 .find('li')
