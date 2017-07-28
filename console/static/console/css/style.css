@@ -1,4 +1,7 @@
-body { padding-top: 70px; }
+body {
+    padding-top: 70px;
+    color: #222;
+ }
 
 .word-break{
     word-break: break-all;
@@ -85,4 +88,7 @@ body { padding-top: 70px; }
     .dropdown-menu{
         max-height: initial;
     }
+}
+.form-control{
+    color: #222;
 }
