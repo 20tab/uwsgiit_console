@@ -1,6 +1,6 @@
 body {
     padding-top: 70px;
-    color: #222;
+    /*color: #222;*/
  }
 
 .word-break{
@@ -90,5 +90,5 @@ body {
     }
 }
 .form-control{
-    color: #222;
+    /*color: #222;*/
 }
