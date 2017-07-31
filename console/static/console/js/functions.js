@@ -34,6 +34,7 @@ jQuery(function($){
         e.preventDefault();
         var filter = $(this).attr('data-filter');
         $('.table_row.hidden').removeClass('hidden');
+        $('.table_row.search-item').removeClass('search-item');
         if (last_tag == undefined || last_tag != filter){
             $('.table_row').not('[data-category*="'+filter+'"]').addClass('hidden');
             $('.table_row[data-category*="'+filter+'"]').addClass('search-item');

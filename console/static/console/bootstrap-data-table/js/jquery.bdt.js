@@ -205,6 +205,7 @@
                 }
                 setPageCount(tableBody);
                 addPages();
+                paginate(tableBody, 1);
                 // pageCount = Math.ceil(tableBody.children('.search-item').length / pageRowCount);
                 // if (pageCount == 0) {
                     // pageCount = 1;
