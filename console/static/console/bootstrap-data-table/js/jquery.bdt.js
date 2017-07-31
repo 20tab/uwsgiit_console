@@ -206,28 +206,19 @@
                 setPageCount(tableBody);
                 addPages();
                 paginate(tableBody, 1);
-                // pageCount = Math.ceil(tableBody.children('.search-item').length / pageRowCount);
-                // if (pageCount == 0) {
-                    // pageCount = 1;
-                // }
-                // addPages();
-                // paginate(tableBody, 1);
             })
             $('body').on('click', '.pagination li', function (event) {
                 var listItem;
-
                 if ($(event.target).is("a")) {
                     listItem = $(event.target).parent();
                 } else {
                     listItem = $(event.target).parent().parent();
                 }
-
                 var page = listItem.data('page');
 
                 if (!listItem.hasClass("disabled") && !listItem.hasClass("active")) {
                     paginate(tableBody, page);
                 }
-
                 event.preventDefault();
             });
 
