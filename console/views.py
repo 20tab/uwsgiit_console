@@ -4,10 +4,10 @@ import json
 
 from django.conf import settings
 from django.contrib import messages
-from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse,\
-    HttpResponseForbidden
+    HttpResponseForbidden, Http404
+from django.template.loader import render_to_string
 
 from .utils import ConsoleClient as CC
 
@@ -36,8 +36,7 @@ def main_render(request, template, v_dict={}):
         if last_alarm:
             v_dict['last_alarm_id'] = last_alarm[0]['id']
 
-    return render_to_response(
-        template, v_dict, context_instance=RequestContext(request))
+    return render(request, template, context=v_dict)
 
 
 def home(request):
@@ -206,7 +205,7 @@ def containers(request, id):
                         if link not in list_linked_to:
                             client.update_container(id, {'link': link})
                     for link in list_linked_to:
-                        if unicode(link) not in cd['linked_to']:
+                        if link not in cd['linked_to']:
                             client.update_container(id, {'unlink': link})
 
             elif 'action' in request.POST:
@@ -306,8 +305,25 @@ def containers(request, id):
         res['calendar'] = calendar
         res['newloopboxform'] = newloopboxform
         res['active_panel'] = active_panel
-        res['domains'] = client.domains_in_container(id).json()
     return main_render(request, 'console/containers.html', res)
+
+
+@login_required
+def domains_in_container(request, id):
+    if request.is_ajax():
+
+        client = CC(
+            request.session.get('username'),
+            request.session.get('password'),
+            request.session.get('api_url')
+        )
+
+        rendered = render_to_string('console/container/domains.html', {'domains': client.domains_in_container(id).json()})
+        return HttpResponse(
+            json.dumps({'rendered': rendered}),
+            content_type="application/json"
+        )
+    raise Http404
 
 
 @login_required
@@ -409,8 +425,25 @@ def domain(request, id):
     res['calendar'] = calendar
     res['domain'] = domain
     res['domainform'] = form
-    res['containers_per_domain'] = client.containers_per_domain(id).json()
     return main_render(request, 'console/domain.html', res)
+
+
+@login_required
+def containers_per_domain(request, id):
+    if request.is_ajax():
+
+        client = CC(
+            request.session.get('username'),
+            request.session.get('password'),
+            request.session.get('api_url')
+        )
+
+        rendered = render_to_string('console/domain/containers.html', {'containers_per_domain': client.containers_per_domain(id).json()})
+        return HttpResponse(
+            json.dumps({'rendered': rendered}),
+            content_type="application/json"
+        )
+    raise Http404
 
 
 @login_required

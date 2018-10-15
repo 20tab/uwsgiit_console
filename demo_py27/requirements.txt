@@ -1,0 +1,6 @@
+Django
+django-appconf
+requests
+six
+twentytab-select2
+uwsgiit-py

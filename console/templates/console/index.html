@@ -1,18 +1,25 @@
 {% extends "console/base.html" %}
+{% load static %}
 {% load console_tags %}
 
 {% block head_meta %}
     <meta name="viewport" content="width=device-width, initial-scale=1">
 {% endblock %}
 {% block extra_style %}
-    <link href="{{ STATIC_URL }}console/css/style.css" rel="stylesheet">
-    <link href="{{ STATIC_URL }}console/bootstrap-3.1.1-dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ STATIC_URL }}select2/select2-3.4.5/select2.css" type="text/css" media="all" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    <link href="{% static "console/bootstrap-3.3.7-dist/css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "console/bootstrap-data-table/css/vendor/font-awesome.min.css" %}" type="text/css" rel="stylesheet">
+    <link href="{% static "console/bootstrap-data-table/css/jquery.bdt.min.css" %}" type="text/css" rel="stylesheet">
+    <link href="{% static "console/bootstrap-3.3.7-dist/css/theme.min.css" %}" rel="stylesheet">
+    <link href="{% static "console/css/style.css" %}"  rel="stylesheet">
+    <link href="{% static "select2/select2-4.0.2/css/select2.css" type="text/css" %}" media="all" rel="stylesheet" />
 {% endblock %}
 {% block extra_head %}
-    <script type="text/javascript" src="{{ STATIC_URL }}select2/js/jquery-2.1.0.min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}select2/select2-3.4.5/select2.min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}select2/js/select2__init.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{% static "select2/select2-4.0.2/js/select2.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "select2/select2__init.js" %}"></script>
+    <script src="{% static "console/bootstrap-data-table/js/vendor/jquery.sortelements.js" %}" type="text/javascript"></script>
+    <script src="{% static "console/bootstrap-data-table/js/jquery.bdt.js" %}" type="text/javascript"></script>
 {% endblock %}
 {% block body %}
 <div class="container">
@@ -163,8 +170,8 @@
 {% endblock %}
 {% block footer_js %}
 <!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="{{ STATIC_URL }}console/bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
-<script src="{{ STATIC_URL }}console/js/functions.js"></script>
+<script src="{% static "console/bootstrap-3.1.1-dist/js/bootstrap.min.js" %}"></script>
+<script src="{% static "console/js/functions.js" %}"></script>
 {% if last_alarm_id %}{# if user is logged in #}
 <script>
     var latest_alarms_url = "{% url 'console_latest_alarms' %}";
@@ -172,6 +179,6 @@
     var last_alarm_id = {% if last_alarm_id %}{{ last_alarm_id }}{% else %}undefined{%endif%};
 
 </script>
-<script src="{{ STATIC_URL }}console/js/latest_alarms.js"></script>
+<script src="{% static "console/js/latest_alarms.js" %}"></script>
 {% endif %}
 {% endblock %}

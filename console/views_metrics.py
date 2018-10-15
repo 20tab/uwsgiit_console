@@ -71,7 +71,6 @@ def domain_metrics_per_tag(request, tag, **kwargs):
 
     domains = client.domains(tags=[tag]).json()
     metrics = [kwargs['model'](domain=d['id']) for d in domains]
-
     return stats_render(request, metrics, **kwargs)
 
 

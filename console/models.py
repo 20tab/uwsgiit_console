@@ -26,7 +26,7 @@ class UwsgiItApi(models.Model):
     url = models.CharField(max_length=512, unique=True)
     name = models.CharField(max_length=255, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.url
 
 
@@ -40,7 +40,7 @@ class GenericMetric(models.Model):
     # this ia blob containing raw metrics
     json = models.TextField(null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{year}-{month}-{day}'.format(
             year=self.year, month=self.month, day=self.day)
 
